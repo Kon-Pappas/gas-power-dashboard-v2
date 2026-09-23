@@ -435,6 +435,15 @@ def process_economics(date_str):
 # ==========================================
 # MAIN EXECUTION
 # ==========================================
+def wipe_date(target_date_str):
+    """Διαγράφει οριστικά ΟΛΑ τα δεδομένα μιας συγκεκριμένης ημερομηνίας πριν το backfill."""
+    db["isp_generation"] = [d for d in db["isp_generation"] if d.get("Ημερομηνία") != target_date_str]
+    db["scada_generation"] = [d for d in db["scada_generation"] if d.get("Ημερομηνία") != target_date_str]
+    db["scada_generation_hourly"] = [d for d in db["scada_generation_hourly"] if d.get("Ημερομηνία") != target_date_str]
+    db["daily_economics"] = [d for d in db["daily_economics"] if d.get("Ημερομηνία") != target_date_str]
+    db["daily_surplus"] = [d for d in db["daily_surplus"] if d.get("Date") != target_date_str]
+    # ΔΕΝ διαγράφουμε henex και co2, γιατί αυτά είναι σωστά και γλιτώνουμε API calls!
+
 if __name__ == "__main__":
     today = datetime.now(TZ)
     print(f"Starting Data Fetch Job at {today.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -460,6 +469,10 @@ if __name__ == "__main__":
         date_str = target_date.strftime("%Y-%m-%d")
         print(f"--> Processing Date: {date_str}")
         
+        # 1. ΑΠΟΛΥΤΟΣ ΚΑΘΑΡΙΣΜΟΣ ΤΗΣ ΗΜΕΡΑΣ ΠΡΙΝ ΤΗΝ ΕΠΕΞΕΡΓΑΣΙΑ
+        wipe_date(date_str)
+        
+        # 2. ΕΠΑΝΥΠΟΛΟΓΙΣΜΟΣ ΟΛΩΝ (Τώρα πια σε "καθαρό καμβά")
         process_scada(date_str)
         process_isp(date_str)
         process_henex(date_str)
