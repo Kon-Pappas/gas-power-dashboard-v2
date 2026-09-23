@@ -123,36 +123,44 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Πλέον έχουμε 6 στήλες στο Grid για να χωρέσει το CO2 -->
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
                 <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-xs text-slate-400 uppercase tracking-wider">HGSIDA Gas Price</span>
+                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">HGSIDA Gas Price</span>
                     <div class="flex items-baseline gap-1">
                         <span id="kpiHgsida" class="text-2xl font-bold text-blue-400">0.00</span>
                         <span class="text-sm text-slate-500">€/MWh</span>
                     </div>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-xs text-slate-400 uppercase tracking-wider">Fleet Efficiency</span>
+                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">EUA CO2 Price</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="kpiCo2" class="text-2xl font-bold text-slate-300">0.00</span>
+                        <span class="text-sm text-slate-500">€/t</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Fleet Efficiency</span>
                     <div class="flex items-baseline gap-1">
                         <span id="kpiFleetEff" class="text-2xl font-bold text-emerald-400">0.0</span>
                         <span class="text-sm text-slate-500">%</span>
                     </div>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Avg Gas Cost</span>
+                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Avg Fleet SRMC</span>
                     <div class="flex items-baseline gap-1">
                         <span id="kpiAvgGasCost" class="text-2xl font-bold text-amber-400">0.00</span>
                         <span class="text-sm text-slate-500">€/MWh</span>
                     </div>
                 </div>
                 <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Gas Fleet Generation</span>
+                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Gas Generation</span>
                     <div class="flex items-baseline gap-1">
                         <span id="kpiEcoScada" class="text-2xl font-bold text-orange-400">0.0</span>
                         <span class="text-sm text-slate-500">MWh</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center col-span-2 lg:col-span-1">
+                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
                     <span class="text-[11px] text-slate-400 uppercase tracking-wider">Total Est. Cost</span>
                     <div class="flex items-baseline gap-1">
                         <span id="kpiTotalEcoCost" class="text-2xl font-bold text-rose-400">0</span>
@@ -163,25 +171,27 @@
 
             <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
                 <h3 class="text-lg font-semibold text-slate-200 mb-1" id="ecoTableTitle">Daily Theoretical Cost per Unit</h3>
-                <p class="text-xs text-slate-400 mb-6">Cost Formula: (HGSIDA / Thermal Efficiency) + CO2 Cost (Fixed at 28 €/MWh)</p>
+                <p class="text-xs text-slate-400 mb-6">Calculated via hourly dynamic load interpolation. Cost = (HGSIDA / Dynamic Efficiency) + (Dynamic CO2 Factor * EUA Price).</p>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-900/80 text-slate-400 uppercase text-xs">
+                        <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider">
                             <tr>
                                 <th class="p-3 rounded-tl-lg">CLASS</th>
                                 <th class="p-3">GAS FACTORY</th>
-                                <th class="p-3 text-right">DAILY PRODUCED (MWh)</th>
-                                <th class="p-3 text-right">EFFICIENCY</th>
-                                <th class="p-3 text-right">GAS COST (€/MWh)</th>
+                                <th class="p-3 text-right">PRODUCED (MWh)</th>
+                                <th class="p-3 text-right">AVG EFFICIENCY</th>
+                                <th class="p-3 text-right">CO2 EMISSIONS (t)</th>
+                                <th class="p-3 text-right">AVG SRMC (€/MWh)</th>
                                 <th class="p-3 text-right rounded-tr-lg">TOTAL COST (€)</th>
                             </tr>
                         </thead>
                         <tbody id="economicsTableBody" class="divide-y divide-slate-700/50"></tbody>
-                        <tfoot class="bg-slate-900/50 font-bold border-t-2 border-slate-600">
+                        <tfoot class="bg-slate-900/50 font-bold border-t-2 border-slate-600 text-xs">
                             <tr>
                                 <td colspan="2" class="p-3 text-right text-slate-400 uppercase tracking-wider">DAILY TOTAL / AVG</td>
                                 <td id="ecoTableTotalMwh" class="p-3 text-right text-orange-400">0.0</td>
-                                <td id="ecoTableAvgEff" class="p-3 text-right text-emerald-400">0.0%</td>
+                                <td id="ecoTableAvgEffPct" class="p-3 text-right text-emerald-400">0.0%</td>
+                                <td id="ecoTableTotalTons" class="p-3 text-right text-slate-300">0 t</td>
                                 <td id="ecoTableAvgGasCost" class="p-3 text-right text-amber-400">0.00</td>
                                 <td id="ecoTableTotalCost" class="p-3 text-right text-rose-400">0 €</td>
                             </tr>
@@ -190,7 +200,6 @@
                 </div>
             </div>
         </div>
-
         <!-- VIEW 3: MONTHLY ANALYTICS -->
         <div id="viewIspScada" class="space-y-6 hidden">
             <div class="flex justify-end items-center">
