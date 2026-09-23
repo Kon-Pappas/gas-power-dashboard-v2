@@ -2,9 +2,17 @@ name: Daily Energy Data Update
 
 on:
   schedule:
-    # Τρέχει κάθε μέρα στις 04:00 UTC (07:00 ώρα Ελλάδος)
-    - cron: '0 4 * * *'
-  workflow_dispatch: # Σου επιτρέπει να το τρέχεις χειροκίνητα με ένα κουμπί από το GitHub
+    - cron: '0 4 * * *' # 07:00 ώρα Ελλάδος
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: 'Start Date (π.χ. 2026-09-01)'
+        required: false
+        type: string
+      end_date:
+        description: 'End Date (π.χ. 2026-09-23)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -17,32 +25,33 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip' # Κρατάει cache τις βιβλιοθήκες για να τρέχει πιο γρήγορα
-
+          cache: 'pip'
+        
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Data Fetcher
+      - name: Run Data Extraction Script
         env:
           TZ: "Europe/Athens"
+          START_DATE: ${{ inputs.start_date }}
+          END_DATE: ${{ inputs.end_date }}
         run: python update_data.py
 
       - name: Commit and Push Changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action Bot"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add data/historical.json
           
-          # Κάνει commit μόνο αν το Python script βρήκε και έγραψε νέα δεδομένα
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "data: daily market data update"
-            git push
+          if git diff --staged --quiet; then
+            echo "Δεν βρέθηκαν νέα δεδομένα (ή δεν υπάρχει αλλαγή). Παράβλεψη commit."
           else
-            echo "No new data to commit."
+            git commit -m "data: Auto-update market data 🤖 [skip ci]"
+            git push
           fi
