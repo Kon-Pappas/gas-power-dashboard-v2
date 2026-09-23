@@ -13,7 +13,8 @@ let rawData = {
     mcpHourly: [], 
     efficiency: [],
     daily_surplus: [],          
-    daily_gas_constraints: []   
+    daily_gas_constraints: [],
+    daily_economics: []    
 };
 
 let currentLang = 'en'; 
@@ -153,7 +154,6 @@ async function fetchMarketData() {
     let activeSteps = texts[lang] || texts.en;
     updateProgress(activeSteps[0].p, activeSteps[0].t);
 
-    // Το loading bar είναι πιο γρήγορο πλέον γιατί δεν περιμένουμε το Google Script
     let progressInterval = setInterval(() => {
         stepIndex++;
         if (stepIndex < activeSteps.length) {
@@ -164,7 +164,6 @@ async function fetchMarketData() {
     }, 300);
 
     try {
-        // Το cache busting (?v=...) διασφαλίζει ότι το GitHub Pages φέρνει πάντα το πιο φρέσκο αρχείο
         const response = await fetch(API_URL + "?v=" + new Date().getTime());
         clearInterval(progressInterval);
 
@@ -182,6 +181,7 @@ async function fetchMarketData() {
         rawData.efficiency = json.thermal_efficiency || [];
         rawData.daily_surplus = json.daily_surplus || [];                
         rawData.daily_gas_constraints = json.daily_gas_constraints || []; 
+        rawData.daily_economics = json.daily_economics || []; // <-- Προσθήκη για τα Οικονομικά
         
         console.log("Local Data successfully loaded:", rawData);
 
