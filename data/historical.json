@@ -50463,6 +50463,13 @@
       "HGSIWD (€/MWh)": 61.8,
       "HGMBI (€/MWh)": 68.87,
       "HGMSI (€/MWh)": 56.35
+    },
+    {
+      "Ημερομηνία": "2026-09-22",
+      "HGSIDA (€/MWh)": 57.21,
+      "HGSIWD (€/MWh)": 59.21,
+      "HGMBI (€/MWh)": 63.03,
+      "HGMSI (€/MWh)": 51.57
     }
   ],
   "dam_mcp_hourly": [
@@ -56067,5 +56074,6 @@
       "Hour From": "10:00",
       "Hour To": "14:30"
     }
-  ]
+  ],
+  "co2_prices": []
 }
