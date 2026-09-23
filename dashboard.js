@@ -1,9 +1,4 @@
 // ==========================================
-// CONFIGURATION & CONSTANTS
-// ==========================================
-const CO2_COST_PER_MWH = 28.0; 
-
-// ==========================================
 // GLOBAL CHART INSTANCES & STATE
 // ==========================================
 let overviewChartInst = null;
@@ -115,7 +110,7 @@ function createDiagonalPattern(colorHex) {
 function getCanonicalUnitName(rawName) {
     if (!rawName) return "UNKNOWN";
     let clean = String(rawName).trim().toUpperCase();
-    clean = clean.replace(/\s*\((ST|GT\d+)\)/gi, '').trim();
+    clean = clean.replace(/\s*\((ST\vert{}GT\d+)\)/gi, '').trim();
 
     if (clean === "KOMOTINI_POWER") return "KOMOTINI_POWER";
     if (clean.includes("KOMOTINI") || clean.includes("ΚΟΜΟΤΗΝΗ")) {
@@ -341,7 +336,7 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
 }
 
 // ==========================================
-// TAB 2: DAILY ECONOMICS (DYNAMIC MODEL)
+// TAB 2: DAILY ECONOMICS
 // ==========================================
 function updateEconomicsTab() {
     const dateSelect = document.getElementById('dateSelectEco');
@@ -380,14 +375,12 @@ function updateEconomicsTab() {
     const hgsidaVal = dayEco["HGSIDA (€/MWh)"] || 0;
     const co2PriceVal = dayEco["CO2 Price (€/t)"] || 0;
 
-    // Ενημέρωση KPIs κορυφής
     document.getElementById('kpiHgsida').innerText = hgsidaVal.toFixed(2);
     document.getElementById('kpiCo2').innerText = co2PriceVal > 0 ? co2PriceVal.toFixed(2) : '-';
     document.getElementById('kpiEcoScada').innerText = totals["Συνολική Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
     document.getElementById('kpiAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2);
     document.getElementById('kpiTotalEcoCost').innerText = formatEuro(totals["Συνολικό Κόστος Στόλου (€)"]);
     
-    // Υπολογισμός μέσης απόδοσης στόλου: (Σ MWh * HGSIDA) / Σ Fuel Cost
     const totalMwh = totals["Συνολική Παραγωγή (MWh)"];
     const totalFuelCost = totals["Συνολικό Κόστος Καυσίμου (€)"];
     const avgFleetEff = (totalFuelCost > 0 && hgsidaVal > 0) ? (totalMwh * hgsidaVal / totalFuelCost) * 100 : 0;
@@ -397,7 +390,6 @@ function updateEconomicsTab() {
     let sumCost = 0;
     let sumTons = 0;
 
-    // Ταξινόμηση Μονάδων: H-Class (1), F-Class (2), Peakers (3), και μετά βάσει MWh
     let sortedUnits = [...dayEco.Units];
     sortedUnits.sort((a, b) => {
         const orderA = getUnitMetadata(a["Μονάδα"]).order;
@@ -406,7 +398,6 @@ function updateEconomicsTab() {
         return b["Παραγωγή (MWh)"] - a["Παραγωγή (MWh)"];
     });
 
-    // Γέμισμα Πίνακα
     sortedUnits.forEach(u => {
         sumMwh += u["Παραγωγή (MWh)"];
         sumCost += u["Συνολικό Κόστος (€)"];
@@ -418,7 +409,6 @@ function updateEconomicsTab() {
         if (meta.order === 2) borderClass = "border-l-4 border-[#3b82f6]";
         if (meta.order === 3) borderClass = "border-l-4 border-[#f97316]";
 
-        // Υπολογισμός μέσης ημερήσιας απόδοσης εργοστασίου: (MWh * HGSIDA) / Fuel Cost
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
 
@@ -436,7 +426,6 @@ function updateEconomicsTab() {
         tbody.appendChild(tr);
     });
 
-    // Footer
     document.getElementById('ecoTableTotalMwh').innerText = sumMwh.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
     document.getElementById('ecoTableAvgEffPct').innerText = avgFleetEff > 0 ? avgFleetEff.toFixed(1) + '%' : '-';
     document.getElementById('ecoTableTotalTons').innerText = sumTons.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
@@ -445,64 +434,76 @@ function updateEconomicsTab() {
 }
 
 // ==========================================
-// TAB 3: MONTHLY ANALYTICS
+// TAB 3: MONTHLY ANALYTICS (CLEANED)
 // ==========================================
 function updateMonthlyTab() {
     const monthSelect = document.getElementById('monthSelect');
-    if (!monthSelect || !rawData || !rawData.scada) return;
+    if (!monthSelect || !rawData || !rawData.daily_economics) return;
     
     const selectedMonth = monthSelect.value; 
     if (!selectedMonth) return;
 
-    const allDatesInMonth = [...new Set([
-        ...rawData.henex.map(d => parseDate(Object.values(d)[0])),
-        ...rawData.scada.map(d => parseDate(Object.values(d)[0]))
-    ])].filter(d => d.startsWith(selectedMonth)).sort();
+    // Διαβάζουμε τα έτοιμα δεδομένα κατευθείαν από το back-end
+    const monthData = rawData.daily_economics
+        .filter(d => parseDate(d.Ημερομηνία).startsWith(selectedMonth))
+        .sort((a, b) => parseDate(a.Ημερομηνία).localeCompare(parseDate(b.Ημερομηνία)));
 
     const labels = [];
     const hgsidaData = [];
-    const avgCostData = [];
+    const co2Data = [];
+    const srmcData = [];
     const effData = [];
 
-    allDatesInMonth.forEach(day => {
-        const dayNumber = day.split('-')[2];
-        labels.push(dayNumber);
+    let minCost = Infinity, minCostDay = '';
+    let maxCost = -Infinity, maxCostDay = '';
+    let minEff = Infinity, minEffDay = '';
+    let maxEff = -Infinity, maxEffDay = '';
 
-        let hgsida = 0;
-        const henexDay = rawData.henex.find(d => parseDate(Object.values(d)[0]) === day);
-        if (henexDay) hgsida = parseNum(Object.values(henexDay)[1]);
+    monthData.forEach(day => {
+        const dateStr = parseDate(day.Ημερομηνία);
+        const dayNum = dateStr.split('-')[2];
+        labels.push(dayNum);
+
+        const hgsida = day["HGSIDA (€/MWh)"] || 0;
+        const co2 = day["CO2 Price (€/t)"] || 0;
+        const totals = day["Fleet Totals"];
+        const srmc = totals["Μέσο SRMC Στόλου (€/MWh)"] || 0;
+        
+        // Απόδοση Στόλου = (MWh * Gas Price) / Κόστος Καυσίμου
+        const totalMwh = totals["Συνολική Παραγωγή (MWh)"];
+        const totalFuelCost = totals["Συνολικό Κόστος Καυσίμου (€)"];
+        const eff = (totalFuelCost > 0 && hgsida > 0) ? (totalMwh * hgsida / totalFuelCost) * 100 : 0;
+
         hgsidaData.push(hgsida);
+        co2Data.push(co2);
+        srmcData.push(srmc);
+        effData.push(eff);
 
-        const scadaDay = rawData.scada.filter(d => parseDate(Object.values(d)[0]) === day);
-        let dailyTotalMwh = 0;
-        let dailyTotalCost = 0;
-        let dailyTotalTheoreticalFuel = 0;
-
-        scadaDay.forEach(d => {
-            let uName = String(Object.values(d)[1].trim());
-            const val = parseNum(Object.values(d)[2]);
-            if (uName === "TOTAL GAS UNITS" || val <= 0) return;
-
-            uName = getCanonicalUnitName(uName);
-            const eff = getUnitMetadata(uName).eff;
-            const unitCostPerMwh = (hgsida / eff) + CO2_COST_PER_MWH;
-
-            dailyTotalMwh += val;
-            dailyTotalCost += (val * unitCostPerMwh);
-            dailyTotalTheoreticalFuel += (val / eff);
-        });
-
-        const dailyAvgCost = dailyTotalMwh > 0 ? (dailyTotalCost / dailyTotalMwh) : 0;
-        avgCostData.push(dailyAvgCost);
-
-        const dailyEff = dailyTotalTheoreticalFuel > 0 ? (dailyTotalMwh / dailyTotalTheoreticalFuel) * 100 : 0;
-        effData.push(dailyEff);
+        // Track Highs and Lows
+        if (srmc > 0 && srmc < minCost) { minCost = srmc; minCostDay = dayNum; }
+        if (srmc > maxCost) { maxCost = srmc; maxCostDay = dayNum; }
+        
+        if (eff > 0 && eff < minEff) { minEff = eff; minEffDay = dayNum; }
+        if (eff > maxEff) { maxEff = eff; maxEffDay = dayNum; }
     });
 
-    renderMonthlyChart(labels, hgsidaData, avgCostData, effData);
+    // Ενημέρωση των νέων KPI Boxes
+    document.getElementById('kpiPeakCost').innerText = maxCost !== -Infinity ? maxCost.toFixed(2) : '-';
+    document.getElementById('kpiPeakCostDay').innerText = maxCostDay ? `Day ${maxCostDay}` : '';
+    
+    document.getElementById('kpiBestCost').innerText = minCost !== Infinity ? minCost.toFixed(2) : '-';
+    document.getElementById('kpiBestCostDay').innerText = minCostDay ? `Day ${minCostDay}` : '';
+    
+    document.getElementById('kpiWorstEff').innerText = minEff !== Infinity ? minEff.toFixed(1) : '-';
+    document.getElementById('kpiWorstEffDay').innerText = minEffDay ? `Day ${minEffDay}` : '';
+    
+    document.getElementById('kpiMaxEff').innerText = maxEff !== -Infinity ? maxEff.toFixed(1) : '-';
+    document.getElementById('kpiMaxEffDay').innerText = maxEffDay ? `Day ${maxEffDay}` : '';
+
+    renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData);
 }
 
-function renderMonthlyChart(labels, hgsidaData, avgCostData, effData) {
+function renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData) {
     const canvas = document.getElementById('monthlyChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -518,10 +519,10 @@ function renderMonthlyChart(labels, hgsidaData, avgCostData, effData) {
             labels: labels, 
             datasets: [
                 { 
-                    label: 'HGSIDA Price (€/MWh)', 
+                    label: 'HGSIDA Gas Price', 
                     data: hgsidaData, 
-                    borderColor: '#3b82f6', 
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: '#3b82f6', // Μπλε
+                    backgroundColor: 'transparent',
                     borderWidth: 2,
                     tension: 0.3,
                     pointRadius: 3,
@@ -529,27 +530,39 @@ function renderMonthlyChart(labels, hgsidaData, avgCostData, effData) {
                     yAxisID: 'y'
                 }, 
                 { 
-                    label: 'Fleet Avg Gas Cost (€/MWh)', 
-                    data: avgCostData, 
-                    borderColor: '#f59e0b', 
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    label: 'EUA CO2 Price', 
+                    data: co2Data, 
+                    borderColor: '#94a3b8', // Γκρι (Slate)
+                    backgroundColor: 'transparent',
                     borderWidth: 2,
                     tension: 0.3,
                     pointRadius: 3,
-                    pointBackgroundColor: '#f59e0b',
+                    pointBackgroundColor: '#94a3b8',
+                    yAxisID: 'y'
+                },
+                { 
+                    label: 'Avg Fleet SRMC', 
+                    data: srmcData, 
+                    borderColor: '#fbbf24', // Πορτοκαλί (Amber)
+                    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                    fill: true,
+                    borderWidth: 3,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fbbf24',
                     yAxisID: 'y'
                 },
                 {
-                    label: 'Fleet Avg Efficiency (%)',
+                    label: 'Fleet Efficiency',
                     data: effData,
-                    borderColor: '#10b981', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: '#10b981', // Πράσινο (Emerald)
+                    backgroundColor: 'transparent',
                     borderWidth: 2,
                     borderDash: [5, 5], 
                     tension: 0.3,
                     pointRadius: 3,
                     pointBackgroundColor: '#10b981',
-                    yAxisID: 'y1' 
+                    yAxisID: 'y2' 
                 }
             ] 
         }, 
@@ -557,18 +570,18 @@ function renderMonthlyChart(labels, hgsidaData, avgCostData, effData) {
             responsive: true, 
             maintainAspectRatio: false, 
             plugins: { 
-                legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 12 } } }, 
+                legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 12 }, usePointStyle: true } }, 
                 tooltip: {
                     mode: 'index',
                     intersect: false,
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.dataset.yAxisID === 'y1') {
-                                label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' %';
+                            if (label) label = label + ': ';
+                            if (context.dataset.yAxisID === 'y2') {
+                                label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' %';
                             } else {
-                                label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+                                label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €/MWh';
                             }
                             return label;
                         }
@@ -577,8 +590,23 @@ function renderMonthlyChart(labels, hgsidaData, avgCostData, effData) {
             }, 
             scales: { 
                 x: { grid: { color: '#1e293b' }, title: { display: true, text: 'Day of Month', color: '#64748b' } }, 
-                y: { type: 'linear', display: true, position: 'left', grid: { color: '#334155' }, title: { display: true, text: '€ / MWh' } },
-                y1: { type: 'linear', display: true, position: 'right', min: 54, max: 59, grid: { drawOnChartArea: false }, title: { display: true, text: 'Efficiency (%)' } }
+                y: { 
+                    type: 'linear', 
+                    display: true, 
+                    position: 'left', 
+                    grid: { color: '#334155' }, 
+                    title: { display: true, text: 'Cost (€ / MWh & € / t)' },
+                    min: 0
+                },
+                y2: { 
+                    type: 'linear', 
+                    display: true, 
+                    position: 'right', 
+                    min: 40, // Καρφωμένο στο 40-60% όπως ζήτησες!
+                    max: 60, 
+                    grid: { drawOnChartArea: false }, 
+                    title: { display: true, text: 'Efficiency (%)' } 
+                }
             },
             interaction: { mode: 'nearest', axis: 'x', intersect: false }
         } 
@@ -595,7 +623,6 @@ function updateSurplusTab() {
     const selectedMonth = monthSelect.value;
     if (!selectedMonth) return;
 
-    // 1. Δομή για τα Constraints ανά ημέρα και μονάδα
     let constraintsByDay = {};
     
     rawData.daily_gas_constraints.forEach(c => {
@@ -611,7 +638,6 @@ function updateSurplusTab() {
         let hFromInt = parseInt(hFromParts[0], 10) || 0;
         let hToInt = parseInt(hToParts[0], 10) || 0;
         
-        // 9:59 -> 10η ώρα, 13:59 -> 13η ώρα
         let hStart = hFromInt + 1; 
         let hEnd = hToInt;         
         
@@ -626,7 +652,6 @@ function updateSurplusTab() {
         }
     });
 
-    // 2. Υπολογισμός MWh (Generic Constraints) βάσει του SCADA Hourly
     let dailyConstrainedMwh = {};
     
     rawData.scadaHourly.forEach(row => {
@@ -647,7 +672,7 @@ function updateSurplusTab() {
             
             for (let h = window.hStart; h <= window.hEnd; h++) {
                 if (h >= 1 && h <= 24) {
-                    let hIdx = h + 1; // Index 2 είναι η 1η ώρα (01:00)
+                    let hIdx = h + 1;
                     let val = parseNum(vals[hIdx]);
                     dailyConstrainedMwh[d] += val;
                 }
@@ -655,7 +680,6 @@ function updateSurplusTab() {
         }
     });
 
-    // 3. Διάβασμα του Daily Surplus
     let dailySurplusMap = {};
     rawData.daily_surplus.forEach(row => {
         let vals = Object.values(row);
@@ -666,7 +690,6 @@ function updateSurplusTab() {
         }
     });
 
-    // 4. Ενοποίηση δεδομένων για το γράφημα
     const allDatesInMonth = [...new Set([...Object.keys(dailyConstrainedMwh), ...Object.keys(dailySurplusMap)])].sort();
     
     const labels = [];
@@ -688,7 +711,6 @@ function updateSurplusTab() {
         sumConstraints += c;
     });
 
-    // Ενημέρωση KPIs
     document.getElementById('kpiMonthSurplus').innerText = sumSurplus.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
     document.getElementById('kpiMonthConstraints').innerText = sumConstraints.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
 
@@ -713,13 +735,13 @@ function renderSurplusChart(labels, surplusData, constraintsData) {
                 { 
                     label: 'Residual Energy Surplus', 
                     data: surplusData, 
-                    backgroundColor: '#3b82f6', // Μπλε
+                    backgroundColor: '#3b82f6', 
                     borderRadius: 4
                 }, 
                 { 
                     label: 'Generic Constraints (Out of Merit)', 
                     data: constraintsData, 
-                    backgroundColor: '#f43f5e', // Κόκκινο (Rose)
+                    backgroundColor: '#f43f5e', 
                     borderRadius: 4
                 }
             ] 
