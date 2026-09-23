@@ -56,7 +56,6 @@ for k in keys:
     if k not in db:
         db[k] = []
 
-# Ενημέρωση στατικών δεδομένων
 db["thermal_efficiency"] = STATIC_EFFICIENCY
 
 # ==========================================
@@ -70,7 +69,8 @@ def get_admie_excel_url(date_str, file_category):
             data = resp.json()
             for item in data:
                 path = item.get("file_path", "")
-                if path.lower().endswith((".xls", ".xlsx")):
+                # Αλλαγή: Ψάχνει το ".xls" οπουδήποτε στο όνομα (όπως είχες στο JS)
+                if ".xls" in path.lower():
                     return f"https://www.admie.gr{path}" if path.startswith("/") else path
     except Exception:
         pass
@@ -144,8 +144,14 @@ def process_isp(date_str):
     try:
         xl = pd.ExcelFile(excel_data)
         
-        # 1. ISP Generation & Surplus
-        df = xl.parse(0, header=None)
+        # Αλλαγή: Βρίσκουμε δυναμικά το σωστό φύλλο για το ISP, όπως ακριβώς έκανες στο JS
+        target_sheet = xl.sheet_names[0]
+        for s in xl.sheet_names:
+            if str(s).upper().endswith("_ISP"):
+                target_sheet = s
+                break
+                
+        df = xl.parse(target_sheet, header=None)
         
         # -- Surplus --
         if not any(d.get("Date") == date_str for d in db["daily_surplus"]):
@@ -255,7 +261,7 @@ def process_dam(date_str):
                     if "60MIN INDEX" in str(row[0]).upper():
                         hourly_prices = {}
                         for h in range(24):
-                            idx = 1 + (h * 4) # HEnEx has columns per 15 mins, index is every 4th column
+                            idx = 1 + (h * 4) 
                             if idx < len(row):
                                 val = pd.to_numeric(str(row.iloc[idx]).replace(',', '.'), errors='coerce')
                                 hourly_prices[f"{(h+1):02d}:00"] = 0 if math.isnan(val) else round(val, 3)
@@ -275,8 +281,9 @@ if __name__ == "__main__":
     today = datetime.now(TZ)
     print(f"Starting Data Fetch Job at {today.strftime('%Y-%m-%d %H:%M:%S')}")
     
-    # Διαβάζει τις τελευταίες 3 ημέρες
-    for i in range(2, -1, -1):
+    # Αλλαγή: Κοιτάμε πλέον 10 ημέρες πίσω για να πιάσουμε σίγουρα 
+    # παλιότερα αρχεία αν ο ΑΔΜΗΕ έχει αργήσει!
+    for i in range(10, -1, -1):
         target_date = today - timedelta(days=i)
         date_str = target_date.strftime("%Y-%m-%d")
         print(f"--> Processing Date: {date_str}")
