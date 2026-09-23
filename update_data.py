@@ -281,10 +281,28 @@ if __name__ == "__main__":
     today = datetime.now(TZ)
     print(f"Starting Data Fetch Job at {today.strftime('%Y-%m-%d %H:%M:%S')}")
     
-    # Αλλαγή: Κοιτάμε πλέον 10 ημέρες πίσω για να πιάσουμε σίγουρα 
-    # παλιότερα αρχεία αν ο ΑΔΜΗΕ έχει αργήσει!
-    for i in range(10, -1, -1):
-        target_date = today - timedelta(days=i)
+    # Διαβάζει τα inputs από το GitHub Actions (αν υπάρχουν)
+    start_env = os.environ.get('START_DATE')
+    end_env = os.environ.get('END_DATE')
+    
+    date_list = []
+    
+    if start_env and end_env and start_env.strip() != "" and end_env.strip() != "":
+        print(f"Manual backfill triggered from {start_env} to {end_env}")
+        start_date = datetime.strptime(start_env.strip(), "%Y-%m-%d")
+        end_date = datetime.strptime(end_env.strip(), "%Y-%m-%d")
+        delta = end_date - start_date
+        # Φτιάχνει λίστα με όλες τις ενδιάμεσες ημέρες
+        for i in range(delta.days + 1):
+            date_list.append(start_date + timedelta(days=i))
+    else:
+        print("Standard daily cron triggered. Checking last 10 days.")
+        # Default συμπεριφορά: Κοιτάει 10 ημέρες πίσω (για να πιάσει καθυστερήσεις ΑΔΜΗΕ)
+        for i in range(10, -1, -1):
+            date_list.append(today - timedelta(days=i))
+            
+    # Εκτέλεση για κάθε ημερομηνία της λίστας
+    for target_date in date_list:
         date_str = target_date.strftime("%Y-%m-%d")
         print(f"--> Processing Date: {date_str}")
         
