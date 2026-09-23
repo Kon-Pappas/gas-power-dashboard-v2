@@ -96,68 +96,79 @@ def process_scada(date_str):
     try:
         df = pd.read_excel(excel_data, sheet_name=0, header=None)
         
-        # ΚΑΘΑΡΙΣΜΟΣ ΠΑΛΙΩΝ ΔΕΔΟΜΕΝΩΝ ΤΗΣ ΗΜΕΡΑΣ (ώστε το backfill να είναι 100% καθαρό)
+        # 1. ΚΑΘΑΡΙΣΜΟΣ ΠΑΛΙΩΝ ΔΕΔΟΜΕΝΩΝ (Απόλυτο Wipe για τη συγκεκριμένη μέρα για 100% καθαρό backfill)
         db["scada_generation"] = [d for d in db["scada_generation"] if d.get("Ημερομηνία") != date_str]
         db["scada_generation_hourly"] = [d for d in db["scada_generation_hourly"] if d.get("Ημερομηνία") != date_str]
         
-        gas_units_rows = []
+        # Λεξικό για την αποθήκευση μοναδικών εγγραφών ανά μονάδα
+        daily_units_data = {} 
         
-        # 1. Βρίσκουμε το κλασικό μπλοκ Φυσικού Αερίου
+        def extract_hourly_data(row):
+            hourly_vals = []
+            for j in range(2, 26):
+                val = pd.to_numeric(str(row.iloc[j]).replace(' ', '').replace(',', '.'), errors='coerce') if j < len(row) else 0
+                hourly_vals.append(0.0 if pd.isna(val) else float(val))
+            return hourly_vals
+
+        # 2. Σάρωση για Μονάδες Φυσικού Αερίου (Κλασικό μπλοκ)
         start_mask = df[1].astype(str).str.contains("ΜΟΝΑΔΕΣ Φ. ΑΕΡΙΟΥ|ΜΟΝΑΔΕΣ ΦΥΣΙΚΟΥ ΑΕΡΙΟΥ", case=False, na=False)
         if start_mask.any():
             start_idx = df[start_mask].index[0]
             end_mask = df[1].astype(str).str.contains("TOTAL GAS|ΥΔΡΟΗΛΕΚΤΡΙΚΕΣ|ΣΥΜΠΑΡΑΓΩΓΗ", case=False, na=False)
             end_idx_matches = df.iloc[start_idx+1:][end_mask].index
             end_idx = end_idx_matches[0] if len(end_idx_matches) > 0 else len(df)
-            gas_units_rows.extend(df.iloc[start_idx+1:end_idx].values.tolist())
             
-        # 2. Αρπάζουμε ΟΛΟΚΛΗΡΟ το μπλοκ της ΣΥΜΠΑΡΑΓΩΓΗΣ (εκεί είναι το ΑΛΟΥΜΙΝΙΟ)
+            for _, row in df.iloc[start_idx+1:end_idx].iterrows():
+                raw_name = str(row[1]).strip()
+                if not raw_name or raw_name.lower() == 'nan': continue
+                if "TOTAL" in raw_name.upper() or "ΣΥΝΟΛΟ" in raw_name.upper(): continue
+                
+                unit_name = re.sub(r'\s*\((ST|GT\d+)\)', '', raw_name, flags=re.IGNORECASE).strip()
+                hourly_vals = extract_hourly_data(row)
+                
+                # Deduplication: Αν υπάρχει ήδη, αθροίζουμε.
+                if unit_name in daily_units_data:
+                    daily_units_data[unit_name] = [sum(x) for x in zip(daily_units_data[unit_name], hourly_vals)]
+                else:
+                    daily_units_data[unit_name] = hourly_vals
+
+        # 3. Σάρωση ΕΙΔΙΚΑ για το Αλουμίνιο στη Συμπαραγωγή
+        alouminio_mask = df[1].astype(str).str.contains("ΑΛΟΥΜΙΝΙΟ|ALUMINIUM|MYTILIN|METLEN", case=False, na=False)
         chp_mask = df[1].astype(str).str.contains("ΣΥΜΠΑΡΑΓΩΓΗ|CHP", case=False, na=False)
-        if chp_mask.any():
-            chp_start_idx = df[chp_mask].index[0]
-            chp_end_mask = df[1].astype(str).str.contains("TOTAL|ΣΥΝΟΛΟ|ΑΠΕ|RES", case=False, na=False)
-            chp_end_matches = df.iloc[chp_start_idx+1:][chp_end_mask].index
-            chp_end_idx = chp_end_matches[0] if len(chp_end_matches) > 0 else len(df)
+        
+        if chp_mask.any() and alouminio_mask.any():
+            chp_idx = chp_mask.index[0]
+            valid_alouminio = df.iloc[chp_idx:][alouminio_mask]
             
-            chp_rows = df.iloc[chp_start_idx+1:chp_end_idx].values.tolist()
-            gas_units_rows.extend(chp_rows)
-            
-        if not gas_units_rows: return
+            for _, row in valid_alouminio.iterrows():
+                 raw_name = str(row[1]).strip()
+                 if "TOTAL" in raw_name.upper() or "ΣΥΝΟΛΟ" in raw_name.upper(): continue
+                 
+                 hourly_vals = extract_hourly_data(row)
+                 unit_name = "ΑΛΟΥΜΙΝΙΟ" 
+                 
+                 if unit_name in daily_units_data:
+                     daily_units_data[unit_name] = [sum(x) for x in zip(daily_units_data[unit_name], hourly_vals)]
+                 else:
+                     daily_units_data[unit_name] = hourly_vals
+
+        # 4. Εγγραφή των καθαρών, μοναδικών δεδομένων
+        if not daily_units_data: return
         
         total_gas = 0.0
-        for row_data in gas_units_rows:
-            row = pd.Series(row_data)
-            raw_name = str(row[1]).strip()
-            
-            # Αγνοούμε κενά, NaNs ή γραμμές αθροισμάτων
-            if not raw_name or raw_name.lower() == 'nan': continue
-            if "TOTAL" in raw_name.upper() or "ΣΥΝΟΛΟ" in raw_name.upper(): continue
-            
-            unit_name = re.sub(r'\s*\((ST|GT\d+)\)', '', raw_name, flags=re.IGNORECASE).strip()
-            
-            # Αν η μονάδα προέρχεται από το μπλοκ Συμπαραγωγής, τη βαφτίζουμε αυταρχικά "ΑΛΟΥΜΙΝΙΟ" 
-            # για να ταιριάζει με το dashboard μας, ανεξάρτητα από το πώς την έγραψε ο ΑΔΜΗΕ (πχ MYTILINEOS/METLEN)
-            if "ΛΟΥΜΙΝ" in unit_name.upper() or "LUMIN" in unit_name.upper() or "MYTILIN" in unit_name.upper() or "METLEN" in unit_name.upper():
-                unit_name = "ΑΛΟΥΜΙΝΙΟ"
-            
-            hourly_vals = []
-            for j in range(2, 26):
-                val = pd.to_numeric(str(row.iloc[j]).replace(' ', '').replace(',', '.'), errors='coerce') if j < len(row) else 0
-                hourly_vals.append(0.0 if pd.isna(val) else float(val))
-            
+        for unit_name, hourly_vals in daily_units_data.items():
             daily_sum = float(round(sum(hourly_vals), 3))
             total_gas += daily_sum
             
-            # Εγγραφή στο scada_generation
             db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name, "Παραγωγή SCADA (MWh)": daily_sum})
-                
-            # Εγγραφή στο scada_generation_hourly
+            
             hourly_record = {"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name}
-            for h in range(1, 25): hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
+            for h in range(1, 25): 
+                hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
             hourly_record["Ημερήσιο Σύνολο"] = daily_sum
             db["scada_generation_hourly"].append(hourly_record)
-                
-        # Εγγραφή στο TOTAL (το νέο, σωστό άθροισμα)
+            
+        # Εγγραφή TOTAL 
         if total_gas > 0:
             db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή SCADA (MWh)": float(round(total_gas, 3))})
             
@@ -191,6 +202,7 @@ def process_isp(date_str):
                     val = pd.to_numeric(str(df[surplus_mask].iloc[0][total_col]).replace(' ', '').replace(',', '.'), errors='coerce')
                     if not pd.isna(val):
                         db["daily_surplus"].append({"Date": date_str, "Total Daily Surplus (MWh)": float(round(abs(val), 3))})
+        
         if not any(d.get("Ημερομηνία") == date_str for d in db["isp_generation"]):
             thermal_mask = df[0].astype(str).str.strip().str.lower() == "thermal units"
             if thermal_mask.any():
@@ -275,12 +287,22 @@ def process_dam(date_str):
         except: pass
 
 def process_co2(date_str):
+    # ΕΞΥΠΝΟΣ ΚΟΦΤΗΣ: Ελέγχουμε αν η τιμή CO2 υπάρχει ΗΔΗ στο historical.json
+    for c in db["co2_prices"]:
+        if c.get("Ημερομηνία") == date_str and c.get("CO2_Price (€/t)") is not None:
+            print(f"  [{date_str}] CO2 Price already exists. Skipping API call.")
+            return 
+
+    # Αν ΔΕΝ υπάρχει (ήταν None/κενή), καθαρίζουμε τυχόν άκυρη εγγραφή
     db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != date_str]
+    
     api_key = os.environ.get('OILPRICE_API_KEY')
     if not api_key: return
+    
     url = "https://api.oilpriceapi.com/v1/prices"
     headers = {"Authorization": f"Token {api_key}", "Content-Type": "application/json"}
     params = {"by_code": "EU_CARBON_EUR", "by_date": date_str}
+    
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=10)
         if resp.status_code == 200:
@@ -294,8 +316,10 @@ def process_co2(date_str):
                         break
                 if target_price is None and len(prices_list) > 0:
                     target_price = prices_list[0].get("price")
+                    
                 if target_price is not None:
                     db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": float(target_price)})
+                    print(f"  [{date_str}] Fetched NEW CO2 Price from API.")
                 else:
                     db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
             else:
@@ -307,17 +331,14 @@ def process_co2(date_str):
 # PROCESSOR (ADVANCED ECONOMICS ENGINE)
 # ==========================================
 def process_economics(date_str):
-    # Καθαρίζουμε προηγούμενη εγγραφή της ημέρας
     db["daily_economics"] = [d for d in db["daily_economics"] if d.get("Ημερομηνία") != date_str]
 
-    # Παίρνουμε την τιμή αερίου HGSIDA για την ημέρα
     hgsida_val = 50.0  # fallback
     for h in db["henex_indices"]:
         if h.get("Ημερομηνία") == date_str:
             hgsida_val = h.get("HGSIDA (€/MWh)", 50.0)
             break
 
-    # Παίρνουμε την τιμή CO2 για την ημέρα
     co2_val = 85.0  # fallback
     for c in db["co2_prices"]:
         if c.get("Ημερομηνία") == date_str:
@@ -325,7 +346,6 @@ def process_economics(date_str):
             if p is not None: co2_val = p
             break
 
-    # Φιλτράρουμε τα ωριαία SCADA για την ημερομηνία
     hourly_records = [r for r in db["scada_generation_hourly"] if r.get("Ημερομηνία") == date_str]
     if not hourly_records: return
 
@@ -339,7 +359,6 @@ def process_economics(date_str):
         unit_name = rec.get("Μονάδα Φ.Α.")
         if unit_name == "TOTAL GAS UNITS": continue
 
-        # Βρίσκουμε τα specs της μονάδας (με fallback αν δεν υπάρχει ακριβές match)
         specs = PLANT_SPECS.get(unit_name, {"p_min": 150, "p_max": 500, "eff_min": 0.43, "eff_max": 0.57, "co2_min": 0.44, "co2_max": 0.37})
         
         p_min = specs["p_min"]
@@ -361,15 +380,12 @@ def process_economics(date_str):
 
             unit_mwh += p_hour
 
-            # Γραμμική Παρεμβολή Φορτίου
             p_eff = max(p_min, min(p_max, p_hour))
             factor = (p_eff - p_min) / (p_max - p_min) if p_max > p_min else 0.0
 
-            # Δυναμική Απόδοση & Συντελεστής CO2
             eff_hour = eff_min + factor * (eff_max - eff_min)
             co2_hour = co2_min - factor * (co2_min - co2_max)
 
-            # Κόστος Ώρας
             fuel_cost_hour = p_hour * (hgsida_val / eff_hour)
             tons_hour = p_hour * co2_hour
             co2_cost_hour = tons_hour * co2_val
@@ -449,7 +465,7 @@ if __name__ == "__main__":
         process_henex(date_str)
         process_dam(date_str)
         process_co2(date_str)
-        process_economics(date_str)  # Υπολογισμός προηγμένης οικονομίας!
+        process_economics(date_str)
         
         time.sleep(1)
 
