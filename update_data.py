@@ -23,20 +23,21 @@ HEADERS = {
 }
 
 # ΜΗΤΡΩΟ ΤΕΧΝΙΚΩΝ ΧΑΡΑΚΤΗΡΙΣΤΙΚΩΝ ΜΟΝΑΔΩΝ Φ.Α. (Min/Max, Εύρος Απόδοσης, Εύρος CO2)
+# Επικαιροποιημένο βάσει δεδομένων ENTSO-E / ADMIE 2026
 PLANT_SPECS = {
-    "AG_NIKOLAOS2": {"p_min": 295, "p_max": 826, "eff_min": 0.505, "eff_max": 0.635, "co2_min": 0.38, "co2_max": 0.33},
-    "KOMOTINI_POWER": {"p_min": 295, "p_max": 855, "eff_min": 0.500, "eff_max": 0.630, "co2_min": 0.38, "co2_max": 0.33},
-    "PROTERGIA_CC": {"p_min": 160, "p_max": 444, "eff_min": 0.440, "eff_max": 0.585, "co2_min": 0.43, "co2_max": 0.36},
-    "KORINTHOS_POWER": {"p_min": 182, "p_max": 436, "eff_min": 0.435, "eff_max": 0.580, "co2_min": 0.44, "co2_max": 0.37},
-    "ELPEDISON_THISVI": {"p_min": 230, "p_max": 420, "eff_min": 0.430, "eff_max": 0.570, "co2_min": 0.44, "co2_max": 0.37},
-    "ELPEDISON_THESS": {"p_min": 220, "p_max": 403, "eff_min": 0.425, "eff_max": 0.565, "co2_min": 0.45, "co2_max": 0.38},
-    "ΘΗΣ ΗΡΩΝ": {"p_min": 210, "p_max": 435, "eff_min": 0.430, "eff_max": 0.575, "co2_min": 0.44, "co2_max": 0.37},
-    "ΑΛΙΒΕΡΙ 5": {"p_min": 200, "p_max": 427, "eff_min": 0.430, "eff_max": 0.575, "co2_min": 0.44, "co2_max": 0.37},
-    "ΛΑΥΡΙΟ 5": {"p_min": 180, "p_max": 385, "eff_min": 0.420, "eff_max": 0.560, "co2_min": 0.45, "co2_max": 0.38},
-    "ΜΕΓΑΛΟΠΟΛΗ 5": {"p_min": 250, "p_max": 511, "eff_min": 0.435, "eff_max": 0.570, "co2_min": 0.44, "co2_max": 0.37},
-    "ΚΟΜΟΤΗΝΗ": {"p_min": 240, "p_max": 485, "eff_min": 0.400, "eff_max": 0.525, "co2_min": 0.48, "co2_max": 0.41},
+    "AG_NIKOLAOS2": {"p_min": 295, "p_max": 803, "eff_min": 0.505, "eff_max": 0.635, "co2_min": 0.38, "co2_max": 0.33},
+    "KOMOTINI_POWER": {"p_min": 295, "p_max": 858, "eff_min": 0.500, "eff_max": 0.630, "co2_min": 0.38, "co2_max": 0.33},
+    "PROTERGIA_CC": {"p_min": 160, "p_max": 432.7, "eff_min": 0.440, "eff_max": 0.585, "co2_min": 0.43, "co2_max": 0.36},
+    "KORINTHOS_POWER": {"p_min": 182, "p_max": 433.4, "eff_min": 0.435, "eff_max": 0.580, "co2_min": 0.44, "co2_max": 0.37},
+    "ELPEDISON_THISVI": {"p_min": 230, "p_max": 410, "eff_min": 0.430, "eff_max": 0.570, "co2_min": 0.44, "co2_max": 0.37},
+    "ELPEDISON_THESS": {"p_min": 220, "p_max": 400, "eff_min": 0.425, "eff_max": 0.565, "co2_min": 0.45, "co2_max": 0.38},
+    "ΘΗΣ ΗΡΩΝ": {"p_min": 210, "p_max": 422, "eff_min": 0.430, "eff_max": 0.575, "co2_min": 0.44, "co2_max": 0.37},
+    "ΑΛΙΒΕΡΙ 5": {"p_min": 200, "p_max": 417, "eff_min": 0.430, "eff_max": 0.575, "co2_min": 0.44, "co2_max": 0.37},
+    "ΛΑΥΡΙΟ 5": {"p_min": 180, "p_max": 378, "eff_min": 0.420, "eff_max": 0.560, "co2_min": 0.45, "co2_max": 0.38},
+    "ΜΕΓΑΛΟΠΟΛΗ 5": {"p_min": 250, "p_max": 811, "eff_min": 0.435, "eff_max": 0.570, "co2_min": 0.44, "co2_max": 0.37},
+    "ΚΟΜΟΤΗΝΗ": {"p_min": 240, "p_max": 472, "eff_min": 0.400, "eff_max": 0.525, "co2_min": 0.48, "co2_max": 0.41},
     "ΑΛΟΥΜΙΝΙΟ": {"p_min": 128, "p_max": 334, "eff_min": 0.480, "eff_max": 0.550, "co2_min": 0.40, "co2_max": 0.38},
-    "ΛΑΥΡΙΟ 4": {"p_min": 150, "p_max": 560, "eff_min": 0.280, "eff_max": 0.385, "co2_min": 0.61, "co2_max": 0.51}
+    "ΛΑΥΡΙΟ 4": {"p_min": 150, "p_max": 536, "eff_min": 0.420, "eff_max": 0.520, "co2_min": 0.48, "co2_max": 0.39}
 }
 
 # ==========================================
