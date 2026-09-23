@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import pytz
 import io
 import math
+import re
 
 # ==========================================
 # CONFIGURATION
@@ -19,6 +20,22 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     "Cache-Control": "no-cache"
 }
+
+# Σταθερά δεδομένα απόδοσης (αντικαθιστά το tab του Google Sheets)
+STATIC_EFFICIENCY = [
+    {"Κλάση": "H-Class (Super-Efficient)", "Μονάδα Φ.Α.": "AG_NIKOLAOS2", "Βαθμός Απόδοσης": 0.62},
+    {"Κλάση": "H-Class (Super-Efficient)", "Μονάδα Φ.Α.": "KOMOTINI_POWER", "Βαθμός Απόδοσης": 0.62},
+    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "PROTERGIA_CC", "Βαθμός Απόδοσης": 0.58},
+    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ΘΗΣ ΗΡΩΝ", "Βαθμός Απόδοσης": 0.58},
+    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ΜΕΓΑΛΟΠΟΛΗ 5", "Βαθμός Απόδοσης": 0.58},
+    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ELPEDISON_THISVI", "Βαθμός Απόδοσης": 0.57},
+    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "KORINTHOS_POWER", "Βαθμός Απόδοσης": 0.57},
+    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ELPEDISON_THESS", "Βαθμός Απόδοσης": 0.56},
+    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ΑΛΙΒΕΡΙ 5", "Βαθμός Απόδοσης": 0.56},
+    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ΛΑΥΡΙΟ 5", "Βαθμός Απόδοσης": 0.56},
+    {"Κλάση": "Older Generation & Peakers", "Μονάδα Φ.Α.": "ΛΑΥΡΙΟ 4", "Βαθμός Απόδοσης": 0.48},
+    {"Κλάση": "Older Generation & Peakers", "Μονάδα Φ.Α.": "ΑΛΟΥΜΙΝΙΟ", "Βαθμός Απόδοσης": 0.48}
+]
 
 # ==========================================
 # INITIALIZE DATABASE
@@ -39,6 +56,9 @@ for k in keys:
     if k not in db:
         db[k] = []
 
+# Ενημέρωση στατικών δεδομένων
+db["thermal_efficiency"] = STATIC_EFFICIENCY
+
 # ==========================================
 # HELPER FUNCTIONS
 # ==========================================
@@ -52,8 +72,8 @@ def get_admie_excel_url(date_str, file_category):
                 path = item.get("file_path", "")
                 if path.lower().endswith((".xls", ".xlsx")):
                     return f"https://www.admie.gr{path}" if path.startswith("/") else path
-    except Exception as e:
-        print(f"Error fetching ADMIE API for {file_category}: {e}")
+    except Exception:
+        pass
     return None
 
 def fetch_excel(url):
@@ -61,8 +81,8 @@ def fetch_excel(url):
         resp = requests.get(url, headers=HEADERS, timeout=20)
         if resp.status_code == 200:
             return io.BytesIO(resp.content)
-    except Exception as e:
-        print(f"Error downloading Excel from {url}: {e}")
+    except:
+        pass
     return None
 
 # ==========================================
@@ -77,7 +97,6 @@ def process_scada(date_str):
     try:
         df = pd.read_excel(excel_data, sheet_name=0, header=None)
         
-        # Εντοπισμός ενοτήτων Φ.Α.
         start_mask = df[1].astype(str).str.contains("ΜΟΝΑΔΕΣ Φ. ΑΕΡΙΟΥ|ΜΟΝΑΔΕΣ ΦΥΣΙΚΟΥ ΑΕΡΙΟΥ", case=False, na=False)
         if not start_mask.any(): return
         start_idx = df[start_mask].index[0]
@@ -85,93 +104,169 @@ def process_scada(date_str):
         end_mask = df[1].astype(str).str.contains("TOTAL GAS|ΥΔΡΟΗΛΕΚΤΡΙΚΕΣ", case=False, na=False)
         end_idx = df.iloc[start_idx+1:][end_mask].index[0] if end_mask.any() else len(df)
 
-        gas_df = df.iloc[start_idx+1:end_idx].copy()
-        gas_df = gas_df.dropna(subset=[1])
+        gas_df = df.iloc[start_idx+1:end_idx].copy().dropna(subset=[1])
         
         total_gas = 0
         for _, row in gas_df.iterrows():
             raw_name = str(row[1]).strip()
             if not raw_name or raw_name.lower() == 'nan': continue
             
-            # SCADA HOURLY & DAILY SUM
-            unit_name = raw_name.replace("(ST)", "").replace("(GT1)", "").replace("(GT2)", "").strip()
+            unit_name = re.sub(r'\s*\((ST|GT\d+)\)', '', raw_name, flags=re.IGNORECASE).strip()
             
             hourly_vals = []
             for j in range(2, 26):
                 val = pd.to_numeric(str(row.iloc[j]).replace(' ', '').replace(',', '.'), errors='coerce') if j < len(row) else 0
-                if math.isnan(val): val = 0
-                hourly_vals.append(val)
+                hourly_vals.append(0 if math.isnan(val) else val)
                 
             daily_sum = round(sum(hourly_vals), 3)
             total_gas += daily_sum
 
-            # Update SCADA Daily
             if not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == unit_name for d in db["scada_generation"]):
-                db["scada_generation"].append({
-                    "Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name, "Παραγωγή SCADA (MWh)": daily_sum
-                })
+                db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name, "Παραγωγή SCADA (MWh)": daily_sum})
                 
-            # Update SCADA Hourly
             if not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == unit_name for d in db["scada_generation_hourly"]):
                 hourly_record = {"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name}
-                for h in range(1, 25):
-                    hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
+                for h in range(1, 25): hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
                 hourly_record["Ημερήσιο Σύνολο"] = daily_sum
                 db["scada_generation_hourly"].append(hourly_record)
 
         if total_gas > 0 and not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == "TOTAL GAS UNITS" for d in db["scada_generation"]):
-            db["scada_generation"].append({
-                "Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή SCADA (MWh)": round(total_gas, 3)
-            })
-            
+            db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή SCADA (MWh)": round(total_gas, 3)})
     except Exception as e:
-        print(f"Error parsing SCADA for {date_str}: {e}")
+        print(f"Error parsing SCADA: {e}")
 
-def process_henex(date_str):
-    if any(d.get("Ημερομηνία") == date_str for d in db["henex_indices"]): return
-
-    date_for_url = date_str.replace("-", "")
-    base_url = f"https://www.enexgroup.gr/documents/20126/997118/{date_for_url}_NGAS_DOL_EN_v"
-    
-    excel_data = None
-    for v in range(1, 4):
-        url = f"{base_url}{v:02d}.xlsx"
-        try:
-            resp = requests.get(url, headers=HEADERS, timeout=10)
-            if resp.status_code == 200:
-                excel_data = io.BytesIO(resp.content)
-                break
-        except: pass
-            
+def process_isp(date_str):
+    url = get_admie_excel_url(date_str, "ISP2ISPResults")
+    if not url: return
+    excel_data = fetch_excel(url)
     if not excel_data: return
 
     try:
-        df = pd.read_excel(excel_data, sheet_name=0, header=None)
-        header_mask = df.apply(lambda r: r.astype(str).str.contains("Contract", case=False).any(), axis=1)
-        if not header_mask.any(): return
+        xl = pd.ExcelFile(excel_data)
         
-        header_idx = df[header_mask].index[0]
-        df.columns = df.iloc[header_idx]
-        df = df.iloc[header_idx+1:]
+        # 1. ISP Generation & Surplus
+        df = xl.parse(0, header=None)
         
-        hgsida, hgsiwd, hgmbi, hgmsi = 0, 0, 0, 0
-        for _, row in df.iterrows():
-            contract = str(row.get("Contract", "")).strip()
-            if contract == "DA":
-                hgsida = pd.to_numeric(str(row.get("HGSIDA", 0)).replace(',', '.'), errors='coerce')
-            elif contract == "WD":
-                hgsiwd = pd.to_numeric(str(row.get("HGSIWD", 0)).replace(',', '.'), errors='coerce')
-                hgmbi = pd.to_numeric(str(row.get("HGMBI", 0)).replace(',', '.'), errors='coerce')
-                hgmsi = pd.to_numeric(str(row.get("HGMSI", 0)).replace(',', '.'), errors='coerce')
+        # -- Surplus --
+        if not any(d.get("Date") == date_str for d in db["daily_surplus"]):
+            total_col = next((c for c in df.columns if df[c].astype(str).str.contains("TOTAL|ΣΥΝΟΛΟ", case=False, na=False).any()), None)
+            if total_col is not None:
+                surplus_mask = df[0].astype(str).str.contains("ENERGY SURPLUS|ΠΛΕΟΝΑΣΜΑ|DEFICIT|ΕΛΛΕΙΜΜΑ", case=False, na=False) | df[1].astype(str).str.contains("ENERGY SURPLUS|ΠΛΕΟΝΑΣΜΑ|DEFICIT|ΕΛΛΕΙΜΜΑ", case=False, na=False)
+                if surplus_mask.any():
+                    val = pd.to_numeric(str(df[surplus_mask].iloc[0][total_col]).replace(' ', '').replace(',', '.'), errors='coerce')
+                    if not math.isnan(val):
+                        db["daily_surplus"].append({"Date": date_str, "Total Daily Surplus (MWh)": round(abs(val), 3)})
 
-        db["henex_indices"].append({
-            "Ημερομηνία": date_str, "HGSIDA (€/MWh)": 0 if math.isnan(hgsida) else hgsida,
-            "HGSIWD (€/MWh)": 0 if math.isnan(hgsiwd) else hgsiwd,
-            "HGMBI (€/MWh)": 0 if math.isnan(hgmbi) else hgmbi,
-            "HGMSI (€/MWh)": 0 if math.isnan(hgmsi) else hgmsi
-        })
+        # -- ISP Gas --
+        if not any(d.get("Ημερομηνία") == date_str for d in db["isp_generation"]):
+            thermal_mask = df[0].astype(str).str.contains("Thermal Units", case=False, na=False)
+            if thermal_mask.any():
+                start_idx = df[thermal_mask].index[0]
+                end_mask = df[0].astype(str).str.contains("Total |Hydro |RES |Energy ", case=False, na=False)
+                end_idx = df.iloc[start_idx+1:][end_mask].index[0] if end_mask.any() else len(df)
+                
+                gas_df = df.iloc[start_idx+1:end_idx].copy().dropna(subset=[0])
+                total_isp = 0
+                
+                for _, row in gas_df.iterrows():
+                    unit = str(row[0]).strip()
+                    if any(l in unit.upper() for l in ["AG_DIMITRIOS", "PTOLEMAIDA", "MEGALOPOLI4"]) or unit == "nan": continue
+                    
+                    vals = pd.to_numeric(row.iloc[2:98].astype(str).str.replace(' ', '').str.replace(',', '.'), errors='coerce')
+                    daily_mwh = round(vals.sum() / 4, 3)
+                    total_isp += daily_mwh
+                    
+                    db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit, "Παραγωγή (MWh)": daily_mwh})
+                    
+                if total_isp > 0:
+                    db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή (MWh)": round(total_isp, 3)})
+
+        # 2. Constraints
+        if not any(d.get("Date") == date_str for d in db["daily_gas_constraints"]):
+            constraint_sheet = [s for s in xl.sheet_names if "GENERICCONSTRAINTS" in str(s).upper()]
+            if constraint_sheet:
+                df_c = xl.parse(constraint_sheet[0], header=None)
+                for _, row in df_c.iterrows():
+                    if len(row) < 6: continue
+                    unit = str(row[5]).strip()
+                    if unit.lower() in ["nan", "unit"] or "START" in unit.upper() or "TIME" in unit.upper() or "ALOUMINIO" in unit.upper() or "ΑΛΟΥΜΙΝΙΟ" in unit.upper() or "PTOLEMAIDA" in unit.upper(): continue
+                    
+                    def format_time(t):
+                        if isinstance(t, datetime): return t.strftime("%H:%M")
+                        if isinstance(t, (int, float)) and t < 1: return f"{round(t * 24 * 60) // 60:02d}:{round(t * 24 * 60) % 60:02d}"
+                        return str(t).strip()
+                    
+                    hf, ht = format_time(row[1]), format_time(row[2])
+                    if "FROM" in hf.upper() or "START" in hf.upper() or "ΑΠΟ" in hf.upper() or not hf: continue
+                    
+                    db["daily_gas_constraints"].append({"Date": date_str, "Gas Factory": unit, "Hour From": hf, "Hour To": ht})
+
     except Exception as e:
-        print(f"Error parsing HEnEx for {date_str}: {e}")
+        print(f"Error parsing ISP: {e}")
+
+def process_henex(date_str):
+    if any(d.get("Ημερομηνία") == date_str for d in db["henex_indices"]): return
+    date_for_url = date_str.replace("-", "")
+    for v in range(1, 4):
+        url = f"https://www.enexgroup.gr/documents/20126/997118/{date_for_url}_NGAS_DOL_EN_v{v:02d}.xlsx"
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=10)
+            if resp.status_code == 200:
+                df = pd.read_excel(io.BytesIO(resp.content), sheet_name=0, header=None)
+                header_mask = df.apply(lambda r: r.astype(str).str.contains("Contract", case=False).any(), axis=1)
+                if not header_mask.any(): continue
+                
+                header_idx = df[header_mask].index[0]
+                df.columns = df.iloc[header_idx]
+                df = df.iloc[header_idx+1:]
+                
+                hgsida = hgsiwd = hgmbi = hgmsi = 0
+                for _, row in df.iterrows():
+                    contract = str(row.get("Contract", "")).strip()
+                    if contract == "DA": hgsida = pd.to_numeric(str(row.get("HGSIDA", 0)).replace(',', '.'), errors='coerce')
+                    elif contract == "WD":
+                        hgsiwd = pd.to_numeric(str(row.get("HGSIWD", 0)).replace(',', '.'), errors='coerce')
+                        hgmbi = pd.to_numeric(str(row.get("HGMBI", 0)).replace(',', '.'), errors='coerce')
+                        hgmsi = pd.to_numeric(str(row.get("HGMSI", 0)).replace(',', '.'), errors='coerce')
+
+                db["henex_indices"].append({
+                    "Ημερομηνία": date_str, "HGSIDA (€/MWh)": 0 if math.isnan(hgsida) else hgsida,
+                    "HGSIWD (€/MWh)": 0 if math.isnan(hgsiwd) else hgsiwd,
+                    "HGMBI (€/MWh)": 0 if math.isnan(hgmbi) else hgmbi,
+                    "HGMSI (€/MWh)": 0 if math.isnan(hgmsi) else hgmsi
+                })
+                break
+        except: pass
+
+def process_dam(date_str):
+    if any(d.get("Ημερομηνία") == date_str for d in db["dam_mcp_hourly"]): return
+    date_for_url = date_str.replace("-", "")
+    for v in range(1, 4):
+        url = f"https://www.enexgroup.gr/documents/20126/366820/{date_for_url}_EL-DAM_ResultsSummary_EN_v{v:02d}.xlsx"
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=10)
+            if resp.status_code == 200:
+                xl = pd.ExcelFile(io.BytesIO(resp.content))
+                target_sheet = [s for s in xl.sheet_names if "SPOT_SUMMARY (SELL)" in str(s).upper()]
+                if not target_sheet: continue
+                
+                df = xl.parse(target_sheet[0], header=None)
+                for _, row in df.iterrows():
+                    if "60MIN INDEX" in str(row[0]).upper():
+                        hourly_prices = {}
+                        for h in range(24):
+                            idx = 1 + (h * 4) # HEnEx has columns per 15 mins, index is every 4th column
+                            if idx < len(row):
+                                val = pd.to_numeric(str(row.iloc[idx]).replace(',', '.'), errors='coerce')
+                                hourly_prices[f"{(h+1):02d}:00"] = 0 if math.isnan(val) else round(val, 3)
+                                
+                        if len(hourly_prices) == 24:
+                            record = {"Ημερομηνία": date_str}
+                            record.update(hourly_prices)
+                            db["dam_mcp_hourly"].append(record)
+                        break
+                break
+        except: pass
 
 # ==========================================
 # MAIN EXECUTION
@@ -180,17 +275,17 @@ if __name__ == "__main__":
     today = datetime.now(TZ)
     print(f"Starting Data Fetch Job at {today.strftime('%Y-%m-%d %H:%M:%S')}")
     
-    # Αναζήτηση για τις τελευταίες 3 ημέρες για ασφάλεια (catch-up)
+    # Διαβάζει τις τελευταίες 3 ημέρες
     for i in range(2, -1, -1):
         target_date = today - timedelta(days=i)
         date_str = target_date.strftime("%Y-%m-%d")
         print(f"--> Processing Date: {date_str}")
         
         process_scada(date_str)
+        process_isp(date_str)
         process_henex(date_str)
-        # Σημείωση: Αν θέλεις μπορούμε να προσθέσουμε απευθείας και τις process_isp / process_dam στο επόμενο βήμα!
+        process_dam(date_str)
 
-    # Αποθήκευση στο αρχείο historical.json
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(db, f, ensure_ascii=False, indent=2)
         
