@@ -22,7 +22,7 @@ HEADERS = {
     "Cache-Control": "no-cache"
 }
 
-# Σταθερά δεδομένα απόδοσης
+# Σταθερά δεδομένα απόδοσης (αντικαθιστά το tab του Google Sheets)
 STATIC_EFFICIENCY = [
     {"Κλάση": "H-Class (Super-Efficient)", "Μονάδα Φ.Α.": "AG_NIKOLAOS2", "Βαθμός Απόδοσης": 0.62},
     {"Κλάση": "H-Class (Super-Efficient)", "Μονάδα Φ.Α.": "KOMOTINI_POWER", "Βαθμός Απόδοσης": 0.62},
@@ -50,7 +50,6 @@ if os.path.exists(DATA_FILE):
 else:
     db = {}
 
-# Προσθέσαμε το co2_prices στη λίστα!
 keys = ["isp_generation", "scada_generation", "scada_generation_hourly", 
         "henex_indices", "dam_mcp_hourly", "thermal_efficiency", 
         "daily_surplus", "daily_gas_constraints", "co2_prices"]
@@ -251,16 +250,18 @@ def process_dam(date_str):
         except: pass
 
 # ==========================================
-# PROCESSOR (CO2 PRICES)
+# PROCESSOR (CO2 PRICES - VERBOSE DEBUGGING)
 # ==========================================
 def process_co2(date_str):
-    # Έλεγχος αν υπάρχει ήδη η ημερομηνία στο JSON
+    print(f"  [{date_str}] Δοκιμή ανάκτησης CO2...")
+    
     if any(d.get("Ημερομηνία") == date_str for d in db["co2_prices"]): 
+        print(f"  [{date_str}] Βρέθηκε ήδη στο JSON, προσπερνάμε.")
         return
 
     api_key = os.environ.get('OILPRICE_API_KEY')
     if not api_key:
-        print("Missing OILPRICE_API_KEY. Skipping CO2 fetch.")
+        print(f"  [{date_str}] ΛΑΘΟΣ: Το OILPRICE_API_KEY είναι άδειο στα Secrets!")
         return
 
     url = "https://api.oilpriceapi.com/v1/prices"
@@ -275,8 +276,12 @@ def process_co2(date_str):
 
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=10)
+        print(f"  [{date_str}] Status Code από API: {resp.status_code}")
+        
         if resp.status_code == 200:
             data = resp.json()
+            print(f"  [{date_str}] ΩΜΗ ΑΠΑΝΤΗΣΗ API: {json.dumps(data)}")
+            
             if data.get("status") == "success" and data.get("data"):
                 records = data["data"]
                 price = None
@@ -290,18 +295,17 @@ def process_co2(date_str):
                         "Ημερομηνία": date_str,
                         "CO2_Price (€/t)": float(price)
                     })
-                    print(f"  -> CO2 price for {date_str}: {price} €/t")
+                    print(f"  [{date_str}] ΕΠΙΤΥΧΙΑ: Αποθηκεύτηκε τιμή {price} €/t")
+                else:
+                    print(f"  [{date_str}] ΣΦΑΛΜΑ ΛΟΓΙΚΗΣ: Το API επέστρεψε success αλλά δεν είχε 'price'!")
+                    db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
             else:
-                # Αν δεν βρει δεδομένα (π.χ. Σαββατοκύριακο/αργία), σώζουμε None (null στο JSON)
-                db["co2_prices"].append({
-                    "Ημερομηνία": date_str,
-                    "CO2_Price (€/t)": None
-                })
-                print(f"  -> No CO2 price found for {date_str} (Market Closed?)")
+                db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
+                print(f"  [{date_str}] ΠΡΟΣΟΧΗ: Το API δεν βρήκε δεδομένα για αυτή τη μέρα (Κλειστή αγορά;)")
         else:
-            print(f"  -> API Error fetching CO2: {resp.status_code}")
+            print(f"  [{date_str}] ΣΦΑΛΜΑ API: {resp.text}")
     except Exception as e:
-        print(f"Error fetching CO2 for {date_str}: {e}")
+        print(f"  [{date_str}] ΕΞΑΙΡΕΣΗ ΚΩΔΙΚΑ: {e}")
 
 # ==========================================
 # MAIN EXECUTION
@@ -329,19 +333,17 @@ if __name__ == "__main__":
             
     for target_date in date_list:
         date_str = target_date.strftime("%Y-%m-%d")
-        print(f"--> Processing Date: {date_str}")
+        print(f"\n--> Processing Date: {date_str}")
         
         process_scada(date_str)
         process_isp(date_str)
         process_henex(date_str)
         process_dam(date_str)
-        process_co2(date_str)  # Καλούμε τη νέα συνάρτηση!
+        process_co2(date_str)
         
-        # Καθυστέρηση 1 δευτερολέπτου για να μην μας "κόψει" το OilPriceAPI 
-        # αν κάνουμε πολλά αιτήματα μαζεμένα
         time.sleep(1)
 
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(db, f, ensure_ascii=False, indent=2)
         
-    print("✔ Job Completed Successfully!")
+    print("\n✔ Job Completed Successfully!")
