@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Greek Gas-to-Power Market Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 flex flex-col justify-between">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 z-[9999] bg-slate-900 flex flex-col items-center justify-center transition-opacity duration-500 px-4">
+        <div class="w-16 h-16 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-6"></div>
+        <div class="text-white text-xl font-semibold text-center mb-2" id="loading-title">
+            Loading Market Data...
+        </div>
+        <div class="text-sm text-slate-400 text-center mb-6" id="loading-subtitle">
+            Reading IPTO & HEnEx files...
+        </div>
+        
+        <div class="w-full max-w-md bg-slate-800 rounded-full h-4 p-0.5 border border-slate-700 overflow-hidden shadow-inner">
+            <div id="loading-progress-bar" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 15%;"></div>
+        </div>
+        <div class="text-blue-400 text-sm font-mono font-bold mt-2" id="loading-percentage">15%</div>
+    </div>
+
+    <div class="max-w-7xl mx-auto space-y-6 w-full">
+        
+        <!-- Header -->
+        <header class="border-b border-slate-700 pb-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-3xl font-bold text-blue-400" id="mainTitle">Greek Gas-to-Power Analytics</h1>
+                        <span id="scopeBadge" class="cursor-help text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded-full border border-slate-700 hover:border-blue-500 transition" title="">[?]</span>
+                    </div>
+                    <p class="text-slate-400 text-sm mt-1" id="dataSourceText">Data source: IPTO (ADMIE) & HEnEx official reports</p>
+                    <div class="flex flex-wrap items-center gap-4 text-xs text-slate-400 mt-2">
+                        <div><span id="lastUpdateLabel">Last Update:</span> <strong id="lastUpdateVal" class="text-blue-400">-</strong></div>
+                        <div><span id="nextUpdateLabel">Next Update:</span> <strong id="nextUpdateVal" class="text-emerald-400">-</strong></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openMethodologyModal()" class="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-blue-400 transition bg-slate-800/80 px-3 py-1.5 rounded border border-slate-700 hover:border-blue-500 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span id="btnMethodologyText">Methodology & Assumptions</span>
+                    </button>
+                    <div class="flex gap-2 bg-slate-800 border border-slate-700 rounded-lg p-1 text-xs font-bold shadow-sm">
+                        <button onclick="setLang('el')" id="btnGr" class="px-2 py-1 rounded text-slate-400 hover:text-white transition">GR</button>
+                        <button onclick="setLang('en')" id="btnEn" class="px-2 py-1 rounded bg-blue-600 text-white transition">EN</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- TABS NAVIGATION -->
+        <div class="flex space-x-6 border-b border-slate-800 pb-2 overflow-x-auto">
+            <button id="tabBtnOverview" onclick="switchTab('overview')" class="text-blue-400 font-bold border-b-2 border-blue-400 pb-2 px-2 transition whitespace-nowrap">Daily Overview</button>
+            <button id="tabBtnEconomics" onclick="switchTab('economics')" class="text-slate-500 hover:text-blue-300 pb-2 px-2 transition whitespace-nowrap">Daily Economics</button>
+            <button id="tabBtnIspScada" onclick="switchTab('ispScada')" class="text-slate-500 hover:text-blue-300 pb-2 px-2 transition whitespace-nowrap">Monthly Analytics</button>
+            <button id="tabBtnSurplus" onclick="switchTab('surplus')" class="text-slate-500 hover:text-blue-300 pb-2 px-2 transition whitespace-nowrap">System Needs (Surplus)</button>
+        </div>
+
+        <!-- VIEW 1: DAILY OVERVIEW -->
+        <div id="viewOverview" class="space-y-6 block">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-800/40 p-3 rounded-xl border border-slate-700 gap-4">
+                <div class="flex gap-4 px-2">
+                    <div>
+                        <span class="text-xs text-slate-500 block">TOTAL ISP (MWh)</span>
+                        <span class="text-xl font-bold text-blue-400" id="kpiTotalIsp">0.0</span>
+                    </div>
+                    <div class="w-px bg-slate-600"></div>
+                    <div>
+                        <span class="text-xs text-slate-500 block">TOTAL SCADA (MWh)</span>
+                        <span class="text-xl font-bold text-orange-400" id="kpiTotalScada">0.0</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-600 shadow-sm">
+                    <label class="text-xs text-slate-300 font-medium" id="dateLabel">Date:</label>
+                    <select id="dateSelect" onchange="syncDate('dateSelect', 'dateSelectEco'); updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
+                <div class="flex flex-col lg:flex-row justify-between items-start mb-6 gap-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-200" id="overviewChartTitle">Daily Generation: ISP vs SCADA</h2>
+                        <p class="text-xs text-slate-400">Units dynamically sorted by Efficiency Class</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-6 text-xs font-medium bg-slate-900/50 p-3 rounded-lg border border-slate-700">
+                        <div class="flex flex-col gap-2">
+                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Thermal Classes</span>
+                            <span class="flex items-center gap-1.5"><div class="w-3 h-3 bg-[#06b6d4] rounded-sm"></div> H-Class</span>
+                            <span class="flex items-center gap-1.5"><div class="w-3 h-3 bg-[#3b82f6] rounded-sm"></div> F-Class</span>
+                            <span class="flex items-center gap-1.5"><div class="w-3 h-3 bg-[#f97316] rounded-sm"></div> Peakers</span>
+                        </div>
+                        <div class="w-px bg-slate-700 hidden sm:block"></div>
+                        <div class="flex flex-col gap-2">
+                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Data Type</span>
+                            <span class="flex items-center gap-1.5"><div class="w-4 h-3 bg-slate-500 rounded-sm"></div> ISP (Solid)</span>
+                            <span class="flex items-center gap-1.5">
+                                <div class="w-4 h-3 rounded-sm relative overflow-hidden bg-slate-500">
+                                    <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 4px);"></div>
+                                </div> 
+                                SCADA (Striped)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative h-[500px]">
+                    <canvas id="overviewChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: DAILY ECONOMICS -->
+        <div id="viewEconomics" class="space-y-6 hidden">
+            <div class="flex justify-end items-center mb-[-10px]">
+                <div class="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-600 shadow-sm">
+                    <label class="text-xs text-slate-300 font-medium">Date:</label>
+                    <select id="dateSelectEco" onchange="syncDate('dateSelectEco', 'dateSelect'); updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider">HGSIDA Gas Price</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="kpiHgsida" class="text-2xl font-bold text-blue-400">0.00</span>
+                        <span class="text-sm text-slate-500">€/MWh</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider">Fleet Efficiency</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="kpiFleetEff" class="text-2xl font-bold text-emerald-400">0.0</span>
+                        <span class="text-sm text-slate-500">%</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Avg Gas Cost</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="kpiAvgGasCost" class="text-2xl font-bold text-amber-400">0.00</span>
+                        <span class="text-sm text-slate-500">€/MWh</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Gas Fleet Generation</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="kpiEcoScada" class="text-2xl font-bold text-orange-400">0.0</span>
+                        <span class="text-sm text-slate-500">MWh</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center col-span-2 lg:col-span-1">
+                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Total Est. Cost</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="kpiTotalEcoCost" class="text-2xl font-bold text-rose-400">0</span>
+                        <span class="text-sm text-slate-500">€</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
+                <h3 class="text-lg font-semibold text-slate-200 mb-1" id="ecoTableTitle">Daily Theoretical Cost per Unit</h3>
+                <p class="text-xs text-slate-400 mb-6">Cost Formula: (HGSIDA / Thermal Efficiency) + CO2 Cost (Fixed at 28 €/MWh)</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900/80 text-slate-400 uppercase text-xs">
+                            <tr>
+                                <th class="p-3 rounded-tl-lg">CLASS</th>
+                                <th class="p-3">GAS FACTORY</th>
+                                <th class="p-3 text-right">DAILY PRODUCED (MWh)</th>
+                                <th class="p-3 text-right">EFFICIENCY</th>
+                                <th class="p-3 text-right">GAS COST (€/MWh)</th>
+                                <th class="p-3 text-right rounded-tr-lg">TOTAL COST (€)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="economicsTableBody" class="divide-y divide-slate-700/50"></tbody>
+                        <tfoot class="bg-slate-900/50 font-bold border-t-2 border-slate-600">
+                            <tr>
+                                <td colspan="2" class="p-3 text-right text-slate-400 uppercase tracking-wider">DAILY TOTAL / AVG</td>
+                                <td id="ecoTableTotalMwh" class="p-3 text-right text-orange-400">0.0</td>
+                                <td id="ecoTableAvgEff" class="p-3 text-right text-emerald-400">0.0%</td>
+                                <td id="ecoTableAvgGasCost" class="p-3 text-right text-amber-400">0.00</td>
+                                <td id="ecoTableTotalCost" class="p-3 text-right text-rose-400">0 €</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: MONTHLY ANALYTICS -->
+        <div id="viewIspScada" class="space-y-6 hidden">
+            <div class="flex justify-end items-center">
+                <div class="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-600 shadow-sm">
+                    <label class="text-xs text-slate-300 font-medium">Month:</label>
+                    <select id="monthSelect" onchange="syncDate('monthSelect', 'monthSelectSurplus'); updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-200">HGSIDA vs Fleet Average Gas Cost</h2>
+                        <p class="text-xs text-slate-400">Daily comparative analysis for the selected month</p>
+                    </div>
+                </div>
+                <div class="relative h-[450px]">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 4: SYSTEM NEEDS & CONSTRAINTS -->
+        <div id="viewSurplus" class="space-y-6 hidden">
+            <div class="flex justify-end items-center mb-[-10px]">
+                <div class="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-600 shadow-sm">
+                    <label class="text-xs text-slate-300 font-medium">Month:</label>
+                    <select id="monthSelectSurplus" onchange="syncDate('monthSelectSurplus', 'monthSelect'); updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-800/60 p-5 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-sm text-slate-400 uppercase tracking-wider mb-1">Total Monthly Surplus (Isp)</span>
+                    <div class="flex items-baseline gap-2">
+                        <span id="kpiMonthSurplus" class="text-3xl font-bold text-blue-400">0</span>
+                        <span class="text-slate-500">MWh</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 p-5 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-sm text-slate-400 uppercase tracking-wider mb-1">Total Generic Constraints (Scada)</span>
+                    <div class="flex items-baseline gap-2">
+                        <span id="kpiMonthConstraints" class="text-3xl font-bold text-rose-400">0</span>
+                        <span class="text-slate-500">MWh</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-200">Residual Surplus vs Generic Constraints</h2>
+                        <p class="text-xs text-slate-400">Daily dynamic calculation from ISP & Hourly SCADA actuals</p>
+                    </div>
+                </div>
+                <div class="relative h-[450px]">
+                    <canvas id="surplusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-slate-500 text-xs border-t border-slate-800 pt-6 mt-12 space-y-1 pb-8">
+        <p class="font-semibold text-slate-400">Konstantinos Pappas | Energy Market Analyst</p>
+        <p>Business Operations & Risk Management | Data Insights on Energy Transition & Grid Stability</p>
+    </footer>
+
+    <!-- MODAL: METHODOLOGY -->
+    <div id="methodologyModal" class="fixed inset-0 z-[10000] bg-black/80 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
+            
+            <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-500/20 p-2 rounded-lg text-blue-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-100" id="modalTitle">Methodology & Core Assumptions</h2>
+                </div>
+                <button onclick="closeMethodologyModal()" class="text-slate-500 hover:text-rose-400 transition text-3xl leading-none">&times;</button>
+            </div>
+            
+            <div class="text-sm text-slate-300 leading-relaxed" id="modalBody"></div>
+            
+            <div class="mt-6 pt-4 border-t border-slate-800 text-right">
+                <button onclick="closeMethodologyModal()" id="btnClose" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-600 transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openMethodologyModal() {
+            const modal = document.getElementById('methodologyModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                document.getElementById('modalContent').classList.remove('scale-95');
+            }, 10);
+        }
+        function closeMethodologyModal() {
+            const modal = document.getElementById('methodologyModal');
+            modal.classList.add('opacity-0');
+            document.getElementById('modalContent').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+    </script>
+
+    <script src="data.js" defer></script>
+    <script src="dashboard.js" defer></script>
+</body>
+</html>
