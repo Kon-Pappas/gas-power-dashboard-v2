@@ -1,1 +1,18 @@
-{}
+{
+  "isp_generation": [],
+  "scada_generation": [],
+  "scada_generation_hourly": [],
+  "henex_indices": [
+    {
+      "Ημερομηνία": "2026-09-21",
+      "HGSIDA (€/MWh)": 57.19,
+      "HGSIWD (€/MWh)": 58.16,
+      "HGMBI (€/MWh)": 65.18,
+      "HGMSI (€/MWh)": 53.33
+    }
+  ],
+  "dam_mcp_hourly": [],
+  "thermal_efficiency": [],
+  "daily_surplus": [],
+  "daily_gas_constraints": []
+}
