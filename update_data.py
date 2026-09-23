@@ -95,32 +95,61 @@ def process_scada(date_str):
     if not excel_data: return
     try:
         df = pd.read_excel(excel_data, sheet_name=0, header=None)
+        
+        gas_units_rows = []
+        
+        # 1. Βρίσκουμε το κλασικό μπλοκ Φυσικού Αερίου (μέχρι το TOTAL GAS)
         start_mask = df[1].astype(str).str.contains("ΜΟΝΑΔΕΣ Φ. ΑΕΡΙΟΥ|ΜΟΝΑΔΕΣ ΦΥΣΙΚΟΥ ΑΕΡΙΟΥ", case=False, na=False)
-        if not start_mask.any(): return
-        start_idx = df[start_mask].index[0]
-        end_mask = df[1].astype(str).str.contains("TOTAL GAS|ΥΔΡΟΗΛΕΚΤΡΙΚΕΣ", case=False, na=False)
-        end_idx = df.iloc[start_idx+1:][end_mask].index[0] if end_mask.any() else len(df)
-        gas_df = df.iloc[start_idx+1:end_idx].copy().dropna(subset=[1])
+        if start_mask.any():
+            start_idx = df[start_mask].index[0]
+            end_mask = df[1].astype(str).str.contains("TOTAL GAS|ΥΔΡΟΗΛΕΚΤΡΙΚΕΣ|ΣΥΜΠΑΡΑΓΩΓΗ", case=False, na=False)
+            end_idx_matches = df.iloc[start_idx+1:][end_mask].index
+            end_idx = end_idx_matches[0] if len(end_idx_matches) > 0 else len(df)
+            gas_units_rows.extend(df.iloc[start_idx+1:end_idx].values.tolist())
+            
+        # 2. Ψάχνουμε ΕΙΔΙΚΑ για το ΑΛΟΥΜΙΝΙΟ (επειδή κρύβεται στη Συμπαραγωγή)
+        alouminio_mask = df[1].astype(str).str.contains("ΑΛΟΥΜΙΝΙΟ|ALUMINIUM", case=False, na=False)
+        if alouminio_mask.any():
+            gas_units_rows.extend(df[alouminio_mask].values.tolist())
+            
+        if not gas_units_rows: return
+        
         total_gas = 0.0
-        for _, row in gas_df.iterrows():
+        for row_data in gas_units_rows:
+            row = pd.Series(row_data)
             raw_name = str(row[1]).strip()
+            
+            # Αγνοούμε κενά ή γραμμές αθροισμάτων
             if not raw_name or raw_name.lower() == 'nan': continue
+            if "TOTAL" in raw_name.upper() or "ΣΥΝΟΛΟ" in raw_name.upper(): continue
+            
             unit_name = re.sub(r'\s*\((ST|GT\d+)\)', '', raw_name, flags=re.IGNORECASE).strip()
+            
             hourly_vals = []
             for j in range(2, 26):
                 val = pd.to_numeric(str(row.iloc[j]).replace(' ', '').replace(',', '.'), errors='coerce') if j < len(row) else 0
                 hourly_vals.append(0.0 if pd.isna(val) else float(val))
+            
             daily_sum = float(round(sum(hourly_vals), 3))
             total_gas += daily_sum
+            
+            # Εγγραφή στο scada_generation
             if not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == unit_name for d in db["scada_generation"]):
                 db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name, "Παραγωγή SCADA (MWh)": daily_sum})
+                
+            # Εγγραφή στο scada_generation_hourly
             if not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == unit_name for d in db["scada_generation_hourly"]):
                 hourly_record = {"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name}
                 for h in range(1, 25): hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
                 hourly_record["Ημερήσιο Σύνολο"] = daily_sum
                 db["scada_generation_hourly"].append(hourly_record)
-        if total_gas > 0 and not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == "TOTAL GAS UNITS" for d in db["scada_generation"]):
+                
+        # Εγγραφή στο TOTAL (Αναθεωρημένο Total που περιλαμβάνει ΠΛΕΟΝ και το Αλουμίνιο)
+        if total_gas > 0:
+            # Σβήνουμε το παλιό Total (αν υπάρχει) για να περάσουμε το νέο σωστό άθροισμα
+            db["scada_generation"] = [d for d in db["scada_generation"] if not (d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == "TOTAL GAS UNITS")]
             db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή SCADA (MWh)": float(round(total_gas, 3))})
+            
     except Exception as e:
         print(f"Error parsing SCADA for {date_str}: {e}")
 
