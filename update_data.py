@@ -250,10 +250,10 @@ def process_dam(date_str):
         except: pass
 
 # ==========================================
-# PROCESSOR (CO2 PRICES - FIXED)
+# PROCESSOR (CO2 PRICES - DATE MATCHED FIX)
 # ==========================================
 def process_co2(date_str):
-    # Εάν υπάρχει ήδη η ημερομηνία και δεν είναι null, την κρατάμε
+    # Καθαρίζουμε την εγγραφή αν υπάρχει ήδη για αυτή τη μέρα
     db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != date_str]
 
     api_key = os.environ.get('OILPRICE_API_KEY')
@@ -276,21 +276,30 @@ def process_co2(date_str):
         if resp.status_code == 200:
             data = resp.json()
             if data.get("status") == "success" and data.get("data"):
-                # ΔΙΟΡΘΩΣΗ: Το data περιέχει τη λίστα 'prices'
                 prices_list = data["data"].get("prices", [])
-                price = None
-                if isinstance(prices_list, list) and len(prices_list) > 0:
-                    price = prices_list[0].get("price")
-                    
-                if price is not None:
+                target_price = None
+                
+                # Ψάχνουμε στη λίστα ποια τιμή αντιστοιχεί στην ακριβή ημερομηνία (date_str)
+                for item in prices_list:
+                    created_at = str(item.get("created_at", ""))
+                    as_of = str(item.get("as_of", ""))
+                    if date_str in created_at or date_str in as_of:
+                        target_price = item.get("price")
+                        break
+                
+                # Αν δεν βρει ακριβές match με string, παίρνουμε την πρώτη ως fallback για ασφάλεια
+                if target_price is None and len(prices_list) > 0:
+                    target_price = prices_list[0].get("price")
+
+                if target_price is not None:
                     db["co2_prices"].append({
                         "Ημερομηνία": date_str,
-                        "CO2_Price (€/t)": float(price)
+                        "CO2_Price (€/t)": float(target_price)
                     })
-                    print(f"  [{date_str}] CO2 Price Success: {price} €/t")
+                    print(f"  [{date_str}] CO2 Price Matched: {target_price} €/t")
                 else:
                     db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
-                    print(f"  [{date_str}] CO2 Price Warning: Empty prices list.")
+                    print(f"  [{date_str}] CO2 Price Warning: No price found for date.")
             else:
                 db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
         else:
@@ -337,4 +346,4 @@ if __name__ == "__main__":
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(db, f, ensure_ascii=False, indent=2)
         
-    print("✔ Job Completed Successfully!")
+    print("\n✔ Job Completed Successfully!")
