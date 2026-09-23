@@ -6,6 +6,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import pytz
 import io
+import math
 import re
 
 # ==========================================
@@ -131,7 +132,7 @@ def process_scada(date_str):
         if total_gas > 0 and not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == "TOTAL GAS UNITS" for d in db["scada_generation"]):
             db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή SCADA (MWh)": float(round(total_gas, 3))})
     except Exception as e:
-        print(f"Error parsing SCADA: {e}")
+        print(f"Error parsing SCADA for {date_str}: {e}")
 
 def process_isp(date_str):
     url = get_admie_excel_url(date_str, "ISP2ISPResults")
@@ -152,33 +153,47 @@ def process_isp(date_str):
         
         # -- Surplus --
         if not any(d.get("Date") == date_str for d in db["daily_surplus"]):
-            total_col = next((c for c in df.columns if df[c].astype(str).str.contains("TOTAL|ΣΥΝΟΛΟ", case=False, na=False).any()), None)
+            total_col = None
+            for c in df.columns:
+                if df.iloc[:10, c].astype(str).str.contains("TOTAL|ΣΥΝΟΛΟ", case=False, na=False).any():
+                    total_col = c
+                    break
+            
             if total_col is not None:
-                surplus_mask = df[0].astype(str).str.contains("ENERGY SURPLUS|ΠΛΕΟΝΑΣΜΑ|DEFICIT|ΕΛΛΕΙΜΜΑ", case=False, na=False) | df[1].astype(str).str.contains("ENERGY SURPLUS|ΠΛΕΟΝΑΣΜΑ|DEFICIT|ΕΛΛΕΙΜΜΑ", case=False, na=False)
+                mask0 = df[0].astype(str).str.contains("ENERGY SURPLUS|ΠΛΕΟΝΑΣΜΑ|DEFICIT|ΕΛΛΕΙΜΜΑ", case=False, na=False)
+                mask1 = df[1].astype(str).str.contains("ENERGY SURPLUS|ΠΛΕΟΝΑΣΜΑ|DEFICIT|ΕΛΛΕΙΜΜΑ", case=False, na=False)
+                surplus_mask = mask0 | mask1
                 if surplus_mask.any():
                     val = pd.to_numeric(str(df[surplus_mask].iloc[0][total_col]).replace(' ', '').replace(',', '.'), errors='coerce')
                     if not pd.isna(val):
                         db["daily_surplus"].append({"Date": date_str, "Total Daily Surplus (MWh)": float(round(abs(val), 3))})
 
-        # -- ISP Gas --
+        # -- ISP Gas (ΕΔΩ ΕΙΝΑΙ Η ΔΙΟΡΘΩΣΗ) --
         if not any(d.get("Ημερομηνία") == date_str for d in db["isp_generation"]):
-            thermal_mask = df[0].astype(str).str.contains("Thermal Units", case=False, na=False)
+            thermal_mask = df[0].astype(str).str.strip().str.lower() == "thermal units"
             if thermal_mask.any():
-                start_idx = df[thermal_mask].index[0]
-                end_mask = df[0].astype(str).str.contains("Total |Hydro |RES |Energy ", case=False, na=False)
-                end_idx = df.iloc[start_idx+1:][end_mask].index[0] if end_mask.any() else len(df)
+                # Βρίσκουμε όλα τα σημεία που γράφει "Thermal Units" και παίρνουμε το τελευταίο
+                thermal_indices = df[thermal_mask].index.tolist()
+                start_idx = thermal_indices[-1]
+                
+                end_mask = df[0].astype(str).str.contains("Total |Hydro |RES |Energy |Pumping", case=False, na=False)
+                end_idx_matches = df.iloc[start_idx+1:][end_mask].index
+                end_idx = end_idx_matches[0] if len(end_idx_matches) > 0 else len(df)
                 
                 gas_df = df.iloc[start_idx+1:end_idx].copy().dropna(subset=[0])
                 total_isp = 0.0
                 
                 for _, row in gas_df.iterrows():
                     unit = str(row[0]).strip()
-                    if any(l in unit.upper() for l in ["AG_DIMITRIOS", "PTOLEMAIDA", "MEGALOPOLI4"]) or unit == "nan": continue
+                    if not unit or unit.lower() == 'nan': continue
+                    # Αγνοούμε λιγνίτες
+                    if any(l in unit.upper() for l in ["AG_DIMITRIOS", "PTOLEMAIDA", "MEGALOPOLI", "MELITI", "AGIOS DIMITRIOS"]): continue
                     
+                    # Διαβάζουμε τις 96 15-λεπτες τιμές
                     vals = pd.to_numeric(row.iloc[2:98].astype(str).str.replace(' ', '').str.replace(',', '.'), errors='coerce')
                     daily_mwh = float(round(vals.sum() / 4, 3))
-                    total_isp += daily_mwh
                     
+                    total_isp += daily_mwh
                     db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit, "Παραγωγή (MWh)": daily_mwh})
                     
                 if total_isp > 0:
@@ -192,7 +207,7 @@ def process_isp(date_str):
                 for _, row in df_c.iterrows():
                     if len(row) < 6: continue
                     unit = str(row[5]).strip()
-                    if unit.lower() in ["nan", "unit"] or "START" in unit.upper() or "TIME" in unit.upper() or "ALOUMINIO" in unit.upper() or "ΑΛΟΥΜΙΝΙΟ" in unit.upper() or "PTOLEMAIDA" in unit.upper(): continue
+                    if unit.lower() in ["nan", "unit", "none"] or "START" in unit.upper() or "TIME" in unit.upper() or "ALOUMINIO" in unit.upper() or "ΑΛΟΥΜΙΝΙΟ" in unit.upper() or "PTOLEMAIDA" in unit.upper(): continue
                     
                     def format_time(t):
                         if isinstance(t, datetime): return t.strftime("%H:%M")
@@ -200,12 +215,12 @@ def process_isp(date_str):
                         return str(t).strip()
                     
                     hf, ht = format_time(row[1]), format_time(row[2])
-                    if "FROM" in hf.upper() or "START" in hf.upper() or "ΑΠΟ" in hf.upper() or not hf: continue
+                    if "FROM" in hf.upper() or "START" in hf.upper() or "ΑΠΟ" in hf.upper() or not hf or str(hf).lower() == 'nan': continue
                     
                     db["daily_gas_constraints"].append({"Date": date_str, "Gas Factory": unit, "Hour From": hf, "Hour To": ht})
 
     except Exception as e:
-        print(f"Error parsing ISP: {e}")
+        print(f"Error parsing ISP for {date_str}: {e}")
 
 def process_henex(date_str):
     if any(d.get("Ημερομηνία") == date_str for d in db["henex_indices"]): return
