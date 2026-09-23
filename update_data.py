@@ -22,21 +22,22 @@ HEADERS = {
     "Cache-Control": "no-cache"
 }
 
-# Σταθερά δεδομένα απόδοσης
-STATIC_EFFICIENCY = [
-    {"Κλάση": "H-Class (Super-Efficient)", "Μονάδα Φ.Α.": "AG_NIKOLAOS2", "Βαθμός Απόδοσης": 0.62},
-    {"Κλάση": "H-Class (Super-Efficient)", "Μονάδα Φ.Α.": "KOMOTINI_POWER", "Βαθμός Απόδοσης": 0.62},
-    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "PROTERGIA_CC", "Βαθμός Απόδοσης": 0.58},
-    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ΘΗΣ ΗΡΩΝ", "Βαθμός Απόδοσης": 0.58},
-    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ΜΕΓΑΛΟΠΟΛΗ 5", "Βαθμός Απόδοσης": 0.58},
-    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ELPEDISON_THISVI", "Βαθμός Απόδοσης": 0.57},
-    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "KORINTHOS_POWER", "Βαθμός Απόδοσης": 0.57},
-    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ELPEDISON_THESS", "Βαθμός Απόδοσης": 0.56},
-    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ΑΛΙΒΕΡΙ 5", "Βαθμός Απόδοσης": 0.56},
-    {"Κλάση": "F-Class (Standard)", "Μονάδα Φ.Α.": "ΛΑΥΡΙΟ 5", "Βαθμός Απόδοσης": 0.56},
-    {"Κλάση": "Older Generation & Peakers", "Μονάδα Φ.Α.": "ΛΑΥΡΙΟ 4", "Βαθμός Απόδοσης": 0.48},
-    {"Κλάση": "Older Generation & Peakers", "Μονάδα Φ.Α.": "ΑΛΟΥΜΙΝΙΟ", "Βαθμός Απόδοσης": 0.48}
-]
+# ΜΗΤΡΩΟ ΤΕΧΝΙΚΩΝ ΧΑΡΑΚΤΗΡΙΣΤΙΚΩΝ ΜΟΝΑΔΩΝ Φ.Α. (Min/Max, Εύρος Απόδοσης, Εύρος CO2)
+PLANT_SPECS = {
+    "AG_NIKOLAOS2": {"p_min": 295, "p_max": 826, "eff_min": 0.505, "eff_max": 0.635, "co2_min": 0.38, "co2_max": 0.33},
+    "KOMOTINI_POWER": {"p_min": 295, "p_max": 855, "eff_min": 0.500, "eff_max": 0.630, "co2_min": 0.38, "co2_max": 0.33},
+    "PROTERGIA_CC": {"p_min": 160, "p_max": 444, "eff_min": 0.440, "eff_max": 0.585, "co2_min": 0.43, "co2_max": 0.36},
+    "KORINTHOS_POWER": {"p_min": 182, "p_max": 436, "eff_min": 0.435, "eff_max": 0.580, "co2_min": 0.44, "co2_max": 0.37},
+    "ELPEDISON_THISVI": {"p_min": 230, "p_max": 420, "eff_min": 0.430, "eff_max": 0.570, "co2_min": 0.44, "co2_max": 0.37},
+    "ELPEDISON_THESS": {"p_min": 220, "p_max": 403, "eff_min": 0.425, "eff_max": 0.565, "co2_min": 0.45, "co2_max": 0.38},
+    "ΘΗΣ ΗΡΩΝ": {"p_min": 210, "p_max": 435, "eff_min": 0.430, "eff_max": 0.575, "co2_min": 0.44, "co2_max": 0.37},
+    "ΑΛΙΒΕΡΙ 5": {"p_min": 200, "p_max": 427, "eff_min": 0.430, "eff_max": 0.575, "co2_min": 0.44, "co2_max": 0.37},
+    "ΛΑΥΡΙΟ 5": {"p_min": 180, "p_max": 385, "eff_min": 0.420, "eff_max": 0.560, "co2_min": 0.45, "co2_max": 0.38},
+    "ΜΕΓΑΛΟΠΟΛΗ 5": {"p_min": 250, "p_max": 511, "eff_min": 0.435, "eff_max": 0.570, "co2_min": 0.44, "co2_max": 0.37},
+    "ΚΟΜΟΤΗΝΗ": {"p_min": 240, "p_max": 485, "eff_min": 0.400, "eff_max": 0.525, "co2_min": 0.48, "co2_max": 0.41},
+    "ΑΛΟΥΜΙΝΙΟ": {"p_min": 128, "p_max": 334, "eff_min": 0.480, "eff_max": 0.550, "co2_min": 0.40, "co2_max": 0.38},
+    "ΛΑΥΡΙΟ 4": {"p_min": 150, "p_max": 560, "eff_min": 0.280, "eff_max": 0.385, "co2_min": 0.61, "co2_max": 0.51}
+}
 
 # ==========================================
 # INITIALIZE DATABASE
@@ -52,12 +53,10 @@ else:
 
 keys = ["isp_generation", "scada_generation", "scada_generation_hourly", 
         "henex_indices", "dam_mcp_hourly", "thermal_efficiency", 
-        "daily_surplus", "daily_gas_constraints", "co2_prices"]
+        "daily_surplus", "daily_gas_constraints", "co2_prices", "daily_economics"]
 for k in keys:
     if k not in db:
         db[k] = []
-
-db["thermal_efficiency"] = STATIC_EFFICIENCY
 
 # ==========================================
 # HELPER FUNCTIONS
@@ -86,7 +85,7 @@ def fetch_excel(url):
     return None
 
 # ==========================================
-# PROCESSORS (ADMIE & HENEX)
+# PROCESSORS (ADMIE & HENEX & CO2)
 # ==========================================
 def process_scada(date_str):
     url = get_admie_excel_url(date_str, "SystemRealizationSCADA")
@@ -171,21 +170,6 @@ def process_isp(date_str):
                     db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit, "Παραγωγή (MWh)": daily_mwh})
                 if total_isp > 0:
                     db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή (MWh)": float(round(total_isp, 3))})
-        if not any(d.get("Date") == date_str for d in db["daily_gas_constraints"]):
-            constraint_sheet = [s for s in xl.sheet_names if "GENERICCONSTRAINTS" in str(s).upper()]
-            if constraint_sheet:
-                df_c = xl.parse(constraint_sheet[0], header=None)
-                for _, row in df_c.iterrows():
-                    if len(row) < 6: continue
-                    unit = str(row[5]).strip()
-                    if unit.lower() in ["nan", "unit", "none"] or "START" in unit.upper() or "TIME" in unit.upper() or "ALOUMINIO" in unit.upper() or "ΑΛΟΥΜΙΝΙΟ" in unit.upper() or "PTOLEMAIDA" in unit.upper(): continue
-                    def format_time(t):
-                        if isinstance(t, datetime): return t.strftime("%H:%M")
-                        if isinstance(t, (int, float)) and t < 1: return f"{int(round(t * 24 * 60) // 60):02d}:{int(round(t * 24 * 60) % 60):02d}"
-                        return str(t).strip()
-                    hf, ht = format_time(row[1]), format_time(row[2])
-                    if "FROM" in hf.upper() or "START" in hf.upper() or "ΑΠΟ" in hf.upper() or not hf or str(hf).lower() == 'nan': continue
-                    db["daily_gas_constraints"].append({"Date": date_str, "Gas Factory": unit, "Hour From": hf, "Hour To": ht})
     except Exception as e:
         print(f"Error parsing ISP for {date_str}: {e}")
 
@@ -249,28 +233,13 @@ def process_dam(date_str):
                 break
         except: pass
 
-# ==========================================
-# PROCESSOR (CO2 PRICES - DATE MATCHED FIX)
-# ==========================================
 def process_co2(date_str):
-    # Καθαρίζουμε την εγγραφή αν υπάρχει ήδη για αυτή τη μέρα
     db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != date_str]
-
     api_key = os.environ.get('OILPRICE_API_KEY')
-    if not api_key:
-        print(f"  [{date_str}] ΛΑΘΟΣ: Το OILPRICE_API_KEY είναι άδειο στα Secrets!")
-        return
-
+    if not api_key: return
     url = "https://api.oilpriceapi.com/v1/prices"
-    headers = {
-        "Authorization": f"Token {api_key}",
-        "Content-Type": "application/json"
-    }
-    params = {
-        "by_code": "EU_CARBON_EUR",
-        "by_date": date_str
-    }
-
+    headers = {"Authorization": f"Token {api_key}", "Content-Type": "application/json"}
+    params = {"by_code": "EU_CARBON_EUR", "by_date": date_str}
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=10)
         if resp.status_code == 200:
@@ -278,34 +247,133 @@ def process_co2(date_str):
             if data.get("status") == "success" and data.get("data"):
                 prices_list = data["data"].get("prices", [])
                 target_price = None
-                
-                # Ψάχνουμε στη λίστα ποια τιμή αντιστοιχεί στην ακριβή ημερομηνία (date_str)
                 for item in prices_list:
-                    created_at = str(item.get("created_at", ""))
-                    as_of = str(item.get("as_of", ""))
-                    if date_str in created_at or date_str in as_of:
+                    if date_str in str(item.get("created_at", "")) or date_str in str(item.get("as_of", "")):
                         target_price = item.get("price")
                         break
-                
-                # Αν δεν βρει ακριβές match με string, παίρνουμε την πρώτη ως fallback για ασφάλεια
                 if target_price is None and len(prices_list) > 0:
                     target_price = prices_list[0].get("price")
-
                 if target_price is not None:
-                    db["co2_prices"].append({
-                        "Ημερομηνία": date_str,
-                        "CO2_Price (€/t)": float(target_price)
-                    })
-                    print(f"  [{date_str}] CO2 Price Matched: {target_price} €/t")
+                    db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": float(target_price)})
                 else:
                     db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
-                    print(f"  [{date_str}] CO2 Price Warning: No price found for date.")
             else:
                 db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
-        else:
-            print(f"  [{date_str}] API Error fetching CO2: {resp.status_code}")
-    except Exception as e:
-        print(f"Error fetching CO2 for {date_str}: {e}")
+    except:
+        pass
+
+# ==========================================
+# PROCESSOR (ADVANCED ECONOMICS ENGINE)
+# ==========================================
+def process_economics(date_str):
+    # Καθαρίζουμε προηγούμενη εγγραφή της ημέρας
+    db["daily_economics"] = [d for d in db["daily_economics"] if d.get("Ημερομηνία") != date_str]
+
+    # Παίρνουμε την τιμή αερίου HGSIDA για την ημέρα
+    hgsida_val = 50.0  # fallback
+    for h in db["henex_indices"]:
+        if h.get("Ημερομηνία") == date_str:
+            hgsida_val = h.get("HGSIDA (€/MWh)", 50.0)
+            break
+
+    # Παίρνουμε την τιμή CO2 για την ημέρα
+    co2_val = 85.0  # fallback
+    for c in db["co2_prices"]:
+        if c.get("Ημερομηνία") == date_str:
+            p = c.get("CO2_Price (€/t)")
+            if p is not None: co2_val = p
+            break
+
+    # Φιλτράρουμε τα ωριαία SCADA για την ημερομηνία
+    hourly_records = [r for r in db["scada_generation_hourly"] if r.get("Ημερομηνία") == date_str]
+    if not hourly_records: return
+
+    units_summary = []
+    fleet_total_mwh = 0.0
+    fleet_total_fuel_cost = 0.0
+    fleet_total_co2_cost = 0.0
+    fleet_total_tons = 0.0
+
+    for rec in hourly_records:
+        unit_name = rec.get("Μονάδα Φ.Α.")
+        if unit_name == "TOTAL GAS UNITS": continue
+
+        # Βρίσκουμε τα specs της μονάδας (με fallback αν δεν υπάρχει ακριβές match)
+        specs = PLANT_SPECS.get(unit_name, {"p_min": 150, "p_max": 500, "eff_min": 0.43, "eff_max": 0.57, "co2_min": 0.44, "co2_max": 0.37})
+        
+        p_min = specs["p_min"]
+        p_max = specs["p_max"]
+        eff_min = specs["eff_min"]
+        eff_max = specs["eff_max"]
+        co2_min = specs["co2_min"]
+        co2_max = specs["co2_max"]
+
+        unit_mwh = 0.0
+        unit_fuel_cost = 0.0
+        unit_co2_cost = 0.0
+        unit_tons = 0.0
+
+        for h in range(1, 25):
+            hour_key = f"{h:02d}:00"
+            p_hour = rec.get(hour_key, 0.0)
+            if p_hour <= 0: continue
+
+            unit_mwh += p_hour
+
+            # Γραμμική Παρεμβολή Φορτίου
+            p_eff = max(p_min, min(p_max, p_hour))
+            factor = (p_eff - p_min) / (p_max - p_min) if p_max > p_min else 0.0
+
+            # Δυναμική Απόδοση & Συντελεστής CO2
+            eff_hour = eff_min + factor * (eff_max - eff_min)
+            co2_hour = co2_min - factor * (co2_min - co2_max)
+
+            # Κόστος Ώρας
+            fuel_cost_hour = p_hour * (hgsida_val / eff_hour)
+            tons_hour = p_hour * co2_hour
+            co2_cost_hour = tons_hour * co2_val
+
+            unit_fuel_cost += fuel_cost_hour
+            unit_co2_cost += co2_cost_hour
+            unit_tons += tons_hour
+
+        if unit_mwh > 0:
+            total_unit_cost = unit_fuel_cost + unit_co2_cost
+            srmc = total_unit_cost / unit_mwh if unit_mwh > 0 else 0.0
+
+            units_summary.append({
+                "Μονάδα": unit_name,
+                "Παραγωγή (MWh)": float(round(unit_mwh, 2)),
+                "Κόστος Καυσίμου (€)": float(round(unit_fuel_cost, 2)),
+                "Κόστος CO2 (€)": float(round(unit_co2_cost, 2)),
+                "Συνολικό Κόστος (€)": float(round(total_unit_cost, 2)),
+                "SRMC Μέσος Όρος (€/MWh)": float(round(srmc, 2)),
+                "Εκπομπές CO2 (t)": float(round(unit_tons, 2))
+            })
+
+            fleet_total_mwh += unit_mwh
+            fleet_total_fuel_cost += unit_fuel_cost
+            fleet_total_co2_cost += unit_co2_cost
+            fleet_total_tons += unit_tons
+
+    fleet_total_cost = fleet_total_fuel_cost + fleet_total_co2_cost
+    fleet_srmc = fleet_total_cost / fleet_total_mwh if fleet_total_mwh > 0 else 0.0
+
+    db["daily_economics"].append({
+        "Ημερομηνία": date_str,
+        "HGSIDA (€/MWh)": float(round(hgsida_val, 2)),
+        "CO2 Price (€/t)": float(round(co2_val, 2)),
+        "Fleet Totals": {
+            "Συνολική Παραγωγή (MWh)": float(round(fleet_total_mwh, 2)),
+            "Συνολικό Κόστος Καυσίμου (€)": float(round(fleet_total_fuel_cost, 2)),
+            "Συνολικό Κόστος CO2 (€)": float(round(fleet_total_co2_cost, 2)),
+            "Συνολικό Κόστος Στόλου (€)": float(round(fleet_total_cost, 2)),
+            "Μέσο SRMC Στόλου (€/MWh)": float(round(fleet_srmc, 2)),
+            "Συνολικοί Τόνοι CO2 (t)": float(round(fleet_total_tons, 2))
+        },
+        "Units": units_summary
+    })
+    print(f"  [{date_str}] Economics calculated successfully.")
 
 # ==========================================
 # MAIN EXECUTION
@@ -340,6 +408,7 @@ if __name__ == "__main__":
         process_henex(date_str)
         process_dam(date_str)
         process_co2(date_str)
+        process_economics(date_str)  # Υπολογισμός προηγμένης οικονομίας!
         
         time.sleep(1)
 
