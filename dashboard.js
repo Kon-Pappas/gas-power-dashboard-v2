@@ -341,88 +341,92 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
 }
 
 // ==========================================
-// TAB 2: DAILY ECONOMICS
+// TAB 2: DAILY ECONOMICS (DYNAMIC MODEL)
 // ==========================================
 function updateEconomicsTab() {
     const dateSelect = document.getElementById('dateSelectEco');
-    if (!dateSelect || !rawData || !rawData.scada) return;
+    if (!dateSelect || !rawData) return;
     
     const selectedDate = dateSelect.value;
     if (!selectedDate) return;
 
-    let hgsida = 0;
-    if (rawData.henex) {
-        const henexDay = rawData.henex.find(d => parseDate(Object.values(d)[0]) === selectedDate);
-        if (henexDay) hgsida = parseNum(Object.values(henexDay)[1]); 
+    // Αναζήτηση των οικονομικών δεδομένων της ημέρας από το νέο dataset
+    let dayEco = null;
+    if (rawData.daily_economics) {
+        dayEco = rawData.daily_economics.find(d => parseDate(d.Ημερομηνία) === selectedDate);
     }
-
-    const scadaDay = rawData.scada.filter(d => parseDate(Object.values(d)[0]) === selectedDate);
-    
-    const ecoMap = {};
-    scadaDay.forEach(d => {
-        let uName = String(Object.values(d)[1].trim());
-        const val = parseNum(Object.values(d)[2]);
-        if (uName === "TOTAL GAS UNITS" || val <= 0) return; 
-
-        uName = getCanonicalUnitName(uName);
-        if (!ecoMap[uName]) ecoMap[uName] = { name: uName, scada: 0, meta: getUnitMetadata(uName) };
-        ecoMap[uName].scada += val;
-    });
-
-    const unitsArray = Object.values(ecoMap);
-    unitsArray.sort((a, b) => {
-        if (a.meta.order !== b.meta.order) return a.meta.order - b.meta.order;
-        return b.scada - a.scada;
-    });
-
-    let totalMwh = 0;
-    let totalTheoreticalFuel = 0;
-    let totalCostFleet = 0;
 
     const tbody = document.getElementById('economicsTableBody');
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    unitsArray.forEach(u => {
-        totalMwh += u.scada;
-        const efficiencyRatio = u.meta.eff; 
-        const gasCostPerMwh = hgsida > 0 ? (hgsida / efficiencyRatio) + CO2_COST_PER_MWH : 0;
-        const unitTotalCost = u.scada * gasCostPerMwh;
+    // Fallback UI αν δεν υπάρχουν δεδομένα για τη μέρα
+    if (!dayEco || !dayEco.Units || dayEco.Units.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">No economic data available for this date.</td></tr>`;
+        document.getElementById('ecoTableTotalMwh').innerText = '0.0';
+        document.getElementById('ecoTableAvgEff').innerText = '-';
+        document.getElementById('ecoTableAvgGasCost').innerText = '-';
+        document.getElementById('ecoTableTotalCost').innerText = '0 €';
         
-        totalCostFleet += unitTotalCost;
-        totalTheoreticalFuel += (u.scada / efficiencyRatio);
+        document.getElementById('kpiHgsida').innerText = '-';
+        document.getElementById('kpiFleetEff').innerText = '-';
+        document.getElementById('kpiAvgGasCost').innerText = '-';
+        document.getElementById('kpiEcoScada').innerText = '0.0';
+        document.getElementById('kpiTotalEcoCost').innerText = '0 €';
+        return;
+    }
 
+    // Ενημέρωση KPIs κορυφής από τα Fleet Totals
+    const totals = dayEco["Fleet Totals"];
+    const hgsidaVal = dayEco["HGSIDA (€/MWh)"] || 0;
+    const co2PriceVal = dayEco["CO2 Price (€/t)"] || 0;
+
+    document.getElementById('kpiHgsida').innerText = hgsidaVal.toFixed(2);
+    document.getElementById('kpiEcoScada').innerText = totals["Συνολική Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    document.getElementById('kpiAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2);
+    document.getElementById('kpiTotalEcoCost').innerText = formatEuro(totals["Συνολικό Κόστος Στόλου (€)"]);
+    
+    // Υπολογισμός μέσης απόδοσης στόλου (έμμεσα από καύσιμο και MWh)
+    const totalMwh = totals["Συνολική Παραγωγή (MWh)"];
+    const totalFuelCost = totals["Συνολικό Κόστος Καυσίμου (€)"];
+    // Αντίστροφη εκτίμηση μέσης απόδοσης για την κάρτα KPI: MWh * Hgsida / FuelCost
+    const avgFleetEff = (totalFuelCost > 0 && hgsidaVal > 0) ? (totalMwh * hgsidaVal / totalFuelCost) * 100 : 0;
+    document.getElementById('kpiFleetEff').innerText = avgFleetEff > 0 ? avgFleetEff.toFixed(1) : '-';
+
+    // Γέμισμα του πίνακα ανά μονάδα
+    let sumMwh = 0;
+    let sumCost = 0;
+    let sumTons = 0;
+
+    dayEco.Units.forEach(u => {
+        sumMwh += u["Παραγωγή (MWh)"];
+        sumCost += u["Συνολικό Κόστος (€)"];
+        sumTons += u["Εκπομπές CO2 (t)"];
+
+        const meta = getUnitMetadata(u["Μονάδα"]);
         let borderClass = "border-l-4 border-slate-700";
-        if (u.meta.order === 1) borderClass = "border-l-4 border-[#06b6d4]";
-        if (u.meta.order === 2) borderClass = "border-l-4 border-[#3b82f6]";
-        if (u.meta.order === 3) borderClass = "border-l-4 border-[#f97316]";
+        if (meta.order === 1) borderClass = "border-l-4 border-[#06b6d4]";
+        if (meta.order === 2) borderClass = "border-l-4 border-[#3b82f6]";
+        if (meta.order === 3) borderClass = "border-l-4 border-[#f97316]";
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-700/50 transition-colors group";
         tr.innerHTML = `
-            <td class="p-3 text-xs text-slate-400 ${borderClass}">${u.meta.class}</td>
-            <td class="p-3 font-bold text-slate-300 group-hover:text-white transition-colors">${u.name}</td>
-            <td class="p-3 text-right font-mono">${u.scada.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})}</td>
-            <td class="p-3 text-right text-emerald-400/90">${(efficiencyRatio * 100).toFixed(1)}%</td>
-            <td class="p-3 text-right font-mono">${gasCostPerMwh > 0 ? gasCostPerMwh.toFixed(2) : '-'}</td>
-            <td class="p-3 text-right font-semibold text-slate-300">${gasCostPerMwh > 0 ? formatEuro(unitTotalCost) : '-'}</td>
+            <td class="p-3 text-xs text-slate-400 ${borderClass}">${meta.class}</td>
+            <td class="p-3 font-bold text-slate-300 group-hover:text-white transition-colors">${u["Μονάδα"]}</td>
+            <td class="p-3 text-right font-mono">${u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})}</td>
+            <td class="p-3 text-right text-emerald-400/90">${u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})} t</td>
+            <td class="p-3 text-right font-mono text-amber-400">${u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2)}</td>
+            <td class="p-3 text-right font-semibold text-slate-300">${formatEuro(u["Συνολικό Κόστος (€)"])}</td>
         `;
         tbody.appendChild(tr);
     });
 
-    const fleetEfficiency = totalTheoreticalFuel > 0 ? (totalMwh / totalTheoreticalFuel) * 100 : 0;
-    const avgGasCost = totalMwh > 0 ? (totalCostFleet / totalMwh) : 0;
-
-    document.getElementById('ecoTableTotalMwh').innerText = totalMwh.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    document.getElementById('ecoTableAvgEff').innerText = fleetEfficiency.toFixed(2) + '%';
-    document.getElementById('ecoTableAvgGasCost').innerText = avgGasCost > 0 ? avgGasCost.toFixed(2) : '-';
-    document.getElementById('ecoTableTotalCost').innerText = formatEuro(totalCostFleet);
-
-    document.getElementById('kpiHgsida').innerText = hgsida > 0 ? hgsida.toFixed(2) : '-';
-    document.getElementById('kpiEcoScada').innerText = totalMwh.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    document.getElementById('kpiAvgGasCost').innerText = avgGasCost > 0 ? avgGasCost.toFixed(2) : '-';
-    document.getElementById('kpiTotalEcoCost').innerText = totalCostFleet > 0 ? formatEuro(totalCostFleet) : '-';
-    document.getElementById('kpiFleetEff').innerText = fleetEfficiency.toFixed(2);
+    // Footer Table Totals
+    document.getElementById('ecoTableTotalMwh').innerText = sumMwh.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    document.getElementById('ecoTableAvgEff').innerText = sumTons.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
+    document.getElementById('ecoTableAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2);
+    document.getElementById('ecoTableTotalCost').innerText = formatEuro(sumCost);
 }
 
 // ==========================================
