@@ -96,9 +96,13 @@ def process_scada(date_str):
     try:
         df = pd.read_excel(excel_data, sheet_name=0, header=None)
         
+        # ΚΑΘΑΡΙΣΜΟΣ ΠΑΛΙΩΝ ΔΕΔΟΜΕΝΩΝ ΤΗΣ ΗΜΕΡΑΣ (ώστε το backfill να είναι 100% καθαρό)
+        db["scada_generation"] = [d for d in db["scada_generation"] if d.get("Ημερομηνία") != date_str]
+        db["scada_generation_hourly"] = [d for d in db["scada_generation_hourly"] if d.get("Ημερομηνία") != date_str]
+        
         gas_units_rows = []
         
-        # 1. Βρίσκουμε το κλασικό μπλοκ Φυσικού Αερίου (μέχρι το TOTAL GAS)
+        # 1. Βρίσκουμε το κλασικό μπλοκ Φυσικού Αερίου
         start_mask = df[1].astype(str).str.contains("ΜΟΝΑΔΕΣ Φ. ΑΕΡΙΟΥ|ΜΟΝΑΔΕΣ ΦΥΣΙΚΟΥ ΑΕΡΙΟΥ", case=False, na=False)
         if start_mask.any():
             start_idx = df[start_mask].index[0]
@@ -107,10 +111,16 @@ def process_scada(date_str):
             end_idx = end_idx_matches[0] if len(end_idx_matches) > 0 else len(df)
             gas_units_rows.extend(df.iloc[start_idx+1:end_idx].values.tolist())
             
-        # 2. Ψάχνουμε ΕΙΔΙΚΑ για το ΑΛΟΥΜΙΝΙΟ (επειδή κρύβεται στη Συμπαραγωγή)
-        alouminio_mask = df[1].astype(str).str.contains("ΑΛΟΥΜΙΝΙΟ|ALUMINIUM", case=False, na=False)
-        if alouminio_mask.any():
-            gas_units_rows.extend(df[alouminio_mask].values.tolist())
+        # 2. Αρπάζουμε ΟΛΟΚΛΗΡΟ το μπλοκ της ΣΥΜΠΑΡΑΓΩΓΗΣ (εκεί είναι το ΑΛΟΥΜΙΝΙΟ)
+        chp_mask = df[1].astype(str).str.contains("ΣΥΜΠΑΡΑΓΩΓΗ|CHP", case=False, na=False)
+        if chp_mask.any():
+            chp_start_idx = df[chp_mask].index[0]
+            chp_end_mask = df[1].astype(str).str.contains("TOTAL|ΣΥΝΟΛΟ|ΑΠΕ|RES", case=False, na=False)
+            chp_end_matches = df.iloc[chp_start_idx+1:][chp_end_mask].index
+            chp_end_idx = chp_end_matches[0] if len(chp_end_matches) > 0 else len(df)
+            
+            chp_rows = df.iloc[chp_start_idx+1:chp_end_idx].values.tolist()
+            gas_units_rows.extend(chp_rows)
             
         if not gas_units_rows: return
         
@@ -119,11 +129,16 @@ def process_scada(date_str):
             row = pd.Series(row_data)
             raw_name = str(row[1]).strip()
             
-            # Αγνοούμε κενά ή γραμμές αθροισμάτων
+            # Αγνοούμε κενά, NaNs ή γραμμές αθροισμάτων
             if not raw_name or raw_name.lower() == 'nan': continue
             if "TOTAL" in raw_name.upper() or "ΣΥΝΟΛΟ" in raw_name.upper(): continue
             
             unit_name = re.sub(r'\s*\((ST|GT\d+)\)', '', raw_name, flags=re.IGNORECASE).strip()
+            
+            # Αν η μονάδα προέρχεται από το μπλοκ Συμπαραγωγής, τη βαφτίζουμε αυταρχικά "ΑΛΟΥΜΙΝΙΟ" 
+            # για να ταιριάζει με το dashboard μας, ανεξάρτητα από το πώς την έγραψε ο ΑΔΜΗΕ (πχ MYTILINEOS/METLEN)
+            if "ΛΟΥΜΙΝ" in unit_name.upper() or "LUMIN" in unit_name.upper() or "MYTILIN" in unit_name.upper() or "METLEN" in unit_name.upper():
+                unit_name = "ΑΛΟΥΜΙΝΙΟ"
             
             hourly_vals = []
             for j in range(2, 26):
@@ -134,20 +149,16 @@ def process_scada(date_str):
             total_gas += daily_sum
             
             # Εγγραφή στο scada_generation
-            if not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == unit_name for d in db["scada_generation"]):
-                db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name, "Παραγωγή SCADA (MWh)": daily_sum})
+            db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name, "Παραγωγή SCADA (MWh)": daily_sum})
                 
             # Εγγραφή στο scada_generation_hourly
-            if not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == unit_name for d in db["scada_generation_hourly"]):
-                hourly_record = {"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name}
-                for h in range(1, 25): hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
-                hourly_record["Ημερήσιο Σύνολο"] = daily_sum
-                db["scada_generation_hourly"].append(hourly_record)
+            hourly_record = {"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name}
+            for h in range(1, 25): hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
+            hourly_record["Ημερήσιο Σύνολο"] = daily_sum
+            db["scada_generation_hourly"].append(hourly_record)
                 
-        # Εγγραφή στο TOTAL (Αναθεωρημένο Total που περιλαμβάνει ΠΛΕΟΝ και το Αλουμίνιο)
+        # Εγγραφή στο TOTAL (το νέο, σωστό άθροισμα)
         if total_gas > 0:
-            # Σβήνουμε το παλιό Total (αν υπάρχει) για να περάσουμε το νέο σωστό άθροισμα
-            db["scada_generation"] = [d for d in db["scada_generation"] if not (d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == "TOTAL GAS UNITS")]
             db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή SCADA (MWh)": float(round(total_gas, 3))})
             
     except Exception as e:
