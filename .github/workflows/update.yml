@@ -41,6 +41,7 @@ jobs:
           TZ: "Europe/Athens"
           START_DATE: ${{ inputs.start_date }}
           END_DATE: ${{ inputs.end_date }}
+          OILPRICE_API_KEY: ${{ secrets.OILPRICE_API_KEY }}
         run: python update_data.py
 
       - name: Commit and Push Changes
