@@ -6,7 +6,6 @@ import numpy as np
 from datetime import datetime, timedelta
 import pytz
 import io
-import math
 import re
 
 # ==========================================
@@ -69,7 +68,6 @@ def get_admie_excel_url(date_str, file_category):
             data = resp.json()
             for item in data:
                 path = item.get("file_path", "")
-                # Αλλαγή: Ψάχνει το ".xls" οπουδήποτε στο όνομα (όπως είχες στο JS)
                 if ".xls" in path.lower():
                     return f"https://www.admie.gr{path}" if path.startswith("/") else path
     except Exception:
@@ -106,7 +104,7 @@ def process_scada(date_str):
 
         gas_df = df.iloc[start_idx+1:end_idx].copy().dropna(subset=[1])
         
-        total_gas = 0
+        total_gas = 0.0
         for _, row in gas_df.iterrows():
             raw_name = str(row[1]).strip()
             if not raw_name or raw_name.lower() == 'nan': continue
@@ -116,9 +114,9 @@ def process_scada(date_str):
             hourly_vals = []
             for j in range(2, 26):
                 val = pd.to_numeric(str(row.iloc[j]).replace(' ', '').replace(',', '.'), errors='coerce') if j < len(row) else 0
-                hourly_vals.append(0 if math.isnan(val) else val)
+                hourly_vals.append(0.0 if pd.isna(val) else float(val))
                 
-            daily_sum = round(sum(hourly_vals), 3)
+            daily_sum = float(round(sum(hourly_vals), 3))
             total_gas += daily_sum
 
             if not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == unit_name for d in db["scada_generation"]):
@@ -131,7 +129,7 @@ def process_scada(date_str):
                 db["scada_generation_hourly"].append(hourly_record)
 
         if total_gas > 0 and not any(d.get("Ημερομηνία") == date_str and d.get("Μονάδα Φ.Α.") == "TOTAL GAS UNITS" for d in db["scada_generation"]):
-            db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή SCADA (MWh)": round(total_gas, 3)})
+            db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή SCADA (MWh)": float(round(total_gas, 3))})
     except Exception as e:
         print(f"Error parsing SCADA: {e}")
 
@@ -144,7 +142,6 @@ def process_isp(date_str):
     try:
         xl = pd.ExcelFile(excel_data)
         
-        # Αλλαγή: Βρίσκουμε δυναμικά το σωστό φύλλο για το ISP, όπως ακριβώς έκανες στο JS
         target_sheet = xl.sheet_names[0]
         for s in xl.sheet_names:
             if str(s).upper().endswith("_ISP"):
@@ -160,8 +157,8 @@ def process_isp(date_str):
                 surplus_mask = df[0].astype(str).str.contains("ENERGY SURPLUS|ΠΛΕΟΝΑΣΜΑ|DEFICIT|ΕΛΛΕΙΜΜΑ", case=False, na=False) | df[1].astype(str).str.contains("ENERGY SURPLUS|ΠΛΕΟΝΑΣΜΑ|DEFICIT|ΕΛΛΕΙΜΜΑ", case=False, na=False)
                 if surplus_mask.any():
                     val = pd.to_numeric(str(df[surplus_mask].iloc[0][total_col]).replace(' ', '').replace(',', '.'), errors='coerce')
-                    if not math.isnan(val):
-                        db["daily_surplus"].append({"Date": date_str, "Total Daily Surplus (MWh)": round(abs(val), 3)})
+                    if not pd.isna(val):
+                        db["daily_surplus"].append({"Date": date_str, "Total Daily Surplus (MWh)": float(round(abs(val), 3))})
 
         # -- ISP Gas --
         if not any(d.get("Ημερομηνία") == date_str for d in db["isp_generation"]):
@@ -172,20 +169,20 @@ def process_isp(date_str):
                 end_idx = df.iloc[start_idx+1:][end_mask].index[0] if end_mask.any() else len(df)
                 
                 gas_df = df.iloc[start_idx+1:end_idx].copy().dropna(subset=[0])
-                total_isp = 0
+                total_isp = 0.0
                 
                 for _, row in gas_df.iterrows():
                     unit = str(row[0]).strip()
                     if any(l in unit.upper() for l in ["AG_DIMITRIOS", "PTOLEMAIDA", "MEGALOPOLI4"]) or unit == "nan": continue
                     
                     vals = pd.to_numeric(row.iloc[2:98].astype(str).str.replace(' ', '').str.replace(',', '.'), errors='coerce')
-                    daily_mwh = round(vals.sum() / 4, 3)
+                    daily_mwh = float(round(vals.sum() / 4, 3))
                     total_isp += daily_mwh
                     
                     db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit, "Παραγωγή (MWh)": daily_mwh})
                     
                 if total_isp > 0:
-                    db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή (MWh)": round(total_isp, 3)})
+                    db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή (MWh)": float(round(total_isp, 3))})
 
         # 2. Constraints
         if not any(d.get("Date") == date_str for d in db["daily_gas_constraints"]):
@@ -199,7 +196,7 @@ def process_isp(date_str):
                     
                     def format_time(t):
                         if isinstance(t, datetime): return t.strftime("%H:%M")
-                        if isinstance(t, (int, float)) and t < 1: return f"{round(t * 24 * 60) // 60:02d}:{round(t * 24 * 60) % 60:02d}"
+                        if isinstance(t, (int, float)) and t < 1: return f"{int(round(t * 24 * 60) // 60):02d}:{int(round(t * 24 * 60) % 60):02d}"
                         return str(t).strip()
                     
                     hf, ht = format_time(row[1]), format_time(row[2])
@@ -226,7 +223,7 @@ def process_henex(date_str):
                 df.columns = df.iloc[header_idx]
                 df = df.iloc[header_idx+1:]
                 
-                hgsida = hgsiwd = hgmbi = hgmsi = 0
+                hgsida = hgsiwd = hgmbi = hgmsi = 0.0
                 for _, row in df.iterrows():
                     contract = str(row.get("Contract", "")).strip()
                     if contract == "DA": hgsida = pd.to_numeric(str(row.get("HGSIDA", 0)).replace(',', '.'), errors='coerce')
@@ -236,10 +233,11 @@ def process_henex(date_str):
                         hgmsi = pd.to_numeric(str(row.get("HGMSI", 0)).replace(',', '.'), errors='coerce')
 
                 db["henex_indices"].append({
-                    "Ημερομηνία": date_str, "HGSIDA (€/MWh)": 0 if math.isnan(hgsida) else hgsida,
-                    "HGSIWD (€/MWh)": 0 if math.isnan(hgsiwd) else hgsiwd,
-                    "HGMBI (€/MWh)": 0 if math.isnan(hgmbi) else hgmbi,
-                    "HGMSI (€/MWh)": 0 if math.isnan(hgmsi) else hgmsi
+                    "Ημερομηνία": date_str, 
+                    "HGSIDA (€/MWh)": 0.0 if pd.isna(hgsida) else float(hgsida),
+                    "HGSIWD (€/MWh)": 0.0 if pd.isna(hgsiwd) else float(hgsiwd),
+                    "HGMBI (€/MWh)": 0.0 if pd.isna(hgmbi) else float(hgmbi),
+                    "HGMSI (€/MWh)": 0.0 if pd.isna(hgmsi) else float(hgmsi)
                 })
                 break
         except: pass
@@ -264,7 +262,7 @@ def process_dam(date_str):
                             idx = 1 + (h * 4) 
                             if idx < len(row):
                                 val = pd.to_numeric(str(row.iloc[idx]).replace(',', '.'), errors='coerce')
-                                hourly_prices[f"{(h+1):02d}:00"] = 0 if math.isnan(val) else round(val, 3)
+                                hourly_prices[f"{(h+1):02d}:00"] = 0.0 if pd.isna(val) else float(round(val, 3))
                                 
                         if len(hourly_prices) == 24:
                             record = {"Ημερομηνία": date_str}
@@ -281,7 +279,6 @@ if __name__ == "__main__":
     today = datetime.now(TZ)
     print(f"Starting Data Fetch Job at {today.strftime('%Y-%m-%d %H:%M:%S')}")
     
-    # Διαβάζει τα inputs από το GitHub Actions (αν υπάρχουν)
     start_env = os.environ.get('START_DATE')
     end_env = os.environ.get('END_DATE')
     
@@ -292,16 +289,13 @@ if __name__ == "__main__":
         start_date = datetime.strptime(start_env.strip(), "%Y-%m-%d")
         end_date = datetime.strptime(end_env.strip(), "%Y-%m-%d")
         delta = end_date - start_date
-        # Φτιάχνει λίστα με όλες τις ενδιάμεσες ημέρες
         for i in range(delta.days + 1):
             date_list.append(start_date + timedelta(days=i))
     else:
         print("Standard daily cron triggered. Checking last 10 days.")
-        # Default συμπεριφορά: Κοιτάει 10 ημέρες πίσω (για να πιάσει καθυστερήσεις ΑΔΜΗΕ)
         for i in range(10, -1, -1):
             date_list.append(today - timedelta(days=i))
             
-    # Εκτέλεση για κάθε ημερομηνία της λίστας
     for target_date in date_list:
         date_str = target_date.strftime("%Y-%m-%d")
         print(f"--> Processing Date: {date_str}")
