@@ -22,7 +22,7 @@ HEADERS = {
     "Cache-Control": "no-cache"
 }
 
-# Σταθερά δεδομένα απόδοσης (αντικαθιστά το tab του Google Sheets)
+# Σταθερά δεδομένα απόδοσης
 STATIC_EFFICIENCY = [
     {"Κλάση": "H-Class (Super-Efficient)", "Μονάδα Φ.Α.": "AG_NIKOLAOS2", "Βαθμός Απόδοσης": 0.62},
     {"Κλάση": "H-Class (Super-Efficient)", "Μονάδα Φ.Α.": "KOMOTINI_POWER", "Βαθμός Απόδοσης": 0.62},
@@ -250,14 +250,11 @@ def process_dam(date_str):
         except: pass
 
 # ==========================================
-# PROCESSOR (CO2 PRICES - VERBOSE DEBUGGING)
+# PROCESSOR (CO2 PRICES - FIXED)
 # ==========================================
 def process_co2(date_str):
-    print(f"  [{date_str}] Δοκιμή ανάκτησης CO2...")
-    
-    if any(d.get("Ημερομηνία") == date_str for d in db["co2_prices"]): 
-        print(f"  [{date_str}] Βρέθηκε ήδη στο JSON, προσπερνάμε.")
-        return
+    # Εάν υπάρχει ήδη η ημερομηνία και δεν είναι null, την κρατάμε
+    db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != date_str]
 
     api_key = os.environ.get('OILPRICE_API_KEY')
     if not api_key:
@@ -276,36 +273,30 @@ def process_co2(date_str):
 
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=10)
-        print(f"  [{date_str}] Status Code από API: {resp.status_code}")
-        
         if resp.status_code == 200:
             data = resp.json()
-            print(f"  [{date_str}] ΩΜΗ ΑΠΑΝΤΗΣΗ API: {json.dumps(data)}")
-            
             if data.get("status") == "success" and data.get("data"):
-                records = data["data"]
+                # ΔΙΟΡΘΩΣΗ: Το data περιέχει τη λίστα 'prices'
+                prices_list = data["data"].get("prices", [])
                 price = None
-                if isinstance(records, list) and len(records) > 0:
-                    price = records[0].get("price")
-                elif isinstance(records, dict):
-                    price = records.get("price")
+                if isinstance(prices_list, list) and len(prices_list) > 0:
+                    price = prices_list[0].get("price")
                     
                 if price is not None:
                     db["co2_prices"].append({
                         "Ημερομηνία": date_str,
                         "CO2_Price (€/t)": float(price)
                     })
-                    print(f"  [{date_str}] ΕΠΙΤΥΧΙΑ: Αποθηκεύτηκε τιμή {price} €/t")
+                    print(f"  [{date_str}] CO2 Price Success: {price} €/t")
                 else:
-                    print(f"  [{date_str}] ΣΦΑΛΜΑ ΛΟΓΙΚΗΣ: Το API επέστρεψε success αλλά δεν είχε 'price'!")
                     db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
+                    print(f"  [{date_str}] CO2 Price Warning: Empty prices list.")
             else:
                 db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
-                print(f"  [{date_str}] ΠΡΟΣΟΧΗ: Το API δεν βρήκε δεδομένα για αυτή τη μέρα (Κλειστή αγορά;)")
         else:
-            print(f"  [{date_str}] ΣΦΑΛΜΑ API: {resp.text}")
+            print(f"  [{date_str}] API Error fetching CO2: {resp.status_code}")
     except Exception as e:
-        print(f"  [{date_str}] ΕΞΑΙΡΕΣΗ ΚΩΔΙΚΑ: {e}")
+        print(f"Error fetching CO2 for {date_str}: {e}")
 
 # ==========================================
 # MAIN EXECUTION
@@ -333,7 +324,7 @@ if __name__ == "__main__":
             
     for target_date in date_list:
         date_str = target_date.strftime("%Y-%m-%d")
-        print(f"\n--> Processing Date: {date_str}")
+        print(f"--> Processing Date: {date_str}")
         
         process_scada(date_str)
         process_isp(date_str)
@@ -346,4 +337,4 @@ if __name__ == "__main__":
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(db, f, ensure_ascii=False, indent=2)
         
-    print("\n✔ Job Completed Successfully!")
+    print("✔ Job Completed Successfully!")
