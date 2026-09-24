@@ -528,17 +528,6 @@ function renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData) {
                     pointRadius: 3,
                     pointBackgroundColor: '#3b82f6',
                     yAxisID: 'y'
-                }, 
-                { 
-                    label: 'EUA CO2 Price', 
-                    data: co2Data, 
-                    borderColor: '#94a3b8', // Γκρι (Slate)
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 3,
-                    pointBackgroundColor: '#94a3b8',
-                    yAxisID: 'y'
                 },
                 { 
                     label: 'Avg Fleet SRMC', 
