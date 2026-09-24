@@ -27,14 +27,6 @@ function formatEuro(amount) {
     return amount.toLocaleString('el-GR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
-function syncDate(sourceId, targetId) {
-    const source = document.getElementById(sourceId);
-    const target = document.getElementById(targetId);
-    if (source && target) {
-        target.value = source.value;
-    }
-}
-
 function getHourNumber(timeStr) {
     if (timeStr === undefined || timeStr === null || timeStr === "") return -1;
     let s = String(timeStr).trim();
@@ -50,27 +42,16 @@ function getHourNumber(timeStr) {
 function initExtraSelectors() {
     if (selectorsInitialized) return;
     
-    const mainDs = document.getElementById('dateSelect');
-    const ecoDs = document.getElementById('dateSelectEco');
-    const monthDs = document.getElementById('monthSelect');
-    const monthSurplusDs = document.getElementById('monthSelectSurplus');
+    const ds = document.getElementById('dateSelect');
+    const ms = document.getElementById('monthSelect');
     
-    if (!mainDs || mainDs.options.length === 0) return; 
+    if (!ds || ds.options.length === 0) return; 
     
-    if (ecoDs && ecoDs.options.length === 0) {
-        ecoDs.innerHTML = mainDs.innerHTML;
-        ecoDs.value = mainDs.value;
-    }
-    
-    if (monthDs && monthDs.options.length === 0) {
-        const allDates = Array.from(mainDs.options).map(opt => opt.value);
+    // Create Month options based on the available Dates
+    if (ms && ms.options.length === 0) {
+        const allDates = Array.from(ds.options).map(opt => opt.value);
         const months = [...new Set(allDates.map(d => d.substring(0, 7)))];
-        const optionsHtml = months.map(m => `<option value="${m}">${m}</option>`).join('');
-        monthDs.innerHTML = optionsHtml;
-        if (monthSurplusDs) {
-            monthSurplusDs.innerHTML = optionsHtml;
-            monthSurplusDs.value = monthDs.value;
-        }
+        ms.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
     }
     
     selectorsInitialized = true;
@@ -178,6 +159,18 @@ function switchTab(tabId) {
             view.classList.add('hidden');
         }
     });
+
+    // Master Header Selectors Toggling
+    const dateWrap = document.getElementById('dateSelectorWrapper');
+    const monthWrap = document.getElementById('monthSelectorWrapper');
+    
+    if (tabId === 'overview' || tabId === 'economics') {
+        if (dateWrap) dateWrap.classList.remove('hidden');
+        if (monthWrap) monthWrap.classList.add('hidden');
+    } else {
+        if (dateWrap) dateWrap.classList.add('hidden');
+        if (monthWrap) monthWrap.classList.remove('hidden');
+    }
 
     if (tabId === 'overview') updateOverviewTab();
     if (tabId === 'economics') updateEconomicsTab();
@@ -339,7 +332,7 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
 // TAB 2: DAILY ECONOMICS
 // ==========================================
 function updateEconomicsTab() {
-    const dateSelect = document.getElementById('dateSelectEco');
+    const dateSelect = document.getElementById('dateSelect');
     if (!dateSelect || !rawData) return;
     
     const selectedDate = dateSelect.value;
@@ -434,7 +427,7 @@ function updateEconomicsTab() {
 }
 
 // ==========================================
-// TAB 3: MONTHLY ANALYTICS (CLEANED)
+// TAB 3: MONTHLY ANALYTICS 
 // ==========================================
 function updateMonthlyTab() {
     const monthSelect = document.getElementById('monthSelect');
@@ -443,14 +436,12 @@ function updateMonthlyTab() {
     const selectedMonth = monthSelect.value; 
     if (!selectedMonth) return;
 
-    // Διαβάζουμε τα έτοιμα δεδομένα κατευθείαν από το back-end
     const monthData = rawData.daily_economics
         .filter(d => parseDate(d.Ημερομηνία).startsWith(selectedMonth))
         .sort((a, b) => parseDate(a.Ημερομηνία).localeCompare(parseDate(b.Ημερομηνία)));
 
     const labels = [];
     const hgsidaData = [];
-    const co2Data = [];
     const srmcData = [];
     const effData = [];
 
@@ -465,21 +456,17 @@ function updateMonthlyTab() {
         labels.push(dayNum);
 
         const hgsida = day["HGSIDA (€/MWh)"] || 0;
-        const co2 = day["CO2 Price (€/t)"] || 0;
         const totals = day["Fleet Totals"];
         const srmc = totals["Μέσο SRMC Στόλου (€/MWh)"] || 0;
         
-        // Απόδοση Στόλου = (MWh * Gas Price) / Κόστος Καυσίμου
         const totalMwh = totals["Συνολική Παραγωγή (MWh)"];
         const totalFuelCost = totals["Συνολικό Κόστος Καυσίμου (€)"];
         const eff = (totalFuelCost > 0 && hgsida > 0) ? (totalMwh * hgsida / totalFuelCost) * 100 : 0;
 
         hgsidaData.push(hgsida);
-        co2Data.push(co2);
         srmcData.push(srmc);
         effData.push(eff);
 
-        // Track Highs and Lows
         if (srmc > 0 && srmc < minCost) { minCost = srmc; minCostDay = dayNum; }
         if (srmc > maxCost) { maxCost = srmc; maxCostDay = dayNum; }
         
@@ -487,7 +474,6 @@ function updateMonthlyTab() {
         if (eff > maxEff) { maxEff = eff; maxEffDay = dayNum; }
     });
 
-    // Ενημέρωση των νέων KPI Boxes
     document.getElementById('kpiPeakCost').innerText = maxCost !== -Infinity ? maxCost.toFixed(2) : '-';
     document.getElementById('kpiPeakCostDay').innerText = maxCostDay ? `Day ${maxCostDay}` : '';
     
@@ -500,10 +486,10 @@ function updateMonthlyTab() {
     document.getElementById('kpiMaxEff').innerText = maxEff !== -Infinity ? maxEff.toFixed(1) : '-';
     document.getElementById('kpiMaxEffDay').innerText = maxEffDay ? `Day ${maxEffDay}` : '';
 
-    renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData);
+    renderMonthlyChart(labels, hgsidaData, srmcData, effData);
 }
 
-function renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData) {
+function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
     const canvas = document.getElementById('monthlyChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -521,7 +507,7 @@ function renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData) {
                 { 
                     label: 'HGSIDA Gas Price', 
                     data: hgsidaData, 
-                    borderColor: '#3b82f6', // Μπλε
+                    borderColor: '#3b82f6', 
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     tension: 0.3,
@@ -532,7 +518,7 @@ function renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData) {
                 { 
                     label: 'Avg Fleet SRMC', 
                     data: srmcData, 
-                    borderColor: '#fbbf24', // Πορτοκαλί (Amber)
+                    borderColor: '#fbbf24', 
                     backgroundColor: 'rgba(251, 191, 36, 0.1)',
                     fill: true,
                     borderWidth: 3,
@@ -544,7 +530,7 @@ function renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData) {
                 {
                     label: 'Fleet Efficiency',
                     data: effData,
-                    borderColor: '#10b981', // Πράσινο (Emerald)
+                    borderColor: '#10b981', 
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     borderDash: [5, 5], 
@@ -584,14 +570,14 @@ function renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData) {
                     display: true, 
                     position: 'left', 
                     grid: { color: '#334155' }, 
-                    title: { display: true, text: 'Cost (€ / MWh & € / t)' },
+                    title: { display: true, text: 'Cost (€ / MWh)' },
                     min: 0
                 },
                 y2: { 
                     type: 'linear', 
                     display: true, 
                     position: 'right', 
-                    min: 40, // Καρφωμένο στο 40-60% όπως ζήτησες!
+                    min: 40, 
                     max: 60, 
                     grid: { drawOnChartArea: false }, 
                     title: { display: true, text: 'Efficiency (%)' } 
@@ -606,7 +592,7 @@ function renderMonthlyChart(labels, hgsidaData, co2Data, srmcData, effData) {
 // TAB 4: SYSTEM NEEDS (SURPLUS & CONSTRAINTS)
 // ==========================================
 function updateSurplusTab() {
-    const monthSelect = document.getElementById('monthSelectSurplus');
+    const monthSelect = document.getElementById('monthSelect');
     if (!monthSelect || !rawData || !rawData.daily_surplus || !rawData.daily_gas_constraints || !rawData.scadaHourly) return;
     
     const selectedMonth = monthSelect.value;
