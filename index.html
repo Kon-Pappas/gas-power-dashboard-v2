@@ -43,10 +43,12 @@
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-3 justify-end">
-                    <!-- Master Selectors (Δυναμική Εμφάνιση μέσω JS) -->
+                    <!-- Master Selectors -->
                     <div id="dateSelectorWrapper" class="flex items-center gap-2 bg-slate-900/50 p-1.5 px-3 rounded-lg border border-slate-600 shadow-sm transition-all">
                         <label class="text-xs text-slate-300 font-medium">Date:</label>
                         <select id="dateSelect" onchange="updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
+                        <!-- Dynamic Status Badge -->
+                        <span id="dataStatusBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded border whitespace-nowrap transition-colors"></span>
                     </div>
                     
                     <div id="monthSelectorWrapper" class="flex items-center gap-2 bg-slate-900/50 p-1.5 px-3 rounded-lg border border-slate-600 shadow-sm transition-all hidden">
