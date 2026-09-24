@@ -41,11 +41,24 @@
                         <div><span id="nextUpdateLabel">Next Update:</span> <strong id="nextUpdateVal" class="text-emerald-400">-</strong></div>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                
+                <div class="flex flex-wrap items-center gap-3 justify-end">
+                    <!-- Master Selectors (Δυναμική Εμφάνιση μέσω JS) -->
+                    <div id="dateSelectorWrapper" class="flex items-center gap-2 bg-slate-900/50 p-1.5 px-3 rounded-lg border border-slate-600 shadow-sm transition-all">
+                        <label class="text-xs text-slate-300 font-medium">Date:</label>
+                        <select id="dateSelect" onchange="updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
+                    </div>
+                    
+                    <div id="monthSelectorWrapper" class="flex items-center gap-2 bg-slate-900/50 p-1.5 px-3 rounded-lg border border-slate-600 shadow-sm transition-all hidden">
+                        <label class="text-xs text-slate-300 font-medium">Month:</label>
+                        <select id="monthSelect" onchange="updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
+                    </div>
+
                     <button onclick="openMethodologyModal()" class="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-blue-400 transition bg-slate-800/80 px-3 py-1.5 rounded border border-slate-700 hover:border-blue-500 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         <span id="btnMethodologyText">Methodology & Assumptions</span>
                     </button>
+                    
                     <div class="flex gap-2 bg-slate-800 border border-slate-700 rounded-lg p-1 text-xs font-bold shadow-sm">
                         <button onclick="setLang('el')" id="btnGr" class="px-2 py-1 rounded text-slate-400 hover:text-white transition">GR</button>
                         <button onclick="setLang('en')" id="btnEn" class="px-2 py-1 rounded bg-blue-600 text-white transition">EN</button>
@@ -75,10 +88,6 @@
                         <span class="text-xs text-slate-500 block">TOTAL SCADA (MWh)</span>
                         <span class="text-xl font-bold text-orange-400" id="kpiTotalScada">0.0</span>
                     </div>
-                </div>
-                <div class="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-600 shadow-sm">
-                    <label class="text-xs text-slate-300 font-medium" id="dateLabel">Date:</label>
-                    <select id="dateSelect" onchange="syncDate('dateSelect', 'dateSelectEco'); updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
                 </div>
             </div>
 
@@ -116,14 +125,7 @@
 
         <!-- VIEW 2: DAILY ECONOMICS -->
         <div id="viewEconomics" class="space-y-6 hidden">
-            <div class="flex justify-end items-center mb-[-10px]">
-                <div class="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-600 shadow-sm">
-                    <label class="text-xs text-slate-300 font-medium">Date:</label>
-                    <select id="dateSelectEco" onchange="syncDate('dateSelectEco', 'dateSelect'); updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mt-2">
                 <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
                     <span class="text-[11px] text-slate-400 uppercase tracking-wider">HGSIDA Gas Price</span>
                     <div class="flex items-baseline gap-1">
@@ -202,15 +204,8 @@
 
         <!-- VIEW 3: MONTHLY ANALYTICS -->
         <div id="viewIspScada" class="space-y-6 hidden">
-            <div class="flex justify-end items-center">
-                <div class="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-600 shadow-sm">
-                    <label class="text-xs text-slate-300 font-medium">Month:</label>
-                    <select id="monthSelect" onchange="syncDate('monthSelect', 'monthSelectSurplus'); updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
-                </div>
-            </div>
-
             <!-- New KPI Boxes for Best/Worst Day -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                 <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center relative overflow-hidden">
                     <div class="absolute right-0 top-0 w-1 h-full bg-rose-500"></div>
                     <span class="text-[11px] text-slate-400 uppercase tracking-wider">🔴 Peak Grid Cost</span>
@@ -267,14 +262,7 @@
 
         <!-- VIEW 4: SYSTEM NEEDS & CONSTRAINTS -->
         <div id="viewSurplus" class="space-y-6 hidden">
-            <div class="flex justify-end items-center mb-[-10px]">
-                <div class="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-600 shadow-sm">
-                    <label class="text-xs text-slate-300 font-medium">Month:</label>
-                    <select id="monthSelectSurplus" onchange="syncDate('monthSelectSurplus', 'monthSelect'); updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div class="bg-slate-800/60 p-5 rounded-xl border border-slate-700 flex flex-col justify-center">
                     <span class="text-sm text-slate-400 uppercase tracking-wider mb-1">Total Monthly Surplus (Isp)</span>
                     <div class="flex items-baseline gap-2">
