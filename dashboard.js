@@ -5,6 +5,7 @@ let overviewChartInst = null;
 let monthlyChartInst = null;
 let surplusChartInst = null;
 let selectorsInitialized = false;
+let smartDefaultApplied = false; // Νέα μεταβλητή για το 1st load
 
 // ==========================================
 // HELPERS
@@ -40,21 +41,89 @@ function getHourNumber(timeStr) {
 }
 
 function initExtraSelectors() {
-    if (selectorsInitialized) return;
-    
     const ds = document.getElementById('dateSelect');
     const ms = document.getElementById('monthSelect');
     
-    if (!ds || ds.options.length === 0) return; 
+    if (!ds || !rawData) return;
     
-    // Create Month options based on the available Dates
-    if (ms && ms.options.length === 0) {
+    // ΕΞΥΠΝΗ ΛΟΓΙΚΗ ΕΛΕΓΧΟΥ (Smart Logic)
+    if (!smartDefaultApplied && ds.options.length > 0) {
+        let latestCompleteDate = null;
+        
+        // Σαρώνουμε τις ημερομηνίες για να δούμε ποιες ΔΕΝ έχουν SCADA
+        Array.from(ds.options).forEach(opt => {
+            const dateStr = opt.value;
+            const scadaDay = rawData.scada ? rawData.scada.filter(d => parseDate(Object.values(d)[0]) === dateStr) : [];
+            let totalScada = 0;
+            
+            scadaDay.forEach(d => {
+                let uName = String(Object.values(d)[1]).trim();
+                if (uName === "TOTAL GAS UNITS" || uName.includes("Σύνολο")) {
+                    totalScada += parseNum(Object.values(d)[2]);
+                }
+            });
+
+            // Αν δεν υπάρχει TOTAL GAS UNITS, τα αθροίζουμε μόνοι μας
+            if (totalScada === 0 && scadaDay.length > 0) {
+                scadaDay.forEach(d => {
+                    let uName = String(Object.values(d)[1]).trim();
+                    if (uName !== "TOTAL GAS UNITS" && !uName.includes("Σύνολο") && uName !== "NAN") {
+                        totalScada += parseNum(Object.values(d)[2]);
+                    }
+                });
+            }
+
+            // Μαρκάρουμε τη μέρα ανάλογα με τα SCADA
+            if (totalScada === 0) {
+                opt.dataset.partial = 'true';
+                opt.text = dateStr + ' (Pending SCADA)';
+            } else {
+                opt.dataset.partial = 'false';
+                if (!latestCompleteDate || dateStr > latestCompleteDate) {
+                    latestCompleteDate = dateStr;
+                }
+            }
+        });
+
+        // Αν η αρχική επιλογή του συστήματος "πέσει" σε μέρα χωρίς SCADA, 
+        // σε σπρώχνει αυτόματα στην πιο πρόσφατη ΟΛΟΚΛΗΡΩΜΕΝΗ μέρα (χθες)
+        const currentOpt = ds.options[ds.selectedIndex];
+        if (currentOpt && currentOpt.dataset.partial === 'true' && latestCompleteDate) {
+            ds.value = latestCompleteDate;
+        }
+
+        smartDefaultApplied = true;
+    }
+
+    if (ms && ms.options.length === 0 && ds.options.length > 0) {
         const allDates = Array.from(ds.options).map(opt => opt.value);
         const months = [...new Set(allDates.map(d => d.substring(0, 7)))];
         ms.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
     }
     
+    updateStatusBadge();
     selectorsInitialized = true;
+}
+
+// ΕΝΗΜΕΡΩΣΗ ΤΟΥ UI BADGE
+function updateStatusBadge() {
+    const ds = document.getElementById('dateSelect');
+    const badge = document.getElementById('dataStatusBadge');
+    if (!ds || !badge) return;
+
+    const currentOpt = ds.options[ds.selectedIndex];
+    if (!currentOpt) return;
+
+    badge.classList.remove('hidden');
+    const lang = (typeof currentLang !== 'undefined') ? currentLang : 'en';
+
+    if (currentOpt.dataset.partial === 'true') {
+        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded border border-orange-500/50 bg-orange-500/10 text-orange-400 whitespace-nowrap transition-colors';
+        badge.innerText = lang === 'el' ? '🟠 Μόνο Πρόγραμμα (ISP)' : '🟠 Pending SCADA (ISP only)';
+    } else {
+        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 whitespace-nowrap transition-colors';
+        badge.innerText = lang === 'el' ? '🟢 Πλήρη Δεδομένα' : '🟢 Complete Data';
+    }
 }
 
 function createDiagonalPattern(colorHex) {
@@ -160,7 +229,6 @@ function switchTab(tabId) {
         }
     });
 
-    // Master Header Selectors Toggling
     const dateWrap = document.getElementById('dateSelectorWrapper');
     const monthWrap = document.getElementById('monthSelectorWrapper');
     
