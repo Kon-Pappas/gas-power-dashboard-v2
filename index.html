@@ -156,58 +156,63 @@
         </div>
         
         <!-- VIEW 2: DAILY ECONOMICS -->
-        <div id="viewEconomics" class="space-y-6 hidden">
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mt-2">
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">HGSIDA Gas Price</span>
+        <div id="viewEconomics" class="space-y-4 sm:space-y-6 hidden">
+            <!-- Συμπιεσμένα KPIs στα κινητά: μικρότερο padding (p-2.5) και μικρότερο gap (gap-2) -->
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-4 mt-2">
+                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">HGSIDA Price</span>
                     <div class="flex items-baseline gap-1">
-                        <span id="kpiHgsida" class="text-2xl font-bold text-blue-400">0.00</span>
-                        <span class="text-sm text-slate-500">€/MWh</span>
+                        <span id="kpiHgsida" class="text-lg sm:text-2xl font-bold text-blue-400">0.00</span>
+                        <span class="text-[10px] sm:text-sm text-slate-500">€/MWh</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">EUA CO2 Price</span>
+                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">EUA CO2 Price</span>
                     <div class="flex items-baseline gap-1">
-                        <span id="kpiCo2" class="text-2xl font-bold text-slate-300">0.00</span>
-                        <span class="text-sm text-slate-500">€/t</span>
+                        <span id="kpiCo2" class="text-lg sm:text-2xl font-bold text-slate-300">0.00</span>
+                        <span class="text-[10px] sm:text-sm text-slate-500">€/t</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Fleet Efficiency</span>
+                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">Fleet Efficiency</span>
                     <div class="flex items-baseline gap-1">
-                        <span id="kpiFleetEff" class="text-2xl font-bold text-emerald-400">0.0</span>
-                        <span class="text-sm text-slate-500">%</span>
+                        <span id="kpiFleetEff" class="text-lg sm:text-2xl font-bold text-emerald-400">0.0</span>
+                        <span class="text-[10px] sm:text-sm text-slate-500">%</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Avg Fleet SRMC</span>
+                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">Avg Fleet SRMC</span>
                     <div class="flex items-baseline gap-1">
-                        <span id="kpiAvgGasCost" class="text-2xl font-bold text-amber-400">0.00</span>
-                        <span class="text-sm text-slate-500">€/MWh</span>
+                        <span id="kpiAvgGasCost" class="text-lg sm:text-2xl font-bold text-amber-400">0.00</span>
+                        <span class="text-[10px] sm:text-sm text-slate-500">€/MWh</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Gas Generation</span>
+                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">Gas Generation</span>
                     <div class="flex items-baseline gap-1">
-                        <span id="kpiEcoScada" class="text-2xl font-bold text-orange-400">0.0</span>
-                        <span class="text-sm text-slate-500">MWh</span>
+                        <span id="kpiEcoScada" class="text-lg sm:text-2xl font-bold text-orange-400">0.0</span>
+                        <span class="text-[10px] sm:text-sm text-slate-500">MWh</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">Total Est. Cost</span>
+                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
+                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">Total Est. Cost</span>
                     <div class="flex items-baseline gap-1">
-                        <span id="kpiTotalEcoCost" class="text-2xl font-bold text-rose-400">0</span>
-                        <span class="text-sm text-slate-500">€</span>
+                        <span id="kpiTotalEcoCost" class="text-lg sm:text-2xl font-bold text-rose-400">0</span>
+                        <span class="text-[10px] sm:text-sm text-slate-500">€</span>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
+            <div class="bg-slate-800/40 p-4 sm:p-6 rounded-xl border border-slate-700">
                 <h3 class="text-lg font-semibold text-slate-200 mb-1" id="ecoTableTitle">Daily Theoretical Cost per Unit</h3>
-                <p class="text-xs text-slate-400 mb-6">Calculated via hourly dynamic load interpolation. Cost = (HGSIDA / Dynamic Efficiency) + (Dynamic CO2 Factor * EUA Price).</p>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider">
+                <p class="text-xs text-slate-400 mb-4 sm:mb-6">Calculated via hourly dynamic load interpolation. Cost = (HGSIDA / Dynamic Efficiency) + (Dynamic CO2 Factor * EUA Price).</p>
+                
+                <!-- Αφαιρέσαμε το overflow-x-auto, ο πίνακας πλέον γίνεται block στα κινητά -->
+                <div class="w-full">
+                    <!-- class: block στα κινητά, table στο desktop -->
+                    <table class="w-full text-left text-sm text-slate-300 block md:table">
+                        <!-- Header: Κρύβεται στα κινητά (hidden), φαίνεται στο desktop -->
+                        <thead class="hidden md:table-header-group bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider">
                             <tr>
                                 <th class="p-3 rounded-tl-lg">CLASS</th>
                                 <th class="p-3">GAS FACTORY</th>
@@ -218,22 +223,41 @@
                                 <th class="p-3 text-right rounded-tr-lg">TOTAL COST (€)</th>
                             </tr>
                         </thead>
-                        <tbody id="economicsTableBody" class="divide-y divide-slate-700/50"></tbody>
-                        <tfoot class="bg-slate-900/50 font-bold border-t-2 border-slate-600 text-xs">
-                            <tr>
-                                <td colspan="2" class="p-3 text-right text-slate-400 uppercase tracking-wider">DAILY TOTAL / AVG</td>
-                                <td id="ecoTableTotalMwh" class="p-3 text-right text-orange-400">0.0</td>
-                                <td id="ecoTableAvgEffPct" class="p-3 text-right text-emerald-400">0.0%</td>
-                                <td id="ecoTableTotalTons" class="p-3 text-right text-slate-300">0 t</td>
-                                <td id="ecoTableAvgGasCost" class="p-3 text-right text-amber-400">0.00</td>
-                                <td id="ecoTableTotalCost" class="p-3 text-right text-rose-400">0 €</td>
+                        <!-- Body: class block (κινητά), table-row-group (desktop) -->
+                        <tbody id="economicsTableBody" class="block md:table-row-group divide-y divide-transparent md:divide-slate-700/50"></tbody>
+                        
+                        <!-- Footer: Καρτέλα στα κινητά, γραμμή στο desktop -->
+                        <tfoot class="block md:table-footer-group bg-slate-900/80 md:bg-slate-900/50 font-bold border-2 md:border-t-2 md:border-l-0 md:border-r-0 md:border-b-0 border-slate-600 md:border-slate-600 text-xs rounded-xl md:rounded-none p-4 md:p-0 mt-4 md:mt-0 shadow-lg md:shadow-none">
+                            <tr class="block md:table-row">
+                                <td colspan="2" class="hidden md:table-cell p-3 text-right text-slate-400 uppercase tracking-wider">DAILY TOTAL / AVG</td>
+                                
+                                <td class="flex md:table-cell justify-between items-center py-2 md:p-3 border-b border-slate-700/50 md:border-0 text-orange-400">
+                                    <span class="md:hidden text-[10px] text-slate-500 uppercase tracking-wider">Total MWh</span>
+                                    <span id="ecoTableTotalMwh" class="text-right">0.0</span>
+                                </td>
+                                <td class="flex md:table-cell justify-between items-center py-2 md:p-3 border-b border-slate-700/50 md:border-0 text-emerald-400">
+                                    <span class="md:hidden text-[10px] text-slate-500 uppercase tracking-wider">Avg Efficiency</span>
+                                    <span id="ecoTableAvgEffPct" class="text-right">0.0%</span>
+                                </td>
+                                <td class="flex md:table-cell justify-between items-center py-2 md:p-3 border-b border-slate-700/50 md:border-0 text-slate-300">
+                                    <span class="md:hidden text-[10px] text-slate-500 uppercase tracking-wider">Total CO2</span>
+                                    <span id="ecoTableTotalTons" class="text-right">0 t</span>
+                                </td>
+                                <td class="flex md:table-cell justify-between items-center py-2 md:p-3 border-b border-slate-700/50 md:border-0 text-amber-400">
+                                    <span class="md:hidden text-[10px] text-slate-500 uppercase tracking-wider">Avg SRMC</span>
+                                    <span id="ecoTableAvgGasCost" class="text-right">0.00</span>
+                                </td>
+                                <td class="flex md:table-cell justify-between items-center py-2 md:p-3 md:border-0 text-rose-400 text-sm md:text-xs pt-3 md:pt-0">
+                                    <span class="md:hidden text-[10px] text-slate-500 uppercase tracking-wider">Total Cost</span>
+                                    <span id="ecoTableTotalCost" class="text-right">0 €</span>
+                                </td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             </div>
         </div>
-
+        
         <!-- VIEW 3: MONTHLY ANALYTICS -->
         <div id="viewIspScada" class="space-y-6 hidden">
             <!-- New KPI Boxes for Best/Worst Day -->
