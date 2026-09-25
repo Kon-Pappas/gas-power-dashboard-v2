@@ -500,24 +500,31 @@ function updateEconomicsTab() {
 
     sortedUnits.forEach(u => {
         const canonical = getCanonicalUnitName(u["Μονάδα"]);
-        const shortName = getShortUnitName(canonical); // Χρήση της νέας παγκόσμιας συνάρτησης!
+        const shortName = getShortUnitName(canonical);
         const meta = getUnitMetadata(u["Μονάδα"]);
 
-        // Color Tints για τη γραμμή ανάλογα με την κλάση
-        let rowTint = "bg-orange-900/10 hover:bg-orange-900/30"; 
-        let stickyTint = "bg-[#1f191a]"; 
-        let classColor = "text-orange-400";
+        // ==========================================
+        // MATCHING ΤΩΝ ΧΡΩΜΑΤΩΝ ΑΠΟ ΤΟ TAB 1
+        // ==========================================
+        // Peakers (Order 3): Πορτοκαλί (#f97316)
+        let rowTint = "bg-[#f97316]/10 hover:bg-[#f97316]/25"; 
+        let stickyTint = "bg-[#272128]"; // Συμπαγές (Solid) χρώμα μίξης για το sticky
+        let classColor = "text-[#f97316]";
 
+        // H-Class (Order 1): Κυανό (#06b6d4)
         if (meta.order === 1) { 
-            rowTint = "bg-cyan-900/10 hover:bg-cyan-900/30"; 
-            stickyTint = "bg-[#14222f]"; 
-            classColor = "text-cyan-400";
+            rowTint = "bg-[#06b6d4]/10 hover:bg-[#06b6d4]/25"; 
+            stickyTint = "bg-[#0f273b]"; 
+            classColor = "text-[#06b6d4]";
         }
+        
+        // F-Class (Order 2): Μπλε (#3b82f6)
         if (meta.order === 2) { 
-            rowTint = "bg-blue-900/10 hover:bg-blue-900/30"; 
-            stickyTint = "bg-[#151f38]"; 
-            classColor = "text-blue-400";
+            rowTint = "bg-[#3b82f6]/10 hover:bg-[#3b82f6]/25"; 
+            stickyTint = "bg-[#14223f]"; 
+            classColor = "text-[#3b82f6]";
         }
+        // ==========================================
 
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
@@ -552,7 +559,6 @@ function updateEconomicsTab() {
 
         // --- Το Ανοιγόμενο Συρτάρι (Μόνο για Κινητά) ---
         const trExpand = document.createElement('tr');
-        // Παίρνει το ίδιο απαλό tint για να φαίνεται ενιαίο
         trExpand.className = `expand-row hidden sm:hidden ${rowTint.split(' ')[0]} transition-all border-b-2 border-slate-800/80`;
         trExpand.innerHTML = `
             <td colspan="3" class="p-4 px-5">
@@ -578,7 +584,6 @@ function updateEconomicsTab() {
         `;
         tbody.appendChild(trExpand);
     });
-}
 
 // Συνάρτηση για το Κλικ στα Κινητά (Ανοιγοκλείνει και ξεθωριάζει τις άλλες γραμμές)
 window.toggleMobileRow = function(clickedRow) {
