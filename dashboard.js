@@ -423,13 +423,7 @@ function updateEconomicsTab() {
     tbody.innerHTML = '';
 
     if (!dayEco || !dayEco.Units || dayEco.Units.length === 0) {
-        tbody.innerHTML = `<tr class="block md:table-row"><td colspan="7" class="block md:table-cell p-4 text-center text-slate-500 bg-slate-900/50 md:bg-transparent rounded-xl">No economic data available for this date.</td></tr>`;
-        document.getElementById('ecoTableTotalMwh').innerText = '0.0';
-        document.getElementById('ecoTableAvgEffPct').innerText = '-';
-        document.getElementById('ecoTableTotalTons').innerText = '-';
-        document.getElementById('ecoTableAvgGasCost').innerText = '-';
-        document.getElementById('ecoTableTotalCost').innerText = '0 €';
-        
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">No economic data available for this date.</td></tr>`;
         document.getElementById('kpiHgsida').innerText = '-';
         document.getElementById('kpiCo2').innerText = '-';
         document.getElementById('kpiFleetEff').innerText = '-';
@@ -454,10 +448,6 @@ function updateEconomicsTab() {
     const avgFleetEff = (totalFuelCost > 0 && hgsidaVal > 0) ? (totalMwh * hgsidaVal / totalFuelCost) * 100 : 0;
     document.getElementById('kpiFleetEff').innerText = avgFleetEff > 0 ? avgFleetEff.toFixed(1) : '-';
 
-    let sumMwh = 0;
-    let sumCost = 0;
-    let sumTons = 0;
-
     let sortedUnits = [...dayEco.Units];
     sortedUnits.sort((a, b) => {
         const orderA = getUnitMetadata(a["Μονάδα"]).order;
@@ -467,10 +457,6 @@ function updateEconomicsTab() {
     });
 
     sortedUnits.forEach(u => {
-        sumMwh += u["Παραγωγή (MWh)"];
-        sumCost += u["Συνολικό Κόστος (€)"];
-        sumTons += u["Εκπομπές CO2 (t)"];
-
         const meta = getUnitMetadata(u["Μονάδα"]);
         let borderColor = "border-slate-700";
         if (meta.order === 1) borderColor = "border-[#06b6d4]";
@@ -480,54 +466,104 @@ function updateEconomicsTab() {
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
 
+        // Φορμάρισμα Τιμών
+        const MWh = u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+        const Eff = unitEff > 0 ? unitEff.toFixed(1) + '%' : '-';
+        const CO2 = u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
+        const SRMC = u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2);
+        const Cost = formatEuro(u["Συνολικό Κόστος (€)"]);
+
+        // Η Κύρια Γραμμή
         const tr = document.createElement('tr');
-        // Στα κινητά: Card (block, bg, border, shadow). Στο Desktop: Κανονικό Row
-        tr.className = `block md:table-row mb-4 md:mb-0 bg-slate-900/50 md:bg-transparent rounded-xl md:rounded-none border-l-4 ${borderColor} md:border-l-0 p-3 md:p-0 hover:bg-slate-700/50 transition-colors group shadow-sm md:shadow-none`;
-        
-        // Βασικές κλάσεις για κάθε κελί. Στα κινητά είναι flex-box με γραμμούλα από κάτω.
-        const tdBase = "flex md:table-cell justify-between items-center py-2 md:py-3 border-b border-slate-700/50 md:border-0 last:border-0";
-        // Κλάση για τις ετικέτες που εμφανίζονται ΜΟΝΟ στα κινητά
-        const lbl = "text-[10px] text-slate-500 font-bold uppercase tracking-wider md:hidden";
+        tr.className = "main-row hover:bg-slate-800/50 transition-opacity duration-300 cursor-pointer sm:cursor-default group";
+        tr.onclick = () => window.toggleMobileRow(tr);
 
         tr.innerHTML = `
-            <td class="${tdBase} md:border-l-4 md:${borderColor} md:p-3 text-xs text-slate-400">
-                <span class="${lbl}">Class</span>
-                <span>${meta.class}</span>
+            <!-- Class Στήλη (Μόνο Desktop) -->
+            <td class="hidden sm:table-cell p-3 text-xs text-slate-400 border-l-4 ${borderColor}">${meta.class}</td>
+            
+            <!-- Sticky Factory Στήλη (Κινητά & Desktop) -->
+            <td class="p-3 font-bold text-slate-300 sticky left-0 z-10 bg-[#162032] sm:bg-transparent group-hover:bg-slate-800 sm:group-hover:bg-transparent transition-colors sm:border-l-0 border-l-4 ${borderColor} shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] sm:shadow-none">
+                <div class="flex justify-between items-center pr-2 sm:pr-0">
+                    <div>
+                        <div>${u["Μονάδα"]}</div>
+                        <!-- Η κλάση φαίνεται ως υπότιτλος στα κινητά -->
+                        <div class="text-[10px] text-slate-500 font-normal sm:hidden mt-0.5">${meta.class}</div>
+                    </div>
+                    <!-- Το βελάκι που δείχνει ότι κάνει κλικ (μόνο κινητά) -->
+                    <svg class="w-4 h-4 text-slate-500 sm:hidden chevron transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
             </td>
-            <td class="${tdBase} md:p-3 font-bold text-slate-300 group-hover:text-white transition-colors whitespace-nowrap">
-                <span class="${lbl}">Gas Factory</span>
-                <span>${u["Μονάδα"]}</span>
-            </td>
-            <td class="${tdBase} md:p-3 text-right font-mono">
-                <span class="${lbl}">Produced (MWh)</span>
-                <span>${u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})}</span>
-            </td>
-            <td class="${tdBase} md:p-3 text-right font-mono text-emerald-400/90">
-                <span class="${lbl}">Efficiency</span>
-                <span>${unitEff > 0 ? unitEff.toFixed(1) + '%' : '-'}</span>
-            </td>
-            <td class="${tdBase} md:p-3 text-right font-mono text-slate-400">
-                <span class="${lbl}">CO2 Emissions</span>
-                <span>${u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})} t</span>
-            </td>
-            <td class="${tdBase} md:p-3 text-right font-mono text-amber-400">
-                <span class="${lbl}">Avg SRMC</span>
-                <span>${u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2)} €/MWh</span>
-            </td>
-            <td class="${tdBase} md:p-3 text-right font-semibold text-slate-300 pt-3 md:pt-0">
-                <span class="${lbl}">Total Cost</span>
-                <span>${formatEuro(u["Συνολικό Κόστος (€)"])}</span>
-            </td>
+            
+            <!-- Παραγωγή -->
+            <td class="p-3 text-right font-mono">${MWh}</td>
+            
+            <!-- Κρυμμένα στα κινητά -->
+            <td class="hidden sm:table-cell p-3 text-right font-mono text-emerald-400/90">${Eff}</td>
+            <td class="hidden sm:table-cell p-3 text-right font-mono text-slate-400">${CO2}</td>
+            <td class="hidden sm:table-cell p-3 text-right font-mono text-amber-400">${SRMC}</td>
+            
+            <!-- Συνολικό Κόστος -->
+            <td class="p-3 text-right font-semibold text-slate-300">${Cost}</td>
         `;
         tbody.appendChild(tr);
-    });
 
-    document.getElementById('ecoTableTotalMwh').innerText = sumMwh.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    document.getElementById('ecoTableAvgEffPct').innerText = avgFleetEff > 0 ? avgFleetEff.toFixed(1) + '%' : '-';
-    document.getElementById('ecoTableTotalTons').innerText = sumTons.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
-    document.getElementById('ecoTableAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2) + ' €/MWh';
-    document.getElementById('ecoTableTotalCost').innerText = formatEuro(sumCost);
+        // Η Κρυφή Γραμμή (Accordion) για τα κινητά
+        const trExpand = document.createElement('tr');
+        trExpand.className = "expand-row hidden sm:hidden bg-slate-900/50 transition-all border-b-2 border-slate-700/50";
+        trExpand.innerHTML = `
+            <td colspan="3" class="p-3">
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700">
+                        <div class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">Efficiency</div>
+                        <div class="text-emerald-400 font-mono text-xs">${Eff}</div>
+                    </div>
+                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700">
+                        <div class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">CO2 Emiss.</div>
+                        <div class="text-slate-300 font-mono text-xs">${CO2}</div>
+                    </div>
+                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700">
+                        <div class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">Avg SRMC</div>
+                        <div class="text-amber-400 font-mono text-xs">${SRMC}</div>
+                    </div>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(trExpand);
+    });
 }
+
+// Global Συνάρτηση για το Κλικ στα Κινητά (Ανοιγοκλείνει και ξεθωριάζει)
+window.toggleMobileRow = function(clickedRow) {
+    if (window.innerWidth >= 640) return; // Λειτουργεί μόνο στα κινητά (κάτω από Tailwind 'sm')
+
+    const expandRow = clickedRow.nextElementSibling;
+    const isExpanded = !expandRow.classList.contains('hidden');
+    
+    const allMain = document.querySelectorAll('#economicsTableBody .main-row');
+    const allExpand = document.querySelectorAll('#economicsTableBody .expand-row');
+    
+    // Επαναφορά όλων
+    allMain.forEach(r => {
+        r.classList.remove('opacity-30');
+        const chevron = r.querySelector('.chevron');
+        if(chevron) chevron.style.transform = 'rotate(0deg)';
+    });
+    allExpand.forEach(r => r.classList.add('hidden'));
+
+    // Αν δεν ήταν ήδη ανοιχτό, άνοιξέ το και σβήσε τα υπόλοιπα
+    if (!isExpanded) {
+        expandRow.classList.remove('hidden');
+        const chevron = clickedRow.querySelector('.chevron');
+        if(chevron) chevron.style.transform = 'rotate(180deg)';
+        
+        allMain.forEach(r => {
+            if (r !== clickedRow) r.classList.add('opacity-30');
+        });
+    }
+};
 
 // ==========================================
 // TAB 3: MONTHLY ANALYTICS 
