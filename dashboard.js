@@ -216,19 +216,42 @@ function getUnitMetadata(unitName) {
 // ==========================================
 function switchTab(tabId) {
     const tabs = ['overview', 'economics', 'ispScada', 'surplus'];
+    
+    // Οι κλάσεις όταν το tab είναι ΠΑΤΗΜΕΝΟ
+    const activeClasses = "flex items-center justify-center w-full h-full bg-blue-600 md:bg-transparent text-white md:text-blue-400 font-bold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-blue-500 md:border-blue-400 py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center shadow-lg md:shadow-none";
+    
+    // Οι κλάσεις όταν το tab ΔΕΝ είναι πατημένο
+    const inactiveClasses = "flex items-center justify-center w-full h-full bg-slate-800/80 md:bg-transparent text-slate-400 md:text-slate-500 hover:bg-slate-700 md:hover:bg-transparent md:hover:text-blue-300 font-medium md:font-semibold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-slate-700 md:border-transparent py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center";
+
     tabs.forEach(t => {
         const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
         const view = document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1));
         
         if (t === tabId) {
-            btn.className = "text-blue-400 font-bold border-b-2 border-blue-400 pb-2 px-2 transition whitespace-nowrap";
+            btn.className = activeClasses;
             view.classList.remove('hidden');
         } else {
-            btn.className = "text-slate-500 hover:text-blue-300 pb-2 px-2 transition whitespace-nowrap";
+            btn.className = inactiveClasses;
             view.classList.add('hidden');
         }
     });
 
+    const dateWrap = document.getElementById('dateSelectorWrapper');
+    const monthWrap = document.getElementById('monthSelectorWrapper');
+    
+    if (tabId === 'overview' || tabId === 'economics') {
+        if (dateWrap) dateWrap.classList.remove('hidden');
+        if (monthWrap) monthWrap.classList.add('hidden');
+    } else {
+        if (dateWrap) dateWrap.classList.add('hidden');
+        if (monthWrap) monthWrap.classList.remove('hidden');
+    }
+
+    if (tabId === 'overview') updateOverviewTab();
+    if (tabId === 'economics') updateEconomicsTab();
+    if (tabId === 'ispScada') updateMonthlyTab(); 
+    if (tabId === 'surplus') updateSurplusTab(); 
+}
     const dateWrap = document.getElementById('dateSelectorWrapper');
     const monthWrap = document.getElementById('monthSelectorWrapper');
     
