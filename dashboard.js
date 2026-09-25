@@ -425,7 +425,7 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
     });
 }
 
-// ==========================================
+    // ==========================================
 // TAB 2: DAILY ECONOMICS
 // ==========================================
 // Λεξικό για τα Short Names στα κινητά
@@ -500,19 +500,23 @@ function updateEconomicsTab() {
 
     sortedUnits.forEach(u => {
         const canonical = getCanonicalUnitName(u["Μονάδα"]);
-        const shortName = getShortUnitName(canonical);
+        const shortName = getShortUnitName(canonical); // Χρήση της νέας παγκόσμιας συνάρτησης!
         const meta = getUnitMetadata(u["Μονάδα"]);
 
-        // Color Tints για τη μάνα-γραμμή
-        let rowTint = "bg-orange-900/20"; 
-        let stickyTint = "bg-[#271d18]"; // Solid χρώμα για να μην φεγγίζει από κάτω στο scroll
+        // Color Tints για τη γραμμή ανάλογα με την κλάση
+        let rowTint = "bg-orange-900/10 hover:bg-orange-900/30"; 
+        let stickyTint = "bg-[#1f191a]"; 
+        let classColor = "text-orange-400";
+
         if (meta.order === 1) { 
-            rowTint = "bg-cyan-900/20"; 
-            stickyTint = "bg-[#142835]"; 
+            rowTint = "bg-cyan-900/10 hover:bg-cyan-900/30"; 
+            stickyTint = "bg-[#14222f]"; 
+            classColor = "text-cyan-400";
         }
         if (meta.order === 2) { 
-            rowTint = "bg-blue-900/20"; 
-            stickyTint = "bg-[#17233f]"; 
+            rowTint = "bg-blue-900/10 hover:bg-blue-900/30"; 
+            stickyTint = "bg-[#151f38]"; 
+            classColor = "text-blue-400";
         }
 
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
@@ -524,9 +528,9 @@ function updateEconomicsTab() {
         const SRMC = u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2);
         const Cost = formatEuro(u["Συνολικό Κόστος (€)"]);
 
-        // --- Η Κύρια Γραμμή ---
+        // --- Η Κύρια Γραμμή (Ορατή) ---
         const tr = document.createElement('tr');
-        tr.className = `main-row ${rowTint} hover:brightness-125 transition-all duration-300 cursor-pointer sm:cursor-default group`;
+        tr.className = `main-row ${rowTint} transition-all duration-300 cursor-pointer sm:cursor-default group`;
         tr.onclick = () => window.toggleMobileRow(tr);
 
         tr.innerHTML = `
@@ -546,15 +550,16 @@ function updateEconomicsTab() {
         `;
         tbody.appendChild(tr);
 
-        // --- Το Ανοιγόμενο Συρτάρι (Κάθετη Λίστα) ---
+        // --- Το Ανοιγόμενο Συρτάρι (Μόνο για Κινητά) ---
         const trExpand = document.createElement('tr');
-        trExpand.className = `expand-row hidden sm:hidden ${rowTint} transition-all border-b border-slate-700/50`;
+        // Παίρνει το ίδιο απαλό tint για να φαίνεται ενιαίο
+        trExpand.className = `expand-row hidden sm:hidden ${rowTint.split(' ')[0]} transition-all border-b-2 border-slate-800/80`;
         trExpand.innerHTML = `
             <td colspan="3" class="p-4 px-5">
                 <ul class="space-y-3 text-sm">
                     <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
                         <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Class</span>
-                        <span class="text-slate-200 font-semibold">${meta.class}</span>
+                        <span class="${classColor} font-semibold text-xs">${meta.class}</span>
                     </li>
                     <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
                         <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Efficiency</span>
@@ -575,8 +580,9 @@ function updateEconomicsTab() {
     });
 }
 
+// Συνάρτηση για το Κλικ στα Κινητά (Ανοιγοκλείνει και ξεθωριάζει τις άλλες γραμμές)
 window.toggleMobileRow = function(clickedRow) {
-    if (window.innerWidth >= 640) return; // Λειτουργεί μόνο στα κινητά (Tailwind 'sm' breakpoint)
+    if (window.innerWidth >= 640) return; // Εκτελείται μόνο στα κινητά (κάτω από Tailwind 'sm')
 
     const expandRow = clickedRow.nextElementSibling;
     if (!expandRow || !expandRow.classList.contains('expand-row')) return;
@@ -586,22 +592,22 @@ window.toggleMobileRow = function(clickedRow) {
     const allMain = document.querySelectorAll('#economicsTableBody .main-row');
     const allExpand = document.querySelectorAll('#economicsTableBody .expand-row');
     
-    // Επαναφορά όλων των γραμμών στην αρχική κατάσταση
+    // Επαναφορά όλων στην αρχική κατάσταση
     allMain.forEach(r => {
-        r.classList.remove('opacity-30');
+        r.classList.remove('opacity-20');
         const chevron = r.querySelector('.chevron');
         if(chevron) chevron.style.transform = 'rotate(0deg)';
     });
     allExpand.forEach(r => r.classList.add('hidden'));
 
-    // Αν δεν ήταν ανοιχτό, άνοιξέ το και ξεθώριασε τα υπόλοιπα
+    // Αν δεν ήταν ανοιχτό, άνοιξέ το και ξεθώριασε δραματικά (opacity-20) τα υπόλοιπα
     if (!isExpanded) {
         expandRow.classList.remove('hidden');
         const chevron = clickedRow.querySelector('.chevron');
         if(chevron) chevron.style.transform = 'rotate(180deg)';
         
         allMain.forEach(r => {
-            if (r !== clickedRow) r.classList.add('opacity-30');
+            if (r !== clickedRow) r.classList.add('opacity-20');
         });
     }
 };
