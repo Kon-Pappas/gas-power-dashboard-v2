@@ -29,13 +29,12 @@
         
 <!-- Header -->
         <header class="border-b border-slate-700 pb-4">
-            <!-- Βάλαμε flex-col για κινητά, lg:flex-row για μεγάλες οθόνες -->
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
                 
-                <!-- Αριστερή πλευρά: Τίτλος (flex-1 για να παίρνει όλο τον διαθέσιμο χώρο) -->
-                <div class="flex-1 pr-4">
+                <!-- Αριστερή πλευρά: Τίτλος (flex-1 για να μην πιέζεται ποτέ) -->
+                <div class="flex-1 w-full">
                     <div class="flex items-center gap-3">
-                        <h1 class="text-3xl font-bold text-blue-400" id="mainTitle">Greek Gas-to-Power Analytics</h1>
+                        <h1 class="text-2xl md:text-3xl font-bold text-blue-400" id="mainTitle">Greek Gas-to-Power Analytics</h1>
                         <span id="scopeBadge" class="cursor-help text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded-full border border-slate-700 hover:border-blue-500 transition shrink-0" title="">[?]</span>
                     </div>
                     <p class="text-slate-400 text-sm mt-1" id="dataSourceText">Data source: IPTO (ADMIE) & HEnEx official reports</p>
@@ -45,34 +44,38 @@
                     </div>
                 </div>
                 
-                <!-- Δεξιά πλευρά: Κουμπιά (flex-col για να μπουν σε 2 ορόφους) -->
-                <div class="flex flex-col items-end gap-3 shrink-0">
+                <!-- Δεξιά πλευρά: Κουμπιά ελέγχου (App-style στα κινητά, Compact στο Desktop) -->
+                <div class="flex flex-col lg:items-end gap-3 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
                     
                     <!-- Όροφος 1: Selectors & Γλώσσα -->
-                    <div class="flex items-center gap-3">
-                        <!-- Master Selectors -->
-                        <div id="dateSelectorWrapper" class="flex items-center gap-2 bg-slate-900/50 p-1.5 px-3 rounded-lg border border-slate-600 shadow-sm transition-all">
-                            <label class="text-xs text-slate-300 font-medium">Date:</label>
-                            <select id="dateSelect" onchange="updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
-                            <!-- Dynamic Status Badge -->
-                            <span id="dataStatusBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded border whitespace-nowrap transition-colors"></span>
+                    <div class="flex flex-col sm:flex-row items-stretch lg:items-center gap-3 w-full lg:w-auto">
+                        
+                        <!-- Date Selector (w-full & justify-between στα κινητά για εύκολο άγγιγμα) -->
+                        <div id="dateSelectorWrapper" class="flex flex-1 items-center justify-between lg:justify-start gap-2 bg-slate-900/50 p-2.5 lg:p-1.5 px-4 lg:px-3 rounded-xl lg:rounded-lg border border-slate-600 shadow-sm transition-all w-full lg:w-auto">
+                            <label class="text-sm lg:text-xs text-slate-300 font-medium">Date:</label>
+                            <div class="flex items-center gap-2">
+                                <select id="dateSelect" onchange="updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer max-w-[150px] sm:max-w-none"></select>
+                                <!-- Dynamic Status Badge -->
+                                <span id="dataStatusBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded border whitespace-nowrap transition-colors"></span>
+                            </div>
                         </div>
                         
-                        <div id="monthSelectorWrapper" class="flex items-center gap-2 bg-slate-900/50 p-1.5 px-3 rounded-lg border border-slate-600 shadow-sm transition-all hidden">
-                            <label class="text-xs text-slate-300 font-medium">Month:</label>
+                        <!-- Month Selector -->
+                        <div id="monthSelectorWrapper" class="flex flex-1 items-center justify-between lg:justify-start gap-2 bg-slate-900/50 p-2.5 lg:p-1.5 px-4 lg:px-3 rounded-xl lg:rounded-lg border border-slate-600 shadow-sm transition-all hidden w-full lg:w-auto">
+                            <label class="text-sm lg:text-xs text-slate-300 font-medium">Month:</label>
                             <select id="monthSelect" onchange="updateDashboard()" class="bg-slate-800 text-slate-200 text-sm font-semibold rounded p-1 outline-none focus:border-blue-500 transition cursor-pointer"></select>
                         </div>
                         
-                        <!-- Language Switcher (Ανέβηκε δίπλα στα Selectors) -->
-                        <div class="flex gap-2 bg-slate-800 border border-slate-700 rounded-lg p-1 text-xs font-bold shadow-sm shrink-0">
-                            <button onclick="setLang('el')" id="btnGr" class="px-2 py-1 rounded text-slate-400 hover:text-white transition">GR</button>
-                            <button onclick="setLang('en')" id="btnEn" class="px-2 py-1 rounded bg-blue-600 text-white transition">EN</button>
+                        <!-- Language Switcher (Μεγάλα κουμπιά στο κινητό) -->
+                        <div class="flex justify-center items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl lg:rounded-lg p-1.5 lg:p-1 text-sm lg:text-xs font-bold shadow-sm shrink-0 w-full sm:w-auto lg:w-auto">
+                            <button onclick="setLang('el')" id="btnGr" class="flex-1 sm:flex-none px-4 py-1.5 lg:px-2 lg:py-1 rounded-lg lg:rounded text-slate-400 hover:text-white transition">GR</button>
+                            <button onclick="setLang('en')" id="btnEn" class="flex-1 sm:flex-none px-4 py-1.5 lg:px-2 lg:py-1 rounded-lg lg:rounded bg-blue-600 text-white transition">EN</button>
                         </div>
                     </div>
 
-                    <!-- Όροφος 2: Methodology (Κατέβηκε από κάτω) -->
-                    <button onclick="openMethodologyModal()" class="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-blue-400 transition bg-slate-800/80 px-3 py-1.5 rounded border border-slate-700 hover:border-blue-500 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <!-- Όροφος 2: Methodology (Full width κουμπί στο κινητό) -->
+                    <button onclick="openMethodologyModal()" class="flex items-center justify-center lg:justify-start gap-2 text-sm lg:text-xs font-semibold text-slate-400 hover:text-blue-400 transition bg-slate-800/80 px-4 py-2.5 lg:px-3 lg:py-1.5 rounded-xl lg:rounded-lg border border-slate-700 hover:border-blue-500 shadow-sm w-full lg:w-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lg:h-4 lg:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         <span id="btnMethodologyText">Methodology & Assumptions</span>
                     </button>
                     
