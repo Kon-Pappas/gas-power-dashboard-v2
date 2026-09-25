@@ -252,22 +252,6 @@ function switchTab(tabId) {
     if (tabId === 'ispScada') updateMonthlyTab(); 
     if (tabId === 'surplus') updateSurplusTab(); 
 }
-    const dateWrap = document.getElementById('dateSelectorWrapper');
-    const monthWrap = document.getElementById('monthSelectorWrapper');
-    
-    if (tabId === 'overview' || tabId === 'economics') {
-        if (dateWrap) dateWrap.classList.remove('hidden');
-        if (monthWrap) monthWrap.classList.add('hidden');
-    } else {
-        if (dateWrap) dateWrap.classList.add('hidden');
-        if (monthWrap) monthWrap.classList.remove('hidden');
-    }
-
-    if (tabId === 'overview') updateOverviewTab();
-    if (tabId === 'economics') updateEconomicsTab();
-    if (tabId === 'ispScada') updateMonthlyTab(); 
-    if (tabId === 'surplus') updateSurplusTab(); 
-}
 
 // ==========================================
 // MASTER UPDATE TRIGGER
