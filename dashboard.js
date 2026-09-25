@@ -183,6 +183,26 @@ function getCanonicalUnitName(rawName) {
     return clean;
 }
 
+// ΠΑΓΚΟΣΜΙΑ ΣΥΝΑΡΤΗΣΗ ΣΥΝΤΟΜΟΓΡΑΦΙΩΝ UI
+function getShortUnitName(canonicalName) {
+    const map = {
+        "AG_NIKOLAOS2": "AgNikol2",
+        "KOMOTINI_POWER": "KomotPwr",
+        "PROTERGIA_CC": "ProtergCc",
+        "ΘΗΣ ΗΡΩΝ": "ThisHron",
+        "ΑΛΙΒΕΡΙ 5": "Aliveri5",
+        "KORINTHOS_POWER": "KorintPwr",
+        "ELPEDISON_THISVI": "ElpedThisv",
+        "ELPEDISON_THESS": "ElpedThess",
+        "ΜΕΓΑΛΟΠΟΛΗ 5": "Megalop5",
+        "ΛΑΥΡΙΟ 4": "Lavrio4",
+        "ΛΑΥΡΙΟ 5": "Lavrio5",
+        "ΚΟΜΟΤΗΝΗ": "Komotini",
+        "ΑΛΟΥΜΙΝΙΟ": "Alouminio"
+    };
+    return map[canonicalName] || canonicalName;
+}
+
 function getUnitMetadata(unitName) {
     let result = { class: 'Older Generation & Peakers', eff: 0.50, order: 3 };
     if (!rawData || !rawData.efficiency) return result;
@@ -326,7 +346,9 @@ function updateOverviewTab() {
     const colorMap = { 1: '#06b6d4', 2: '#3b82f6', 3: '#f97316' };
 
     unitsArray.forEach(u => {
-        labels.push(u.name);
+        // ΕΔΩ Η ΑΛΛΑΓΗ: Περνάμε το όνομα μέσα από τη νέα μας συνάρτηση
+        labels.push(getShortUnitName(u.name)); 
+        
         classLabels.push(u.meta.class);
         dataIsp.push(u.isp);
         dataScada.push(u.scada);
