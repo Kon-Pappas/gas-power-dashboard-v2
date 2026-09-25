@@ -5,7 +5,7 @@ let overviewChartInst = null;
 let monthlyChartInst = null;
 let surplusChartInst = null;
 let selectorsInitialized = false;
-let smartDefaultApplied = false; // Νέα μεταβλητή για το 1st load
+let smartDefaultApplied = false; 
 
 // ==========================================
 // HELPERS
@@ -85,8 +85,7 @@ function initExtraSelectors() {
             }
         });
 
-        // Αν η αρχική επιλογή του συστήματος "πέσει" σε μέρα χωρίς SCADA, 
-        // σε σπρώχνει αυτόματα στην πιο πρόσφατη ΟΛΟΚΛΗΡΩΜΕΝΗ μέρα (χθες)
+        // Αν η αρχική επιλογή του συστήματος "πέσει" σε μέρα χωρίς SCADA
         const currentOpt = ds.options[ds.selectedIndex];
         if (currentOpt && currentOpt.dataset.partial === 'true' && latestCompleteDate) {
             ds.value = latestCompleteDate;
@@ -160,7 +159,7 @@ function createDiagonalPattern(colorHex) {
 function getCanonicalUnitName(rawName) {
     if (!rawName) return "UNKNOWN";
     let clean = String(rawName).trim().toUpperCase();
-    clean = clean.replace(/\s*\((ST|GT\d+)\)/gi, '').trim();
+    clean = clean.replace(/\s*\((ST\vert{}GT\d+)\)/gi, '').trim();
 
     if (clean === "KOMOTINI_POWER") return "KOMOTINI_POWER";
     if (clean.includes("KOMOTINI") || clean.includes("ΚΟΜΟΤΗΝΗ")) {
@@ -237,10 +236,7 @@ function getUnitMetadata(unitName) {
 function switchTab(tabId) {
     const tabs = ['overview', 'economics', 'ispScada', 'surplus'];
     
-    // Οι κλάσεις όταν το tab είναι ΠΑΤΗΜΕΝΟ
     const activeClasses = "flex items-center justify-center w-full h-full bg-blue-600 md:bg-transparent text-white md:text-blue-400 font-bold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-blue-500 md:border-blue-400 py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center shadow-lg md:shadow-none";
-    
-    // Οι κλάσεις όταν το tab ΔΕΝ είναι πατημένο
     const inactiveClasses = "flex items-center justify-center w-full h-full bg-slate-800/80 md:bg-transparent text-slate-400 md:text-slate-500 hover:bg-slate-700 md:hover:bg-transparent md:hover:text-blue-300 font-medium md:font-semibold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-slate-700 md:border-transparent py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center";
 
     tabs.forEach(t => {
@@ -327,8 +323,9 @@ function updateOverviewTab() {
 
     const kpiIspEl = document.getElementById('kpiTotalIsp');
     const kpiScadaEl = document.getElementById('kpiTotalScada');
-    if (kpiIspEl) kpiIspEl.innerText = totalIsp.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    if (kpiScadaEl) kpiScadaEl.innerText = totalScada.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    // Αφαίρεση δεκαδικών ψηφίων (0 decimal places)
+    if (kpiIspEl) kpiIspEl.innerText = totalIsp.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    if (kpiScadaEl) kpiScadaEl.innerText = totalScada.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
 
     const unitsArray = Object.values(unitMap);
     unitsArray.sort((a, b) => {
@@ -410,7 +407,8 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
-                            label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' MWh';
+                            // Αφαίρεση δεκαδικών από το tooltip των MWh
+                            label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' MWh';
                             return label;
                         }
                     }
@@ -449,7 +447,7 @@ function updateEconomicsTab() {
         document.getElementById('kpiCo2').innerText = '-';
         document.getElementById('kpiFleetEff').innerText = '-';
         document.getElementById('kpiAvgGasCost').innerText = '-';
-        document.getElementById('kpiEcoScada').innerText = '0.0';
+        document.getElementById('kpiEcoScada').innerText = '0';
         document.getElementById('kpiTotalEcoCost').innerText = '0 €';
         return;
     }
@@ -460,7 +458,8 @@ function updateEconomicsTab() {
 
     document.getElementById('kpiHgsida').innerText = hgsidaVal.toFixed(2);
     document.getElementById('kpiCo2').innerText = co2PriceVal > 0 ? co2PriceVal.toFixed(2) : '-';
-    document.getElementById('kpiEcoScada').innerText = totals["Συνολική Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    // Αφαίρεση δεκαδικών από τα συνολικά MWh
+    document.getElementById('kpiEcoScada').innerText = totals["Συνολική Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     document.getElementById('kpiAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2);
     document.getElementById('kpiTotalEcoCost').innerText = formatEuro(totals["Συνολικό Κόστος Στόλου (€)"]);
     
@@ -482,39 +481,33 @@ function updateEconomicsTab() {
         const shortName = getShortUnitName(canonical);
         const meta = getUnitMetadata(u["Μονάδα"]);
 
-        // ==========================================
-        // MATCHING ΤΩΝ ΧΡΩΜΑΤΩΝ ΑΠΟ ΤΟ TAB 1
-        // ==========================================
-        // Peakers (Order 3): Πορτοκαλί (#f97316)
         let rowTint = "bg-[#f97316]/10 hover:bg-[#f97316]/25"; 
         let stickyTint = "bg-[#272128]"; 
         let classColor = "text-[#f97316]";
 
-        // H-Class (Order 1): Κυανό (#06b6d4)
         if (meta.order === 1) { 
             rowTint = "bg-[#06b6d4]/10 hover:bg-[#06b6d4]/25"; 
             stickyTint = "bg-[#0f273b]"; 
             classColor = "text-[#06b6d4]";
         }
         
-        // F-Class (Order 2): Μπλε (#3b82f6)
         if (meta.order === 2) { 
             rowTint = "bg-[#3b82f6]/10 hover:bg-[#3b82f6]/25"; 
             stickyTint = "bg-[#14223f]"; 
             classColor = "text-[#3b82f6]";
         }
-        // ==========================================
 
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
 
-        const MWh = u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+        // Αφαίρεση δεκαδικών από τα παραχθέντα MWh του πίνακα
+        const MWh = u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
         const Eff = unitEff > 0 ? unitEff.toFixed(1) + '%' : '-';
+        // Το CO2 παραμένει με 1 δεκαδικό ως ζητήθηκε "καθαρά" (μόνο για MWh)
         const CO2 = u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
         const SRMC = u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2);
         const Cost = formatEuro(u["Συνολικό Κόστος (€)"]);
 
-        // --- Η Κύρια Γραμμή (Ορατή) ---
         const tr = document.createElement('tr');
         tr.className = `main-row ${rowTint} transition-all duration-300 cursor-pointer sm:cursor-default group`;
         tr.onclick = () => window.toggleMobileRow(tr);
@@ -536,7 +529,6 @@ function updateEconomicsTab() {
         `;
         tbody.appendChild(tr);
 
-        // --- Το Ανοιγόμενο Συρτάρι (Μόνο για Κινητά) ---
         const trExpand = document.createElement('tr');
         trExpand.className = `expand-row hidden sm:hidden ${rowTint.split(' ')[0]} transition-all border-b-2 border-slate-800/80`;
         trExpand.innerHTML = `
@@ -563,11 +555,10 @@ function updateEconomicsTab() {
         `;
         tbody.appendChild(trExpand);
     });
-} // <-- ΑΥΤΗ Η ΑΓΚΥΛΗ ΕΛΕΙΠΕ!!!
+}
 
-// Συνάρτηση για το Κλικ στα Κινητά (Ανοιγοκλείνει και ξεθωριάζει τις άλλες γραμμές)
 window.toggleMobileRow = function(clickedRow) {
-    if (window.innerWidth >= 640) return; // Εκτελείται μόνο στα κινητά (κάτω από Tailwind 'sm')
+    if (window.innerWidth >= 640) return; 
 
     const expandRow = clickedRow.nextElementSibling;
     if (!expandRow || !expandRow.classList.contains('expand-row')) return;
@@ -577,7 +568,6 @@ window.toggleMobileRow = function(clickedRow) {
     const allMain = document.querySelectorAll('#economicsTableBody .main-row');
     const allExpand = document.querySelectorAll('#economicsTableBody .expand-row');
     
-    // Επαναφορά όλων στην αρχική κατάσταση
     allMain.forEach(r => {
         r.classList.remove('opacity-20');
         const chevron = r.querySelector('.chevron');
@@ -585,7 +575,6 @@ window.toggleMobileRow = function(clickedRow) {
     });
     allExpand.forEach(r => r.classList.add('hidden'));
 
-    // Αν δεν ήταν ανοιχτό, άνοιξέ το και ξεθώριασε δραματικά (opacity-20) τα υπόλοιπα
     if (!isExpanded) {
         expandRow.classList.remove('hidden');
         const chevron = clickedRow.querySelector('.chevron');
@@ -857,8 +846,9 @@ function updateSurplusTab() {
         sumConstraints += c;
     });
 
-    document.getElementById('kpiMonthSurplus').innerText = sumSurplus.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    document.getElementById('kpiMonthConstraints').innerText = sumConstraints.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    // Αφαίρεση δεκαδικών από τα συνολικά MWh στο Tab 4
+    document.getElementById('kpiMonthSurplus').innerText = sumSurplus.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    document.getElementById('kpiMonthConstraints').innerText = sumConstraints.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
 
     renderSurplusChart(labels, surplusData, constraintsData);
 }
@@ -904,7 +894,8 @@ function renderSurplusChart(labels, surplusData, constraintsData) {
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
-                            label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' MWh';
+                            // Αφαίρεση δεκαδικών από το tooltip των MWh
+                            label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' MWh';
                             return label;
                         }
                     }
