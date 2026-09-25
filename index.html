@@ -97,13 +97,15 @@
         <div id="viewOverview" class="space-y-4 sm:space-y-6 block">
             
             <!-- Hybrid KPIs: Ghost στο Mobile, Boxed στο PC -->
-            <div class="flex gap-6 px-2 sm:px-0 mb-2 sm:mb-0 sm:bg-slate-800/40 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
+            <div class="flex items-center gap-6 px-2 sm:px-6 sm:py-4 mb-2 sm:mb-0 sm:bg-slate-800/40 sm:rounded-xl sm:border sm:border-slate-700">
                 <div>
                     <span class="text-[10px] sm:text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Total ISP (MWh)</span>
                     <span class="text-xl sm:text-2xl font-bold text-blue-400" id="kpiTotalIsp">0.0</span>
                 </div>
+                
                 <!-- Διαχωριστική κάθετη γραμμή -->
-                <div class="w-px bg-slate-700/50 sm:bg-slate-700 my-1"></div>
+                <div class="w-px h-8 sm:h-10 bg-slate-700/50 sm:bg-slate-700"></div>
+                
                 <div>
                     <span class="text-[10px] sm:text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Total SCADA (MWh)</span>
                     <span class="text-xl sm:text-2xl font-bold text-orange-400" id="kpiTotalScada">0.0</span>
