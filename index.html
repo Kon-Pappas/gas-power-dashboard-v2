@@ -27,7 +27,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6 w-full">
         
-<!-- Header -->
+        <!-- Header -->
         <header class="border-b border-slate-700 pb-4">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
                 
@@ -82,6 +82,7 @@
                 </div>
             </div>
         </header>
+
         <!-- TABS NAVIGATION -->
         <!-- Στα κινητά: grid με 2 στήλες. Στο Desktop: flex οριζόντια με υπογράμμιση -->
         <div class="grid grid-cols-2 gap-2 mb-2 md:mb-0 md:flex md:space-x-6 md:border-b md:border-slate-800 md:pb-2 md:gap-0">
@@ -94,17 +95,18 @@
         
         <!-- VIEW 1: DAILY OVERVIEW -->
         <div id="viewOverview" class="space-y-6 block">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-800/40 p-3 rounded-xl border border-slate-700 gap-4">
-                <div class="flex gap-4 px-2">
-                    <div>
-                        <span class="text-xs text-slate-500 block">TOTAL ISP (MWh)</span>
-                        <span class="text-xl font-bold text-blue-400" id="kpiTotalIsp">0.0</span>
-                    </div>
-                    <div class="w-px bg-slate-600"></div>
-                    <div>
-                        <span class="text-xs text-slate-500 block">TOTAL SCADA (MWh)</span>
-                        <span class="text-xl font-bold text-orange-400" id="kpiTotalScada">0.0</span>
-                    </div>
+            
+            <!-- Μινιμαλιστικά (Ghost) KPIs -->
+            <div class="flex gap-6 px-2 sm:px-0">
+                <div>
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Total ISP (MWh)</span>
+                    <span class="text-xl sm:text-3xl font-bold text-blue-400" id="kpiTotalIsp">0.0</span>
+                </div>
+                <!-- Μια πολύ αχνή κάθετη γραμμή για διαχωρισμό -->
+                <div class="w-px bg-slate-700/50 my-1"></div>
+                <div>
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Total SCADA (MWh)</span>
+                    <span class="text-xl sm:text-3xl font-bold text-orange-400" id="kpiTotalScada">0.0</span>
                 </div>
             </div>
 
@@ -157,48 +159,49 @@
         
         <!-- VIEW 2: DAILY ECONOMICS -->
         <div id="viewEconomics" class="space-y-4 sm:space-y-6 hidden">
-            <!-- Συμπιεσμένα KPIs στα κινητά -->
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-4 mt-2">
-                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">HGSIDA Price</span>
-                    <div class="flex items-baseline gap-1">
-                        <span id="kpiHgsida" class="text-lg sm:text-2xl font-bold text-blue-400">0.00</span>
-                        <span class="text-[10px] sm:text-sm text-slate-500">€/MWh</span>
+            
+            <!-- Μινιμαλιστικά (Ghost) KPIs χωρίς κουτάκια -->
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6 mt-2 mb-2 px-2 sm:px-0">
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">HGSIDA Price</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiHgsida" class="text-xl sm:text-3xl font-bold text-blue-400">0.00</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">EUA CO2 Price</span>
-                    <div class="flex items-baseline gap-1">
-                        <span id="kpiCo2" class="text-lg sm:text-2xl font-bold text-slate-300">0.00</span>
-                        <span class="text-[10px] sm:text-sm text-slate-500">€/t</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">EUA CO2 Price</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiCo2" class="text-xl sm:text-3xl font-bold text-slate-300">0.00</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">€/t</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">Fleet Efficiency</span>
-                    <div class="flex items-baseline gap-1">
-                        <span id="kpiFleetEff" class="text-lg sm:text-2xl font-bold text-emerald-400">0.0</span>
-                        <span class="text-[10px] sm:text-sm text-slate-500">%</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">Fleet Efficiency</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiFleetEff" class="text-xl sm:text-3xl font-bold text-emerald-400">0.0</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">%</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">Avg Fleet SRMC</span>
-                    <div class="flex items-baseline gap-1">
-                        <span id="kpiAvgGasCost" class="text-lg sm:text-2xl font-bold text-amber-400">0.00</span>
-                        <span class="text-[10px] sm:text-sm text-slate-500">€/MWh</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">Avg Fleet SRMC</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiAvgGasCost" class="text-xl sm:text-3xl font-bold text-amber-400">0.00</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">Gas Generation</span>
-                    <div class="flex items-baseline gap-1">
-                        <span id="kpiEcoScada" class="text-lg sm:text-2xl font-bold text-orange-400">0.0</span>
-                        <span class="text-[10px] sm:text-sm text-slate-500">MWh</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">Gas Generation</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiEcoScada" class="text-xl sm:text-3xl font-bold text-orange-400">0.0</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">MWh</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-2.5 sm:p-4 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wider truncate">Total Est. Cost</span>
-                    <div class="flex items-baseline gap-1">
-                        <span id="kpiTotalEcoCost" class="text-lg sm:text-2xl font-bold text-rose-400">0</span>
-                        <span class="text-[10px] sm:text-sm text-slate-500">€</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">Total Est. Cost</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiTotalEcoCost" class="text-xl sm:text-3xl font-bold text-rose-400">0</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">€</span>
                     </div>
                 </div>
             </div>
@@ -231,51 +234,48 @@
         
         <!-- VIEW 3: MONTHLY ANALYTICS -->
         <div id="viewIspScada" class="space-y-6 hidden">
-            <!-- New KPI Boxes for Best/Worst Day -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center relative overflow-hidden">
-                    <div class="absolute right-0 top-0 w-1 h-full bg-rose-500"></div>
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">🔴 Peak Grid Cost</span>
-                    <div class="flex items-baseline gap-1 mt-1">
-                        <span id="kpiPeakCost" class="text-xl font-bold text-rose-400">0.00</span>
-                        <span class="text-xs text-slate-500">€/MWh</span>
+            
+            <!-- Μινιμαλιστικά (Ghost) KPIs -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-2 mb-2 px-2 sm:px-0">
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">🔴 Peak Grid Cost</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiPeakCost" class="text-xl sm:text-3xl font-bold text-rose-400">0.00</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
                     </div>
-                    <span id="kpiPeakCostDay" class="text-[10px] text-slate-500 mt-1">Day -</span>
+                    <span id="kpiPeakCostDay" class="text-[10px] text-slate-500 mt-0.5">Day -</span>
                 </div>
                 
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center relative overflow-hidden">
-                    <div class="absolute right-0 top-0 w-1 h-full bg-emerald-500"></div>
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">🟢 Best Grid Cost</span>
-                    <div class="flex items-baseline gap-1 mt-1">
-                        <span id="kpiBestCost" class="text-xl font-bold text-emerald-400">0.00</span>
-                        <span class="text-xs text-slate-500">€/MWh</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">🟢 Best Grid Cost</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiBestCost" class="text-xl sm:text-3xl font-bold text-emerald-400">0.00</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
                     </div>
-                    <span id="kpiBestCostDay" class="text-[10px] text-slate-500 mt-1">Day -</span>
+                    <span id="kpiBestCostDay" class="text-[10px] text-slate-500 mt-0.5">Day -</span>
                 </div>
 
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center relative overflow-hidden">
-                    <div class="absolute right-0 top-0 w-1 h-full bg-orange-500"></div>
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">📉 Worst Efficiency</span>
-                    <div class="flex items-baseline gap-1 mt-1">
-                        <span id="kpiWorstEff" class="text-xl font-bold text-orange-400">0.0</span>
-                        <span class="text-xs text-slate-500">%</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">📉 Worst Efficiency</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiWorstEff" class="text-xl sm:text-3xl font-bold text-orange-400">0.0</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">%</span>
                     </div>
-                    <span id="kpiWorstEffDay" class="text-[10px] text-slate-500 mt-1">Day -</span>
+                    <span id="kpiWorstEffDay" class="text-[10px] text-slate-500 mt-0.5">Day -</span>
                 </div>
 
-                <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col justify-center relative overflow-hidden">
-                    <div class="absolute right-0 top-0 w-1 h-full bg-blue-500"></div>
-                    <span class="text-[11px] text-slate-400 uppercase tracking-wider">📈 Max Efficiency</span>
-                    <div class="flex items-baseline gap-1 mt-1">
-                        <span id="kpiMaxEff" class="text-xl font-bold text-blue-400">0.0</span>
-                        <span class="text-xs text-slate-500">%</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5 truncate">📈 Max Efficiency</span>
+                    <div class="flex items-baseline gap-1.5">
+                        <span id="kpiMaxEff" class="text-xl sm:text-3xl font-bold text-blue-400">0.0</span>
+                        <span class="text-xs sm:text-sm text-slate-500 font-medium">%</span>
                     </div>
-                    <span id="kpiMaxEffDay" class="text-[10px] text-slate-500 mt-1">Day -</span>
+                    <span id="kpiMaxEffDay" class="text-[10px] text-slate-500 mt-0.5">Day -</span>
                 </div>
             </div>
 
-            <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
-                <div class="flex justify-between items-center mb-6">
+            <div class="bg-slate-800/40 p-4 sm:p-6 rounded-xl border border-slate-700">
+                <div class="flex justify-between items-center mb-4 sm:mb-6">
                     <div>
                         <h2 class="text-lg font-semibold text-slate-200">Monthly Market & Fleet Performance</h2>
                         <p class="text-xs text-slate-400">Cost drivers and resulting average fleet metrics</p>
@@ -289,25 +289,27 @@
 
         <!-- VIEW 4: SYSTEM NEEDS & CONSTRAINTS -->
         <div id="viewSurplus" class="space-y-6 hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                <div class="bg-slate-800/60 p-5 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-sm text-slate-400 uppercase tracking-wider mb-1">Total Monthly Surplus (Isp)</span>
+            
+            <!-- Μινιμαλιστικά (Ghost) KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-2 mb-2 px-2 sm:px-0">
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5">Total Monthly Surplus (Isp)</span>
                     <div class="flex items-baseline gap-2">
                         <span id="kpiMonthSurplus" class="text-3xl font-bold text-blue-400">0</span>
-                        <span class="text-slate-500">MWh</span>
+                        <span class="text-sm text-slate-500 font-medium">MWh</span>
                     </div>
                 </div>
-                <div class="bg-slate-800/60 p-5 rounded-xl border border-slate-700 flex flex-col justify-center">
-                    <span class="text-sm text-slate-400 uppercase tracking-wider mb-1">Total Generic Constraints (Scada)</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5">Total Generic Constraints (Scada)</span>
                     <div class="flex items-baseline gap-2">
                         <span id="kpiMonthConstraints" class="text-3xl font-bold text-rose-400">0</span>
-                        <span class="text-slate-500">MWh</span>
+                        <span class="text-sm text-slate-500 font-medium">MWh</span>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
-                <div class="flex justify-between items-center mb-6">
+            <div class="bg-slate-800/40 p-4 sm:p-6 rounded-xl border border-slate-700">
+                <div class="flex justify-between items-center mb-4 sm:mb-6">
                     <div>
                         <h2 class="text-lg font-semibold text-slate-200">Residual Surplus vs Generic Constraints</h2>
                         <p class="text-xs text-slate-400">Daily dynamic calculation from ISP & Hourly SCADA actuals</p>
