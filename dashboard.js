@@ -406,6 +406,26 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
 // ==========================================
 // TAB 2: DAILY ECONOMICS
 // ==========================================
+// Λεξικό για τα Short Names στα κινητά
+function getShortUnitName(canonicalName) {
+    const map = {
+        "AG_NIKOLAOS2": "AgNikol2",
+        "KOMOTINI_POWER": "KomotPwr",
+        "PROTERGIA_CC": "ProtergCc",
+        "ΘΗΣ ΗΡΩΝ": "ThisHron",
+        "ΑΛΙΒΕΡΙ 5": "Aliveri5",
+        "KORINTHOS_POWER": "KorintPwr",
+        "ELPEDISON_THISVI": "ElpedThisv",
+        "ELPEDISON_THESS": "ElpedThess",
+        "ΜΕΓΑΛΟΠΟΛΗ 5": "Megalop5",
+        "ΛΑΥΡΙΟ 4": "Lavrio4",
+        "ΛΑΥΡΙΟ 5": "Lavrio5",
+        "ΚΟΜΟΤΗΝΗ": "Komotini",
+        "ΑΛΟΥΜΙΝΙΟ": "Alouminio"
+    };
+    return map[canonicalName] || canonicalName;
+}
+
 function updateEconomicsTab() {
     const dateSelect = document.getElementById('dateSelect');
     if (!dateSelect || !rawData) return;
@@ -423,7 +443,7 @@ function updateEconomicsTab() {
     tbody.innerHTML = '';
 
     if (!dayEco || !dayEco.Units || dayEco.Units.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">No economic data available for this date.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">No economic data available for this date.</td></tr>`;
         document.getElementById('kpiHgsida').innerText = '-';
         document.getElementById('kpiCo2').innerText = '-';
         document.getElementById('kpiFleetEff').innerText = '-';
@@ -457,95 +477,94 @@ function updateEconomicsTab() {
     });
 
     sortedUnits.forEach(u => {
+        const canonical = getCanonicalUnitName(u["Μονάδα"]);
+        const shortName = getShortUnitName(canonical);
         const meta = getUnitMetadata(u["Μονάδα"]);
-        let borderColor = "border-slate-700";
-        if (meta.order === 1) borderColor = "border-[#06b6d4]";
-        if (meta.order === 2) borderColor = "border-[#3b82f6]";
-        if (meta.order === 3) borderColor = "border-[#f97316]";
+
+        // Color Tints για τη μάνα-γραμμή
+        let rowTint = "bg-orange-900/20"; 
+        let stickyTint = "bg-[#271d18]"; // Solid χρώμα για να μην φεγγίζει από κάτω στο scroll
+        if (meta.order === 1) { 
+            rowTint = "bg-cyan-900/20"; 
+            stickyTint = "bg-[#142835]"; 
+        }
+        if (meta.order === 2) { 
+            rowTint = "bg-blue-900/20"; 
+            stickyTint = "bg-[#17233f]"; 
+        }
 
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
 
-        // Φορμάρισμα Τιμών
         const MWh = u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
         const Eff = unitEff > 0 ? unitEff.toFixed(1) + '%' : '-';
         const CO2 = u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
         const SRMC = u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2);
         const Cost = formatEuro(u["Συνολικό Κόστος (€)"]);
 
-        // Η Κύρια Γραμμή
+        // --- Η Κύρια Γραμμή ---
         const tr = document.createElement('tr');
-        tr.className = "main-row hover:bg-slate-800/50 transition-opacity duration-300 cursor-pointer sm:cursor-default group";
+        tr.className = `main-row ${rowTint} hover:brightness-125 transition-all duration-300 cursor-pointer sm:cursor-default group`;
         tr.onclick = () => window.toggleMobileRow(tr);
 
         tr.innerHTML = `
-            <!-- Class Στήλη (Μόνο Desktop) -->
-            <td class="hidden sm:table-cell p-3 text-xs text-slate-400 border-l-4 ${borderColor}">${meta.class}</td>
-            
-            <!-- Sticky Factory Στήλη (Κινητά & Desktop) -->
-            <td class="p-3 font-bold text-slate-300 sticky left-0 z-10 bg-[#162032] sm:bg-transparent group-hover:bg-slate-800 sm:group-hover:bg-transparent transition-colors sm:border-l-0 border-l-4 ${borderColor} shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] sm:shadow-none">
-                <div class="flex justify-between items-center pr-2 sm:pr-0">
-                    <div>
-                        <div>${u["Μονάδα"]}</div>
-                        <!-- Η κλάση φαίνεται ως υπότιτλος στα κινητά -->
-                        <div class="text-[10px] text-slate-500 font-normal sm:hidden mt-0.5">${meta.class}</div>
-                    </div>
-                    <!-- Το βελάκι που δείχνει ότι κάνει κλικ (μόνο κινητά) -->
+            <td class="p-3 font-bold text-slate-200 sticky left-0 z-10 ${stickyTint} sm:bg-transparent shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] sm:shadow-none">
+                <div class="flex justify-between items-center pr-1 sm:pr-0">
+                    <span>${shortName}</span>
                     <svg class="w-4 h-4 text-slate-500 sm:hidden chevron transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </div>
             </td>
-            
-            <!-- Παραγωγή -->
             <td class="p-3 text-right font-mono">${MWh}</td>
-            
-            <!-- Κρυμμένα στα κινητά -->
             <td class="hidden sm:table-cell p-3 text-right font-mono text-emerald-400/90">${Eff}</td>
             <td class="hidden sm:table-cell p-3 text-right font-mono text-slate-400">${CO2}</td>
             <td class="hidden sm:table-cell p-3 text-right font-mono text-amber-400">${SRMC}</td>
-            
-            <!-- Συνολικό Κόστος -->
             <td class="p-3 text-right font-semibold text-slate-300">${Cost}</td>
         `;
         tbody.appendChild(tr);
 
-        // Η Κρυφή Γραμμή (Accordion) για τα κινητά
+        // --- Το Ανοιγόμενο Συρτάρι (Κάθετη Λίστα) ---
         const trExpand = document.createElement('tr');
-        trExpand.className = "expand-row hidden sm:hidden bg-slate-900/50 transition-all border-b-2 border-slate-700/50";
+        trExpand.className = `expand-row hidden sm:hidden ${rowTint} transition-all border-b border-slate-700/50`;
         trExpand.innerHTML = `
-            <td colspan="3" class="p-3">
-                <div class="grid grid-cols-3 gap-2 text-center">
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700">
-                        <div class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">Efficiency</div>
-                        <div class="text-emerald-400 font-mono text-xs">${Eff}</div>
-                    </div>
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700">
-                        <div class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">CO2 Emiss.</div>
-                        <div class="text-slate-300 font-mono text-xs">${CO2}</div>
-                    </div>
-                    <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-700">
-                        <div class="text-[9px] text-slate-400 uppercase tracking-wider mb-1">Avg SRMC</div>
-                        <div class="text-amber-400 font-mono text-xs">${SRMC}</div>
-                    </div>
-                </div>
+            <td colspan="3" class="p-4 px-5">
+                <ul class="space-y-3 text-sm">
+                    <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
+                        <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Class</span>
+                        <span class="text-slate-200 font-semibold">${meta.class}</span>
+                    </li>
+                    <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
+                        <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Efficiency</span>
+                        <span class="text-emerald-400 font-mono font-bold">${Eff}</span>
+                    </li>
+                    <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
+                        <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">CO2 Emissions</span>
+                        <span class="text-slate-300 font-mono">${CO2}</span>
+                    </li>
+                    <li class="flex justify-between items-center pb-1">
+                        <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Avg SRMC</span>
+                        <span class="text-amber-400 font-mono font-bold">${SRMC} €/MWh</span>
+                    </li>
+                </ul>
             </td>
         `;
         tbody.appendChild(trExpand);
     });
 }
 
-// Global Συνάρτηση για το Κλικ στα Κινητά (Ανοιγοκλείνει και ξεθωριάζει)
 window.toggleMobileRow = function(clickedRow) {
-    if (window.innerWidth >= 640) return; // Λειτουργεί μόνο στα κινητά (κάτω από Tailwind 'sm')
+    if (window.innerWidth >= 640) return; // Λειτουργεί μόνο στα κινητά (Tailwind 'sm' breakpoint)
 
     const expandRow = clickedRow.nextElementSibling;
+    if (!expandRow || !expandRow.classList.contains('expand-row')) return;
+    
     const isExpanded = !expandRow.classList.contains('hidden');
     
     const allMain = document.querySelectorAll('#economicsTableBody .main-row');
     const allExpand = document.querySelectorAll('#economicsTableBody .expand-row');
     
-    // Επαναφορά όλων
+    // Επαναφορά όλων των γραμμών στην αρχική κατάσταση
     allMain.forEach(r => {
         r.classList.remove('opacity-30');
         const chevron = r.querySelector('.chevron');
@@ -553,7 +572,7 @@ window.toggleMobileRow = function(clickedRow) {
     });
     allExpand.forEach(r => r.classList.add('hidden'));
 
-    // Αν δεν ήταν ήδη ανοιχτό, άνοιξέ το και σβήσε τα υπόλοιπα
+    // Αν δεν ήταν ανοιχτό, άνοιξέ το και ξεθώριασε τα υπόλοιπα
     if (!isExpanded) {
         expandRow.classList.remove('hidden');
         const chevron = clickedRow.querySelector('.chevron');
