@@ -160,7 +160,7 @@ function createDiagonalPattern(colorHex) {
 function getCanonicalUnitName(rawName) {
     if (!rawName) return "UNKNOWN";
     let clean = String(rawName).trim().toUpperCase();
-    clean = clean.replace(/\s*\((ST\vert{}GT\d+)\)/gi, '').trim();
+    clean = clean.replace(/\s*\((ST|GT\d+)\)/gi, '').trim();
 
     if (clean === "KOMOTINI_POWER") return "KOMOTINI_POWER";
     if (clean.includes("KOMOTINI") || clean.includes("ΚΟΜΟΤΗΝΗ")) {
@@ -346,7 +346,6 @@ function updateOverviewTab() {
     const colorMap = { 1: '#06b6d4', 2: '#3b82f6', 3: '#f97316' };
 
     unitsArray.forEach(u => {
-        // ΕΔΩ Η ΑΛΛΑΓΗ: Περνάμε το όνομα μέσα από τη νέα μας συνάρτηση
         labels.push(getShortUnitName(u.name)); 
         
         classLabels.push(u.meta.class);
@@ -425,29 +424,9 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
     });
 }
 
-    // ==========================================
+// ==========================================
 // TAB 2: DAILY ECONOMICS
 // ==========================================
-// Λεξικό για τα Short Names στα κινητά
-function getShortUnitName(canonicalName) {
-    const map = {
-        "AG_NIKOLAOS2": "AgNikol2",
-        "KOMOTINI_POWER": "KomotPwr",
-        "PROTERGIA_CC": "ProtergCc",
-        "ΘΗΣ ΗΡΩΝ": "ThisHron",
-        "ΑΛΙΒΕΡΙ 5": "Aliveri5",
-        "KORINTHOS_POWER": "KorintPwr",
-        "ELPEDISON_THISVI": "ElpedThisv",
-        "ELPEDISON_THESS": "ElpedThess",
-        "ΜΕΓΑΛΟΠΟΛΗ 5": "Megalop5",
-        "ΛΑΥΡΙΟ 4": "Lavrio4",
-        "ΛΑΥΡΙΟ 5": "Lavrio5",
-        "ΚΟΜΟΤΗΝΗ": "Komotini",
-        "ΑΛΟΥΜΙΝΙΟ": "Alouminio"
-    };
-    return map[canonicalName] || canonicalName;
-}
-
 function updateEconomicsTab() {
     const dateSelect = document.getElementById('dateSelect');
     if (!dateSelect || !rawData) return;
@@ -508,7 +487,7 @@ function updateEconomicsTab() {
         // ==========================================
         // Peakers (Order 3): Πορτοκαλί (#f97316)
         let rowTint = "bg-[#f97316]/10 hover:bg-[#f97316]/25"; 
-        let stickyTint = "bg-[#272128]"; // Συμπαγές (Solid) χρώμα μίξης για το sticky
+        let stickyTint = "bg-[#272128]"; 
         let classColor = "text-[#f97316]";
 
         // H-Class (Order 1): Κυανό (#06b6d4)
@@ -584,6 +563,7 @@ function updateEconomicsTab() {
         `;
         tbody.appendChild(trExpand);
     });
+} // <-- ΑΥΤΗ Η ΑΓΚΥΛΗ ΕΛΕΙΠΕ!!!
 
 // Συνάρτηση για το Κλικ στα Κινητά (Ανοιγοκλείνει και ξεθωριάζει τις άλλες γραμμές)
 window.toggleMobileRow = function(clickedRow) {
