@@ -423,7 +423,7 @@ function updateEconomicsTab() {
     tbody.innerHTML = '';
 
     if (!dayEco || !dayEco.Units || dayEco.Units.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">No economic data available for this date.</td></tr>`;
+        tbody.innerHTML = `<tr class="block md:table-row"><td colspan="7" class="block md:table-cell p-4 text-center text-slate-500 bg-slate-900/50 md:bg-transparent rounded-xl">No economic data available for this date.</td></tr>`;
         document.getElementById('ecoTableTotalMwh').innerText = '0.0';
         document.getElementById('ecoTableAvgEffPct').innerText = '-';
         document.getElementById('ecoTableTotalTons').innerText = '-';
@@ -472,24 +472,52 @@ function updateEconomicsTab() {
         sumTons += u["Εκπομπές CO2 (t)"];
 
         const meta = getUnitMetadata(u["Μονάδα"]);
-        let borderClass = "border-l-4 border-slate-700";
-        if (meta.order === 1) borderClass = "border-l-4 border-[#06b6d4]";
-        if (meta.order === 2) borderClass = "border-l-4 border-[#3b82f6]";
-        if (meta.order === 3) borderClass = "border-l-4 border-[#f97316]";
+        let borderColor = "border-slate-700";
+        if (meta.order === 1) borderColor = "border-[#06b6d4]";
+        if (meta.order === 2) borderColor = "border-[#3b82f6]";
+        if (meta.order === 3) borderColor = "border-[#f97316]";
 
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-700/50 transition-colors group";
+        // Στα κινητά: Card (block, bg, border, shadow). Στο Desktop: Κανονικό Row
+        tr.className = `block md:table-row mb-4 md:mb-0 bg-slate-900/50 md:bg-transparent rounded-xl md:rounded-none border-l-4 ${borderColor} md:border-l-0 p-3 md:p-0 hover:bg-slate-700/50 transition-colors group shadow-sm md:shadow-none`;
+        
+        // Βασικές κλάσεις για κάθε κελί. Στα κινητά είναι flex-box με γραμμούλα από κάτω.
+        const tdBase = "flex md:table-cell justify-between items-center py-2 md:py-3 border-b border-slate-700/50 md:border-0 last:border-0";
+        // Κλάση για τις ετικέτες που εμφανίζονται ΜΟΝΟ στα κινητά
+        const lbl = "text-[10px] text-slate-500 font-bold uppercase tracking-wider md:hidden";
+
         tr.innerHTML = `
-            <td class="p-3 text-xs text-slate-400 ${borderClass}">${meta.class}</td>
-            <td class="p-3 font-bold text-slate-300 group-hover:text-white transition-colors whitespace-nowrap">${u["Μονάδα"]}</td>
-            <td class="p-3 text-right font-mono">${u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})}</td>
-            <td class="p-3 text-right font-mono text-emerald-400/90">${unitEff > 0 ? unitEff.toFixed(1) + '%' : '-'}</td>
-            <td class="p-3 text-right font-mono text-slate-400">${u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})} t</td>
-            <td class="p-3 text-right font-mono text-amber-400">${u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2)}</td>
-            <td class="p-3 text-right font-semibold text-slate-300">${formatEuro(u["Συνολικό Κόστος (€)"])}</td>
+            <td class="${tdBase} md:border-l-4 md:${borderColor} md:p-3 text-xs text-slate-400">
+                <span class="${lbl}">Class</span>
+                <span>${meta.class}</span>
+            </td>
+            <td class="${tdBase} md:p-3 font-bold text-slate-300 group-hover:text-white transition-colors whitespace-nowrap">
+                <span class="${lbl}">Gas Factory</span>
+                <span>${u["Μονάδα"]}</span>
+            </td>
+            <td class="${tdBase} md:p-3 text-right font-mono">
+                <span class="${lbl}">Produced (MWh)</span>
+                <span>${u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})}</span>
+            </td>
+            <td class="${tdBase} md:p-3 text-right font-mono text-emerald-400/90">
+                <span class="${lbl}">Efficiency</span>
+                <span>${unitEff > 0 ? unitEff.toFixed(1) + '%' : '-'}</span>
+            </td>
+            <td class="${tdBase} md:p-3 text-right font-mono text-slate-400">
+                <span class="${lbl}">CO2 Emissions</span>
+                <span>${u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})} t</span>
+            </td>
+            <td class="${tdBase} md:p-3 text-right font-mono text-amber-400">
+                <span class="${lbl}">Avg SRMC</span>
+                <span>${u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2)} €/MWh</span>
+            </td>
+            <td class="${tdBase} md:p-3 text-right font-semibold text-slate-300 pt-3 md:pt-0">
+                <span class="${lbl}">Total Cost</span>
+                <span>${formatEuro(u["Συνολικό Κόστος (€)"])}</span>
+            </td>
         `;
         tbody.appendChild(tr);
     });
@@ -497,7 +525,7 @@ function updateEconomicsTab() {
     document.getElementById('ecoTableTotalMwh').innerText = sumMwh.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
     document.getElementById('ecoTableAvgEffPct').innerText = avgFleetEff > 0 ? avgFleetEff.toFixed(1) + '%' : '-';
     document.getElementById('ecoTableTotalTons').innerText = sumTons.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
-    document.getElementById('ecoTableAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2);
+    document.getElementById('ecoTableAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2) + ' €/MWh';
     document.getElementById('ecoTableTotalCost').innerText = formatEuro(sumCost);
 }
 
