@@ -110,15 +110,31 @@
             <div class="flex items-center gap-6 px-2 sm:px-6 sm:py-4 mb-2 sm:mb-0 sm:bg-slate-800/40 sm:rounded-xl sm:border sm:border-slate-700">
                 <div>
                     <span class="text-[10px] sm:text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Total ISP (MWh)</span>
-                    <span class="text-xl sm:text-2xl font-bold text-blue-400" id="kpiTotalIsp">0.0</span>
+                    <div class="flex items-center gap-2.5">
+                        <!-- Vertical Solid Bar -->
+                        <div class="w-1.5 h-8 bg-slate-300 rounded-[2px] shadow-sm"></div>
+                        <!-- Boxed Number -->
+                        <div class="bg-slate-900/60 border border-slate-700/80 px-3 py-1 rounded-lg shadow-inner">
+                            <span class="text-xl sm:text-2xl font-bold text-slate-200" id="kpiTotalIsp">0.0</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- Διαχωριστική κάθετη γραμμή -->
-                <div class="w-px h-8 sm:h-10 bg-slate-700/50 sm:bg-slate-700"></div>
+                <!-- Διαχωριστική κάθετη γραμμή (μεγαλύτερη για να χωράει τα νέα κουτάκια) -->
+                <div class="w-px h-10 sm:h-12 bg-slate-700/50 sm:bg-slate-700"></div>
                 
                 <div>
                     <span class="text-[10px] sm:text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Total SCADA (MWh)</span>
-                    <span class="text-xl sm:text-2xl font-bold text-orange-400" id="kpiTotalScada">0.0</span>
+                    <div class="flex items-center gap-2.5">
+                        <!-- Vertical Striped Bar -->
+                        <div class="w-1.5 h-8 rounded-[2px] shadow-sm relative overflow-hidden bg-slate-500">
+                            <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.7) 2px, rgba(255,255,255,0.7) 4px);"></div>
+                        </div>
+                        <!-- Boxed Number -->
+                        <div class="bg-slate-900/60 border border-slate-700/80 px-3 py-1 rounded-lg shadow-inner">
+                            <span class="text-xl sm:text-2xl font-bold text-slate-200" id="kpiTotalScada">0.0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -142,18 +158,21 @@
                         <div class="w-px bg-slate-700 hidden sm:block"></div>
                         <div class="h-px w-full bg-slate-700/50 sm:hidden"></div>
                         
+                        <!-- DATA TYPE (Neutral Colors) -->
                         <div class="flex flex-wrap sm:flex-col gap-x-4 gap-y-1.5 sm:gap-2 items-center sm:items-start">
                             <span class="w-full sm:w-auto text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5 sm:mb-0">Data Type</span>
-                            <span class="flex items-center gap-1.5"><div class="w-3.5 h-2.5 sm:w-4 sm:h-3 bg-slate-500 rounded-sm"></div> ISP (Solid)</span>
+                            <span class="flex items-center gap-1.5"><div class="w-3.5 h-2.5 sm:w-4 sm:h-3 bg-slate-300 rounded-sm"></div> ISP (Solid)</span>
                             <span class="flex items-center gap-1.5">
                                 <div class="w-3.5 h-2.5 sm:w-4 sm:h-3 rounded-sm relative overflow-hidden bg-slate-500">
-                                    <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 4px);"></div>
+                                    <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.7) 2px, rgba(255,255,255,0.7) 4px);"></div>
                                 </div> 
                                 SCADA (Striped)
                             </span>
                         </div>
                     </div>
                 </div>
+                
+                <!-- ... To Canvas του chart συνεχίζει κανονικά από κάτω ... -->
                 
                 <div class="relative h-[400px] sm:h-[500px]">
                     <canvas id="overviewChart"></canvas>
