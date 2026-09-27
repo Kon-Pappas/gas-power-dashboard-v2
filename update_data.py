@@ -94,7 +94,9 @@ def process_scada(date_str):
     excel_data = fetch_excel(url)
     if not excel_data: return
     try:
-        df = pd.read_excel(excel_data, sheet_name=0, header=None)
+        xl = pd.ExcelFile(excel_data)
+        target_sheet = "System_Production" if "System_Production" in xl.sheet_names else xl.sheet_names[0]
+        df = xl.parse(target_sheet, header=None)
         
         # 1. ΚΑΘΑΡΙΣΜΟΣ ΠΑΛΙΩΝ ΔΕΔΟΜΕΝΩΝ (Απόλυτο Wipe για τη συγκεκριμένη μέρα για 100% καθαρό backfill)
         db["scada_generation"] = [d for d in db["scada_generation"] if d.get("Ημερομηνία") != date_str]
