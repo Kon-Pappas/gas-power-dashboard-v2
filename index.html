@@ -356,21 +356,21 @@
 
     <!-- MODAL: METHODOLOGY -->
     <div id="methodologyModal" class="fixed inset-0 z-[10000] bg-black/80 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[85vh] shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col" id="modalContent">
             
-            <div class="flex justify-between items-center border-b border-slate-700 pb-4 mb-4">
+            <div class="flex justify-between items-center border-b border-slate-700 p-6 pb-4 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-500/20 p-2 rounded-lg text-blue-400">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
                     <h2 class="text-xl font-bold text-slate-100" id="modalTitle">Methodology & Core Assumptions</h2>
                 </div>
-                <button onclick="closeMethodologyModal()" class="text-slate-500 hover:text-rose-400 transition text-3xl leading-none">&times;</button>
+                <button onclick="closeMethodologyModal()" class="text-slate-500 hover:text-rose-400 transition text-3xl leading-none flex-shrink-0">&times;</button>
             </div>
             
-            <div class="text-sm text-slate-300 leading-relaxed" id="modalBody"></div>
+            <div class="text-sm text-slate-300 leading-relaxed px-6 py-4 overflow-y-auto" id="modalBody"></div>
             
-            <div class="mt-6 pt-4 border-t border-slate-800 text-right">
+            <div class="p-6 pt-4 border-t border-slate-800 text-right flex-shrink-0">
                 <button onclick="closeMethodologyModal()" id="btnClose" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-600 transition">Close</button>
             </div>
         </div>
