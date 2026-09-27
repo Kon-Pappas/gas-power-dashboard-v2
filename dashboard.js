@@ -168,12 +168,12 @@ function getCanonicalUnitName(rawName) {
     }
     
     if (clean.includes("AG_NIKOLAOS") || clean.includes("ΑΓ. ΝΙΚΟΛΑΟΣ") || clean.includes("AGIOS NIKOLAOS")) return "AG_NIKOLAOS2";
-    if (clean.includes("PROTERGIA") || clean.includes("THESSALONIKI")) return "PROTERGIA_CC";
+    if (clean.includes("PROTERGIA")) return "PROTERGIA_CC";
     if (clean.includes("HERON") || clean.includes("ΘΗΣ ΗΡΩΝ") || clean.includes("ΗΡΩΝ")) return "ΘΗΣ ΗΡΩΝ";
     if (clean.includes("MEGALOPOLI") || clean.includes("ΜΕΓΑΛΟΠΟΛΗ")) return "ΜΕΓΑΛΟΠΟΛΗ 5";
     if (clean.includes("THISVI") || clean.includes("ΘΗΣΒ")) return "ELPEDISON_THISVI";
     if (clean.includes("KORINTHOS") || clean.includes("ΚΟΡΙΝΘΟΣ")) return "KORINTHOS_POWER";
-    if (clean.includes("THESS") && clean.includes("ELPEDISON")) return "ELPEDISON_THESS";
+    if (clean.includes("THESSALONIKI") || (clean.includes("THESS") && clean.includes("ELPEDISON"))) return "ELPEDISON_THESS";
     if (clean.includes("ALIVERI") || clean.includes("ΑΛΙΒΕΡΙ")) return "ΑΛΙΒΕΡΙ 5";
     if (clean.includes("LAVRIO 5") || clean.includes("ΛΑΥΡΙΟ 5") || clean.includes("LAVRIO5")) return "ΛΑΥΡΙΟ 5";
     if (clean.includes("LAVRIO 4") || clean.includes("ΛΑΥΡΙΟ 4") || clean.includes("LAVRIO4") || clean.includes("ΛΑΥΡΙΟ") || clean.includes("LAVRIOS")) return "ΛΑΥΡΙΟ 4";
@@ -445,6 +445,8 @@ function updateEconomicsTab() {
         tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">No economic data available for this date.</td></tr>`;
         document.getElementById('kpiHgsida').innerText = '-';
         document.getElementById('kpiCo2').innerText = '-';
+        const co2BadgeEmpty = document.getElementById('kpiCo2Badge');
+        if (co2BadgeEmpty) co2BadgeEmpty.style.display = 'none';
         document.getElementById('kpiFleetEff').innerText = '-';
         document.getElementById('kpiAvgGasCost').innerText = '-';
         document.getElementById('kpiEcoScada').innerText = '0';
@@ -457,7 +459,12 @@ function updateEconomicsTab() {
     const co2PriceVal = dayEco["CO2 Price (€/t)"] || 0;
 
     document.getElementById('kpiHgsida').innerText = hgsidaVal.toFixed(2);
-    document.getElementById('kpiCo2').innerText = co2PriceVal > 0 ? co2PriceVal.toFixed(2) : '-';
+    const kpiCo2El = document.getElementById('kpiCo2');
+    kpiCo2El.innerText = co2PriceVal > 0 ? co2PriceVal.toFixed(2) : '-';
+    const co2Badge = document.getElementById('kpiCo2Badge');
+    if (co2Badge) {
+        co2Badge.style.display = dayEco["CO2 Price Estimated"] ? 'inline' : 'none';
+    }
     // Αφαίρεση δεκαδικών από τα συνολικά MWh
     document.getElementById('kpiEcoScada').innerText = totals["Συνολική Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     document.getElementById('kpiAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2);
