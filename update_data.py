@@ -301,9 +301,14 @@ def process_co2(date_str):
     api_key = os.environ.get('OILPRICE_API_KEY')
     if not api_key: return
     
+    # ΔΙΟΡΘΩΣΗ ΜΕΤΑΤΟΠΙΣΗΣ 1 ΗΜΕΡΑΣ: το API φαίνεται να χαρτογραφεί το "created_at" στην
+    # ημερομηνία ΕΙΣΑΓΩΓΗΣ της τιμής στη βάση του, όχι στην ημερομηνία συναλλαγής -- η τιμή
+    # που αντιστοιχεί σε date_str εμφανίζεται με "created_at" = date_str+1. Ζητάμε λοιπόν
+    # ρητά την επόμενη μέρα, και ταιριάζουμε πάνω σε ΕΚΕΙΝΗ την ημερομηνία.
+    query_date = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
     url = "https://api.oilpriceapi.com/v1/prices"
     headers = {"Authorization": f"Token {api_key}", "Content-Type": "application/json"}
-    params = {"by_code": "EU_CARBON_EUR", "by_date": date_str}
+    params = {"by_code": "EU_CARBON_EUR", "by_date": query_date}
     
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=10)
@@ -313,7 +318,7 @@ def process_co2(date_str):
                 prices_list = data["data"].get("prices", [])
                 target_price = None
                 for item in prices_list:
-                    if date_str in str(item.get("created_at", "")) or date_str in str(item.get("as_of", "")):
+                    if query_date in str(item.get("created_at", "")) or query_date in str(item.get("as_of", "")):
                         target_price = item.get("price")
                         break
                 # ΑΦΑΙΡΕΘΗΚΕ το fallback σε prices_list[0]: το API επιστρέφει "success" με την πιο
