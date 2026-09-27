@@ -216,7 +216,7 @@ def process_isp(date_str):
                 for _, row in gas_df.iterrows():
                     unit = str(row[0]).strip()
                     if not unit or unit.lower() == 'nan': continue
-                    if any(l in unit.upper() for l in ["AG_DIMITRIOS", "PTOLEMAIDA", "MEGALOPOLI", "MELITI", "AGIOS DIMITRIOS"]): continue
+                    if any(l in unit.upper() for l in ["AG_DIMITRIOS", "PTOLEMAIDA", "MEGALOPOLI4", "MEGALOPOLI3", "MELITI", "AGIOS DIMITRIOS"]): continue
                     vals = pd.to_numeric(row.iloc[2:98].astype(str).str.replace(' ', '').str.replace(',', '.'), errors='coerce')
                     daily_mwh = float(round(vals.sum() / 4, 3))
                     total_isp += daily_mwh
@@ -314,11 +314,13 @@ def process_co2(date_str):
                     if date_str in str(item.get("created_at", "")) or date_str in str(item.get("as_of", "")):
                         target_price = item.get("price")
                         break
-                if target_price is None and len(prices_list) > 0:
-                    target_price = prices_list[0].get("price")
-                    
+                # ΑΦΑΙΡΕΘΗΚΕ το fallback σε prices_list[0]: το API επιστρέφει "success" με την πιο
+                # πρόσφατη διαθέσιμη τιμή (συχνά ΧΘΕΣΙΝΗ ή παλαιότερη) ακόμα κι όταν δεν υπάρχει
+                # πραγματικό match για το date_str -- προκαλούσε είτε 1-ημέρας μετατόπιση (recent
+                # dates) είτε "κολλημένη" σημερινή τιμή σε πολύ παλιές μέρες (>30 ημερών, εκτός
+                # του ιστορικού παραθύρου του API). Καλύτερα ρητό flag παρά ψευδο-ιστορικό δεδομένο.
                 if target_price is not None:
-                    db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": float(target_price)})
+                    db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": float(target_price), "Estimated": False})
                     print(f"  [{date_str}] Fetched NEW CO2 Price from API.")
                 else:
                     db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
@@ -340,10 +342,13 @@ def process_economics(date_str):
             break
 
     co2_val = 85.0  # fallback
+    co2_estimated = True
     for c in db["co2_prices"]:
         if c.get("Ημερομηνία") == date_str:
             p = c.get("CO2_Price (€/t)")
-            if p is not None: co2_val = p
+            if p is not None:
+                co2_val = p
+                co2_estimated = bool(c.get("Estimated", False))
             break
 
     hourly_records = [r for r in db["scada_generation_hourly"] if r.get("Ημερομηνία") == date_str]
@@ -420,6 +425,7 @@ def process_economics(date_str):
         "Ημερομηνία": date_str,
         "HGSIDA (€/MWh)": float(round(hgsida_val, 2)),
         "CO2 Price (€/t)": float(round(co2_val, 2)),
+        "CO2 Price Estimated": co2_estimated,
         "Fleet Totals": {
             "Συνολική Παραγωγή (MWh)": float(round(fleet_total_mwh, 2)),
             "Συνολικό Κόστος Καυσίμου (€)": float(round(fleet_total_fuel_cost, 2)),
