@@ -62424,6 +62424,13 @@
       "HGSIWD (€/MWh)": 61.61,
       "HGMBI (€/MWh)": 67.85,
       "HGMSI (€/MWh)": 55.51
+    },
+    {
+      "Ημερομηνία": "2026-09-27",
+      "HGSIDA (€/MWh)": 60.0,
+      "HGSIWD (€/MWh)": 56.97,
+      "HGMBI (€/MWh)": 63.36,
+      "HGMSI (€/MWh)": 51.84
     }
   ],
   "dam_mcp_hourly": [
@@ -66219,72 +66226,6 @@
   ],
   "daily_gas_constraints": [
     {
-      "Date": "2026-09-21",
-      "Gas Factory": "KOMOTINI_G_1GT",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-21",
-      "Gas Factory": "KOMOTINI_G_1GT_ST",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-21",
-      "Gas Factory": "KOMOTINI_G_2GT",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-21",
-      "Gas Factory": "KOMOTINI_G_2GT_ST",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-21",
-      "Gas Factory": "ELPEDISON_THIS_G",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-21",
-      "Gas Factory": "KORINTHOS_POWER",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-21",
-      "Gas Factory": "ALIVERI5",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-23",
-      "Gas Factory": "HERON_CC",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-23",
-      "Gas Factory": "ELPEDISON_THIS_G",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-23",
-      "Gas Factory": "KORINTHOS_POWER",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-23",
-      "Gas Factory": "ALIVERI5",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
       "Date": "2026-09-11",
       "Gas Factory": "KOMOTINI_G_1GT",
       "Hour From": "10:00",
@@ -66445,84 +66386,6 @@
       "Gas Factory": "HERON_CC",
       "Hour From": "10:00",
       "Hour To": "15:00"
-    },
-    {
-      "Date": "2026-09-18",
-      "Gas Factory": "KOMOTINI_G_1GT",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-18",
-      "Gas Factory": "KOMOTINI_G_1GT_ST",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-18",
-      "Gas Factory": "KOMOTINI_G_2GT",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-18",
-      "Gas Factory": "ELPEDISON_THIS_G",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-18",
-      "Gas Factory": "KORINTHOS_POWER",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-19",
-      "Gas Factory": "KORINTHOS_POWER",
-      "Hour From": "10:00",
-      "Hour To": "15:00"
-    },
-    {
-      "Date": "2026-09-19",
-      "Gas Factory": "ALIVERI5",
-      "Hour From": "10:00",
-      "Hour To": "15:00"
-    },
-    {
-      "Date": "2026-09-19",
-      "Gas Factory": "HERON_CC",
-      "Hour From": "10:00",
-      "Hour To": "15:00"
-    },
-    {
-      "Date": "2026-09-19",
-      "Gas Factory": "PROTERGIA_CC",
-      "Hour From": "10:00",
-      "Hour To": "15:00"
-    },
-    {
-      "Date": "2026-09-20",
-      "Gas Factory": "HERON_CC",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-20",
-      "Gas Factory": "ALIVERI5",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-20",
-      "Gas Factory": "PROTERGIA_CC",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
-    },
-    {
-      "Date": "2026-09-20",
-      "Gas Factory": "ELPEDISON_THIS_G",
-      "Hour From": "10:00",
-      "Hour To": "14:00"
     },
     {
       "Date": "2026-09-10",
@@ -67600,12 +67463,6 @@
     },
     {
       "Date": "2026-07-26",
-      "Gas Factory": "AGRAS",
-      "Hour From": "10:00",
-      "Hour To": "15:00"
-    },
-    {
-      "Date": "2026-07-26",
       "Gas Factory": "ELPEDISON_THIS_G",
       "Hour From": "10:00",
       "Hour To": "15:00"
@@ -68497,6 +68354,282 @@
       "Gas Factory": "HERON_CC",
       "Hour From": "10:00",
       "Hour To": "14:30"
+    },
+    {
+      "Date": "2026-09-18",
+      "Gas Factory": "KOMOTINI_G_1GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-18",
+      "Gas Factory": "KOMOTINI_G_1GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-18",
+      "Gas Factory": "KOMOTINI_G_2GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-18",
+      "Gas Factory": "ELPEDISON_THIS_G",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-18",
+      "Gas Factory": "KORINTHOS_POWER",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-19",
+      "Gas Factory": "KORINTHOS_POWER",
+      "Hour From": "10:00",
+      "Hour To": "15:00"
+    },
+    {
+      "Date": "2026-09-19",
+      "Gas Factory": "ALIVERI5",
+      "Hour From": "10:00",
+      "Hour To": "15:00"
+    },
+    {
+      "Date": "2026-09-19",
+      "Gas Factory": "HERON_CC",
+      "Hour From": "10:00",
+      "Hour To": "15:00"
+    },
+    {
+      "Date": "2026-09-19",
+      "Gas Factory": "PROTERGIA_CC",
+      "Hour From": "10:00",
+      "Hour To": "15:00"
+    },
+    {
+      "Date": "2026-09-20",
+      "Gas Factory": "HERON_CC",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-20",
+      "Gas Factory": "ALIVERI5",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-20",
+      "Gas Factory": "PROTERGIA_CC",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-20",
+      "Gas Factory": "ELPEDISON_THIS_G",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-21",
+      "Gas Factory": "KOMOTINI_G_1GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-21",
+      "Gas Factory": "KOMOTINI_G_1GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-21",
+      "Gas Factory": "KOMOTINI_G_2GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-21",
+      "Gas Factory": "KOMOTINI_G_2GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-21",
+      "Gas Factory": "ELPEDISON_THIS_G",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-21",
+      "Gas Factory": "KORINTHOS_POWER",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-21",
+      "Gas Factory": "ALIVERI5",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-23",
+      "Gas Factory": "HERON_CC",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-23",
+      "Gas Factory": "ELPEDISON_THIS_G",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-23",
+      "Gas Factory": "KORINTHOS_POWER",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-23",
+      "Gas Factory": "ALIVERI5",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "KOMOTINI_G_1GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "KOMOTINI_G_1GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "KOMOTINI_G_2GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "KOMOTINI_G_2GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "LAVRIO4_G_1GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "LAVRIO4_G_1GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "LAVRIO4_G_2GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "LAVRIO4_G_2GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "LAVRIO4_G_3GT",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "LAVRIO4_G_3GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "HERON_CC",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-24",
+      "Gas Factory": "PROTERGIA_CC",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-25",
+      "Gas Factory": "LAVRIO4_G_1GT_ST",
+      "Hour From": "10:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-26",
+      "Gas Factory": "ALIVERI5",
+      "Hour From": "11:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-26",
+      "Gas Factory": "KORINTHOS_POWER",
+      "Hour From": "11:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-26",
+      "Gas Factory": "ELPEDISON_THIS_G",
+      "Hour From": "11:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-27",
+      "Gas Factory": "PROTERGIA_CC",
+      "Hour From": "10:00",
+      "Hour To": "15:00"
+    },
+    {
+      "Date": "2026-09-27",
+      "Gas Factory": "ALIVERI5",
+      "Hour From": "10:00",
+      "Hour To": "15:00"
+    },
+    {
+      "Date": "2026-09-27",
+      "Gas Factory": "HERON_CC",
+      "Hour From": "10:00",
+      "Hour To": "15:00"
+    },
+    {
+      "Date": "2026-09-28",
+      "Gas Factory": "PROTERGIA_CC",
+      "Hour From": "11:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-28",
+      "Gas Factory": "KORINTHOS_POWER",
+      "Hour From": "11:00",
+      "Hour To": "14:00"
+    },
+    {
+      "Date": "2026-09-28",
+      "Gas Factory": "HERON_CC",
+      "Hour From": "11:00",
+      "Hour To": "14:00"
     }
   ],
   "co2_prices": [
@@ -69074,13 +69207,13 @@
       "Estimated": false
     },
     {
-      "Ημερομηνία": "2026-09-20",
-      "CO2_Price (€/t)": null
-    },
-    {
       "Ημερομηνία": "2026-09-21",
       "CO2_Price (€/t)": 86.59,
       "Estimated": false
+    },
+    {
+      "Ημερομηνία": "2026-09-20",
+      "CO2_Price (€/t)": null
     },
     {
       "Ημερομηνία": "2026-09-27",
@@ -82601,79 +82734,79 @@
     },
     {
       "Ημερομηνία": "2026-09-27",
-      "HGSIDA (€/MWh)": 50.0,
+      "HGSIDA (€/MWh)": 60.0,
       "CO2 Price (€/t)": 85.0,
       "CO2 Price Estimated": true,
       "Fleet Totals": {
         "Συνολική Παραγωγή (MWh)": 27460.0,
-        "Συνολικό Κόστος Καυσίμου (€)": 2779884.52,
+        "Συνολικό Κόστος Καυσίμου (€)": 3335861.43,
         "Συνολικό Κόστος CO2 (€)": 943517.73,
-        "Συνολικό Κόστος Στόλου (€)": 3723402.26,
-        "Μέσο SRMC Στόλου (€/MWh)": 135.59,
+        "Συνολικό Κόστος Στόλου (€)": 4279379.16,
+        "Μέσο SRMC Στόλου (€/MWh)": 155.84,
         "Συνολικοί Τόνοι CO2 (t)": 11100.21
       },
       "Units": [
         {
           "Μονάδα": "ELPEDISON_THISVI",
           "Παραγωγή (MWh)": 960.0,
-          "Κόστος Καυσίμου (€)": 108351.72,
+          "Κόστος Καυσίμου (€)": 130022.07,
           "Κόστος CO2 (€)": 35352.17,
-          "Συνολικό Κόστος (€)": 143703.89,
-          "SRMC Μέσος Όρος (€/MWh)": 149.69,
+          "Συνολικό Κόστος (€)": 165374.24,
+          "SRMC Μέσος Όρος (€/MWh)": 172.26,
           "Εκπομπές CO2 (t)": 415.91
         },
         {
           "Μονάδα": "KORINTHOS_POWER",
           "Παραγωγή (MWh)": 3718.0,
-          "Κόστος Καυσίμου (€)": 376318.86,
+          "Κόστος Καυσίμου (€)": 451582.63,
           "Κόστος CO2 (€)": 129732.48,
-          "Συνολικό Κόστος (€)": 506051.34,
-          "SRMC Μέσος Όρος (€/MWh)": 136.11,
+          "Συνολικό Κόστος (€)": 581315.11,
+          "SRMC Μέσος Όρος (€/MWh)": 156.35,
           "Εκπομπές CO2 (t)": 1526.26
         },
         {
           "Μονάδα": "PROTERGIA_CC",
           "Παραγωγή (MWh)": 7101.0,
-          "Κόστος Καυσίμου (€)": 678070.84,
+          "Κόστος Καυσίμου (€)": 813685.01,
           "Κόστος CO2 (€)": 233995.85,
-          "Συνολικό Κόστος (€)": 912066.69,
-          "SRMC Μέσος Όρος (€/MWh)": 128.44,
+          "Συνολικό Κόστος (€)": 1047680.86,
+          "SRMC Μέσος Όρος (€/MWh)": 147.54,
           "Εκπομπές CO2 (t)": 2752.89
         },
         {
           "Μονάδα": "ΑΛΙΒΕΡΙ 5",
           "Παραγωγή (MWh)": 6385.0,
-          "Κόστος Καυσίμου (€)": 640456.32,
+          "Κόστος Καυσίμου (€)": 768547.58,
           "Κόστος CO2 (€)": 219080.21,
-          "Συνολικό Κόστος (€)": 859536.52,
-          "SRMC Μέσος Όρος (€/MWh)": 134.62,
+          "Συνολικό Κόστος (€)": 987627.79,
+          "SRMC Μέσος Όρος (€/MWh)": 154.68,
           "Εκπομπές CO2 (t)": 2577.41
         },
         {
           "Μονάδα": "ΑΛΟΥΜΙΝΙΟ",
           "Παραγωγή (MWh)": 3158.0,
-          "Κόστος Καυσίμου (€)": 328124.64,
+          "Κόστος Καυσίμου (€)": 393749.57,
           "Κόστος CO2 (€)": 107278.45,
-          "Συνολικό Κόστος (€)": 435403.09,
-          "SRMC Μέσος Όρος (€/MWh)": 137.87,
+          "Συνολικό Κόστος (€)": 501028.02,
+          "SRMC Μέσος Όρος (€/MWh)": 158.65,
           "Εκπομπές CO2 (t)": 1262.1
         },
         {
           "Μονάδα": "ΘΗΣ ΗΡΩΝ",
           "Παραγωγή (MWh)": 6108.0,
-          "Κόστος Καυσίμου (€)": 644990.71,
+          "Κόστος Καυσίμου (€)": 773988.86,
           "Κόστος CO2 (€)": 216854.58,
-          "Συνολικό Κόστος (€)": 861845.29,
-          "SRMC Μέσος Όρος (€/MWh)": 141.1,
+          "Συνολικό Κόστος (€)": 990843.43,
+          "SRMC Μέσος Όρος (€/MWh)": 162.22,
           "Εκπομπές CO2 (t)": 2551.23
         },
         {
           "Μονάδα": "ΛΑΥΡΙΟ 4",
           "Παραγωγή (MWh)": 30.0,
-          "Κόστος Καυσίμου (€)": 3571.43,
+          "Κόστος Καυσίμου (€)": 4285.71,
           "Κόστος CO2 (€)": 1224.0,
-          "Συνολικό Κόστος (€)": 4795.43,
-          "SRMC Μέσος Όρος (€/MWh)": 159.85,
+          "Συνολικό Κόστος (€)": 5509.71,
+          "SRMC Μέσος Όρος (€/MWh)": 183.66,
           "Εκπομπές CO2 (t)": 14.4
         }
       ]
