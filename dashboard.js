@@ -172,6 +172,9 @@ function getCanonicalUnitName(rawName) {
     if (clean.includes("HERON") || clean.includes("ΘΗΣ ΗΡΩΝ") || clean.includes("ΗΡΩΝ")) return "ΘΗΣ ΗΡΩΝ";
     if (clean.includes("MEGALOPOLI") || clean.includes("ΜΕΓΑΛΟΠΟΛΗ")) return "ΜΕΓΑΛΟΠΟΛΗ 5";
     if (clean.includes("THISVI") || clean.includes("ΘΗΣΒ")) return "ELPEDISON_THISVI";
+    // Ονόματα από το sheet GenericConstraints του ISP: ELPEDISON_THIS_G (Θίσβη) / ELPEDISON_THES_G (Θεσσαλονίκη)
+    if (clean.includes("ELPEDISON") && clean.includes("THIS")) return "ELPEDISON_THISVI";
+    if (clean.includes("ELPEDISON") && clean.includes("THES")) return "ELPEDISON_THESS";
     if (clean.includes("KORINTHOS") || clean.includes("ΚΟΡΙΝΘΟΣ")) return "KORINTHOS_POWER";
     if (clean.includes("THESSALONIKI") || (clean.includes("THESS") && clean.includes("ELPEDISON"))) return "ELPEDISON_THESS";
     if (clean.includes("ALIVERI") || clean.includes("ΑΛΙΒΕΡΙ")) return "ΑΛΙΒΕΡΙ 5";
@@ -758,6 +761,28 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
 // ==========================================
 // TAB 4: SYSTEM NEEDS (SURPLUS & CONSTRAINTS)
 // ==========================================
+// Μέρα με διαθέσιμο SCADA: ΙΔΙΟΣ κανόνας με το dropdown ημερομηνιών (συνολική παραγωγή Φ.Α. > 0).
+// Κρίνεται ΜΟΝΟ από το SCADA, ποτέ από τα constraints/surplus: μέρα χωρίς constraints ή με 0 MWh είναι έγκυρη μέρα.
+function getScadaReadyDays() {
+    const totals = {}, unitSums = {};
+    (rawData && rawData.scada ? rawData.scada : []).forEach(d => {
+        const vals = Object.values(d);
+        const day = parseDate(vals[0]);
+        const uName = String(vals[1]).trim();
+        const v = parseNum(vals[2]);
+        if (uName === "TOTAL GAS UNITS" || uName.includes("Σύνολο")) {
+            totals[day] = (totals[day] || 0) + v;
+        } else if (uName !== "NAN") {
+            unitSums[day] = (unitSums[day] || 0) + v;
+        }
+    });
+    const ready = new Set();
+    new Set([...Object.keys(totals), ...Object.keys(unitSums)]).forEach(day => {
+        if ((totals[day] || 0) > 0 || (unitSums[day] || 0) > 0) ready.add(day);
+    });
+    return ready;
+}
+
 function updateSurplusTab() {
     const monthSelect = document.getElementById('monthSelect');
     if (!monthSelect || !rawData || !rawData.daily_surplus || !rawData.daily_gas_constraints || !rawData.scadaHourly) return;
@@ -792,6 +817,18 @@ function updateSurplusTab() {
                 constraintsByDay[d][unit].hEnd = Math.max(constraintsByDay[d][unit].hEnd, hEnd);
             }
         }
+    });
+
+    // Δίχτυ ασφαλείας: μονάδα constraint που δεν ταιριάζει με καμία μονάδα SCADA θα μετρούσε σιωπηλά 0 MWh
+    const scadaCanonNames = new Set(rawData.scadaHourly.map(r => getCanonicalUnitName(String(Object.values(r)[1]).trim())));
+    const warnedUnits = new Set();
+    Object.values(constraintsByDay).forEach(units => {
+        Object.keys(units).forEach(u => {
+            if (!scadaCanonNames.has(u) && !warnedUnits.has(u)) {
+                warnedUnits.add(u);
+                console.warn(`[Constraints] Η μονάδα "${u}" δεν ταιριάζει με καμία μονάδα SCADA — τα MWh της δεν προσμετρώνται.`);
+            }
+        });
     });
 
     let dailyConstrainedMwh = {};
@@ -832,7 +869,11 @@ function updateSurplusTab() {
         }
     });
 
-    const allDatesInMonth = [...new Set([...Object.keys(dailyConstrainedMwh), ...Object.keys(dailySurplusMap)])].sort();
+    // Εκτός γραφήματος μένουν ΜΟΝΟ οι μέρες χωρίς SCADA (pending). Μέρα με 0 constraints ή 0 surplus μένει μέσα.
+    const readyDays = getScadaReadyDays();
+    const allDatesInMonth = [...new Set([...Object.keys(dailyConstrainedMwh), ...Object.keys(dailySurplusMap)])]
+        .filter(day => readyDays.has(day))
+        .sort();
     
     const labels = [];
     const surplusData = [];
