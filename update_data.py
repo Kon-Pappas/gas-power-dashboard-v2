@@ -177,6 +177,67 @@ def process_scada(date_str):
     except Exception as e:
         print(f"Error parsing SCADA for {date_str}: {e}")
 
+# ==========================================
+# GENERIC CONSTRAINTS (από το τελευταίο sheet του ISP2)
+# ==========================================
+# Λίστα ΕΠΙΤΡΕΠΟΜΕΝΩΝ μονάδων Φ.Α. (όχι λίστα αποκλεισμών): το sheet περιέχει και λιγνίτη/υδροηλεκτρικά.
+CONSTRAINT_GAS_PREFIXES = ("ALIVERI", "HERON", "PROTERGIA", "KORINTHOS", "ELPEDISON", "KOMOTINI",
+                           "LAVRIO", "MEGALOPOLI_V", "AG_NIKOLAOS", "THESSALONIKI", "THISVI")
+# Γνωστές μονάδες που εξαιρούνται ΠΑΝΤΑ (δεν τυπώνονται στο log ως "άγνωστες"):
+# ALOUMINIO = συμπαραγωγή με κλειδωμένη παραγωγή 24/7, PTOLEMAIDA = λιγνίτης, AGRAS = μεγάλο υδροηλεκτρικό.
+CONSTRAINT_KNOWN_EXCLUDED = ("ALOUMINIO", "PTOLEMAIDA", "AGRAS")
+
+def is_gas_constraint_unit(unit):
+    return str(unit).strip().upper().startswith(CONSTRAINT_GAS_PREFIXES)
+
+def extract_constraints(xl, date_str):
+    """Γράφει στο daily_gas_constraints μία γραμμή ανά (μέρα, μονάδα Φ.Α., παράθυρο). Το ISP δίνει ΜΟΝΟ
+    μονάδες και ώρες· τα MWh υπολογίζονται στο dashboard από τα ωριαία SCADA."""
+    sheet = next((s for s in xl.sheet_names if str(s).upper().endswith("GENERICCONSTRAINTS")), None)
+    if not sheet:
+        return
+    df = xl.parse(sheet, header=None)
+    hdr_idx = None
+    for i in range(min(6, len(df))):
+        vals = [str(v).strip() for v in df.iloc[i].tolist()]
+        if "Unit" in vals and "Start Time" in vals and "End Time" in vals:
+            hdr_idx = i
+            break
+    if hdr_idx is None:
+        print(f"  [{date_str}] Constraints: δεν βρέθηκε header στο sheet '{sheet}'.")
+        return
+    body = df.iloc[hdr_idx + 1:].copy()
+    body.columns = [str(v).strip() for v in df.iloc[hdr_idx].tolist()]
+
+    day_start = pd.Timestamp(date_str)
+    day_end = day_start + pd.Timedelta(days=1)
+    seen, unknown_skipped = set(), set()
+    for _, r in body.iterrows():
+        unit = str(r["Unit"]).strip()
+        if not unit or unit.lower() == "nan":
+            continue
+        if not is_gas_constraint_unit(unit):
+            if not unit.upper().startswith(CONSTRAINT_KNOWN_EXCLUDED):
+                unknown_skipped.add(unit)
+            continue
+        start = pd.to_datetime(r["Start Time"], errors="coerce")
+        end = pd.to_datetime(r["End Time"], errors="coerce")
+        if pd.isna(start) or pd.isna(end):
+            continue
+        start, end = max(start, day_start), min(end, day_end)   # κόβουμε στα όρια της μέρας
+        if end <= start:
+            continue
+        h_from = start.strftime("%H:%M")
+        h_to = "24:00" if end >= day_end else end.strftime("%H:%M")
+        key = (unit, h_from, h_to)
+        if key in seen:
+            continue
+        seen.add(key)
+        db["daily_gas_constraints"].append({"Date": date_str, "Gas Factory": unit, "Hour From": h_from, "Hour To": h_to})
+    if unknown_skipped:
+        print(f"  [{date_str}] Constraints: μονάδες εκτός λίστας Φ.Α. (έλεγξε αν χρειάζεται να προστεθούν): {sorted(unknown_skipped)}")
+    print(f"  [{date_str}] Constraints: {len(seen)} γραμμές Φ.Α.")
+
 def process_isp(date_str):
     url = get_admie_excel_url(date_str, "ISP2ISPResults")
     if not url: return
@@ -184,6 +245,10 @@ def process_isp(date_str):
     if not excel_data: return
     try:
         xl = pd.ExcelFile(excel_data)
+        try:
+            extract_constraints(xl, date_str)
+        except Exception as e:
+            print(f"Error parsing Generic Constraints for {date_str}: {e}")
         target_sheet = xl.sheet_names[0]
         for s in xl.sheet_names:
             if str(s).upper().endswith("_ISP"):
@@ -455,11 +520,18 @@ def wipe_date(target_date_str):
     db["scada_generation_hourly"] = [d for d in db["scada_generation_hourly"] if d.get("Ημερομηνία") != target_date_str]
     db["daily_economics"] = [d for d in db["daily_economics"] if d.get("Ημερομηνία") != target_date_str]
     db["daily_surplus"] = [d for d in db["daily_surplus"] if d.get("Date") != target_date_str]
+    db["daily_gas_constraints"] = [d for d in db["daily_gas_constraints"] if d.get("Date") != target_date_str]
     # ΔΕΝ διαγράφουμε henex και co2, γιατί αυτά είναι σωστά και γλιτώνουμε API calls!
 
 if __name__ == "__main__":
     today = datetime.now(TZ)
     print(f"Starting Data Fetch Job at {today.strftime('%Y-%m-%d %H:%M:%S')}")
+
+    # Εκκαθάριση: ό,τι δεν είναι μονάδα Φ.Α. (π.χ. η γραμμή AGRAS = υδροηλεκτρικό) φεύγει από τα constraints.
+    _before = len(db["daily_gas_constraints"])
+    db["daily_gas_constraints"] = [d for d in db["daily_gas_constraints"] if is_gas_constraint_unit(d.get("Gas Factory"))]
+    if _before != len(db["daily_gas_constraints"]):
+        print(f"Cleanup: αφαιρέθηκαν {_before - len(db['daily_gas_constraints'])} γραμμές constraints εκτός μονάδων Φ.Α.")
     
     start_env = os.environ.get('START_DATE')
     end_env = os.environ.get('END_DATE')
