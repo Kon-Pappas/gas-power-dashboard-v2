@@ -354,52 +354,47 @@ def process_dam(date_str):
         except: pass
 
 def process_co2(date_str):
-    # ΕΞΥΠΝΟΣ ΚΟΦΤΗΣ: Ελέγχουμε αν η τιμή CO2 υπάρχει ΗΔΗ στο historical.json
+    # Δεν κάνει πλέον κλήση API εδώ (βλ. fetch_latest_co2_price). Μόνο εκκαθαρίζει τυχόν
+    # ορφανή εγγραφή None, ώστε το process_economics να πέσει καθαρά στο fallback 85.00/estimated.
     for c in db["co2_prices"]:
         if c.get("Ημερομηνία") == date_str and c.get("CO2_Price (€/t)") is not None:
-            print(f"  [{date_str}] CO2 Price already exists. Skipping API call.")
-            return 
-
-    # Αν ΔΕΝ υπάρχει (ήταν None/κενή), καθαρίζουμε τυχόν άκυρη εγγραφή
+            return
     db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != date_str]
-    
+
+def fetch_latest_co2_price(today_str):
+    """Καλείται ΜΙΑ φορά ανά εκτέλεση, ΜΟΝΟ από το καθημερινό cron (ποτέ σε manual backfill).
+    Χρησιμοποιεί το ΤΕΚΜΗΡΙΩΜΕΝΟ /v1/prices/latest (1 request), όχι το /v1/prices?by_date που
+    δεν τεκμηριώνεται επίσημα και προκαλούσε μετατόπιση ημερομηνίας. Το /latest δεν δέχεται
+    ημερομηνία -- η τιμή που επιστρέφει ανατίθεται στη ΣΗΜΕΡΙΝΗ μέρα ως γνωστή απλοποίηση
+    (ίδιας λογικής με το "Pending SCADA"): μπορεί να αντανακλά το πιο πρόσφατο κλείσιμο αν η
+    αγορά δεν έχει κλείσει ακόμα σήμερα."""
+    for c in db["co2_prices"]:
+        if c.get("Ημερομηνία") == today_str and c.get("CO2_Price (€/t)") is not None:
+            print(f"  [{today_str}] CO2 Price already exists. Skipping API call.")
+            return
+
     api_key = os.environ.get('OILPRICE_API_KEY')
     if not api_key: return
-    
-    # ΔΙΟΡΘΩΣΗ ΜΕΤΑΤΟΠΙΣΗΣ 1 ΗΜΕΡΑΣ: το API φαίνεται να χαρτογραφεί το "created_at" στην
-    # ημερομηνία ΕΙΣΑΓΩΓΗΣ της τιμής στη βάση του, όχι στην ημερομηνία συναλλαγής -- η τιμή
-    # που αντιστοιχεί σε date_str εμφανίζεται με "created_at" = date_str+1. Ζητάμε λοιπόν
-    # ρητά την επόμενη μέρα, και ταιριάζουμε πάνω σε ΕΚΕΙΝΗ την ημερομηνία.
-    query_date = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-    url = "https://api.oilpriceapi.com/v1/prices"
+
+    db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != today_str]
+    url = "https://api.oilpriceapi.com/v1/prices/latest"
     headers = {"Authorization": f"Token {api_key}", "Content-Type": "application/json"}
-    params = {"by_code": "EU_CARBON_EUR", "by_date": query_date}
-    
+    params = {"by_code": "EU_CARBON_EUR"}
+
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=10)
         if resp.status_code == 200:
             data = resp.json()
-            if data.get("status") == "success" and data.get("data"):
-                prices_list = data["data"].get("prices", [])
-                target_price = None
-                for item in prices_list:
-                    if query_date in str(item.get("created_at", "")) or query_date in str(item.get("as_of", "")):
-                        target_price = item.get("price")
-                        break
-                # ΑΦΑΙΡΕΘΗΚΕ το fallback σε prices_list[0]: το API επιστρέφει "success" με την πιο
-                # πρόσφατη διαθέσιμη τιμή (συχνά ΧΘΕΣΙΝΗ ή παλαιότερη) ακόμα κι όταν δεν υπάρχει
-                # πραγματικό match για το date_str -- προκαλούσε είτε 1-ημέρας μετατόπιση (recent
-                # dates) είτε "κολλημένη" σημερινή τιμή σε πολύ παλιές μέρες (>30 ημερών, εκτός
-                # του ιστορικού παραθύρου του API). Καλύτερα ρητό flag παρά ψευδο-ιστορικό δεδομένο.
-                if target_price is not None:
-                    db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": float(target_price), "Estimated": False})
-                    print(f"  [{date_str}] Fetched NEW CO2 Price from API.")
-                else:
-                    db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
+            price = data.get("data", {}).get("price") if data.get("status") == "success" else None
+            if price is not None:
+                db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": float(price), "Estimated": False})
+                print(f"  [{today_str}] Fetched latest CO2 price from API: {price}")
             else:
-                db["co2_prices"].append({"Ημερομηνία": date_str, "CO2_Price (€/t)": None})
-    except:
-        pass
+                db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": None})
+        else:
+            db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": None})
+    except Exception as e:
+        print(f"  [{today_str}] CO2 API error: {e}")
 
 # ==========================================
 # PROCESSOR (ADVANCED ECONOMICS ENGINE)
@@ -549,6 +544,7 @@ if __name__ == "__main__":
         print("Standard daily cron triggered. Checking last 10 days.")
         for i in range(10, -1, -1):
             date_list.append(today - timedelta(days=i))
+        fetch_latest_co2_price(today.strftime("%Y-%m-%d"))  # 1 κλήση/run, ΜΟΝΟ στο cron, ποτέ σε backfill
             
     for target_date in date_list:
         date_str = target_date.strftime("%Y-%m-%d")
