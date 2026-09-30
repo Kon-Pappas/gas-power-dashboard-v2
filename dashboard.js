@@ -466,6 +466,11 @@ function updateEconomicsTab() {
     kpiCo2El.innerText = co2PriceVal > 0 ? co2PriceVal.toFixed(2) : '-';
     const co2Badge = document.getElementById('kpiCo2Badge');
     if (co2Badge) {
+        const langCo2 = (typeof currentLang !== 'undefined') ? currentLang : 'en';
+        co2Badge.innerText = langCo2 === 'el' ? 'εκτίμηση' : 'estimated';
+        co2Badge.title = langCo2 === 'el'
+            ? 'Δεν υπάρχει διαθέσιμη πραγματική τιμή CO2 για αυτή τη μέρα. Χρησιμοποιείται εκτίμηση.'
+            : 'No real CO2 price is available for this day. An estimated value is used.';
         co2Badge.style.display = dayEco["CO2 Price Estimated"] ? 'inline' : 'none';
     }
     // Αφαίρεση δεκαδικών από τα συνολικά MWh
