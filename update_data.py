@@ -373,10 +373,29 @@ def fetch_latest_co2_price(today_str):
             print(f"  [{today_str}] CO2 Price already exists. Skipping API call.")
             return
 
+    db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != today_str]
+
+    # ΣΑΒΒΑΤΟΚΥΡΙΑΚΟ: η αγορά EUA είναι κλειστή, δεν έχει νόημα να ζητήσουμε API (γλιτώνουμε calls).
+    # Κουβαλάμε την τελευταία ΠΡΑΓΜΑΤΙΚΗ τιμή (Estimated:false) -- ΠΟΤΕ μια ήδη-εκτιμημένη τιμή,
+    # για να μη "χτίζεται" σφάλμα πάνω σε σφάλμα -- σημειωμένη ως estimated.
+    if datetime.strptime(today_str, "%Y-%m-%d").weekday() >= 5:
+        last_real = sorted(
+            [c for c in db["co2_prices"] if c.get("Ημερομηνία") < today_str
+             and c.get("CO2_Price (€/t)") is not None and c.get("Estimated") is False],
+            key=lambda c: c["Ημερομηνία"]
+        )
+        if last_real:
+            src = last_real[-1]
+            db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": src["CO2_Price (€/t)"], "Estimated": True})
+            print(f"  [{today_str}] Σαββατοκύριακο -- κρατάμε την τιμή της {src['Ημερομηνία']} ({src['CO2_Price (€/t)']}) ως estimated. Καμία κλήση API.")
+        else:
+            db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": None})
+            print(f"  [{today_str}] Σαββατοκύριακο, καμία προηγούμενη πραγματική τιμή για forward-fill.")
+        return
+
     api_key = os.environ.get('OILPRICE_API_KEY')
     if not api_key: return
 
-    db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != today_str]
     url = "https://api.oilpriceapi.com/v1/prices/latest"
     headers = {"Authorization": f"Token {api_key}", "Content-Type": "application/json"}
     params = {"by_code": "EU_CARBON_EUR"}
@@ -394,6 +413,9 @@ def fetch_latest_co2_price(today_str):
         else:
             db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": None})
     except Exception as e:
+        # ΔΙΟΡΘΩΣΗ: πριν, ένα exception εδώ άφηνε τη μέρα ΧΩΡΙΣ ΚΑΜΙΑ εγγραφή -- η μέρα "χανόταν"
+        # σιωπηλά, χωρίς καν το ρητό None που θα την έδειχνε ως δοκιμασμένη-αλλά-αποτυχημένη.
+        db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": None})
         print(f"  [{today_str}] CO2 API error: {e}")
 
 # ==========================================
