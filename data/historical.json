@@ -83311,7 +83311,7 @@
     {
       "Ημερομηνία": "2026-09-27",
       "HGSIDA (€/MWh)": 60.0,
-      "CO2 Price (€/t)": 85.0,
+      "CO2 Price (€/t)": 86.78,
       "CO2 Price Estimated": true,
       "Fleet Totals": {
         "Συνολική Παραγωγή (MWh)": 27460.0,
@@ -83390,7 +83390,7 @@
     {
       "Ημερομηνία": "2026-09-28",
       "HGSIDA (€/MWh)": 60.76,
-      "CO2 Price (€/t)": 85.0,
+      "CO2 Price (€/t)": 86.78,
       "CO2 Price Estimated": true,
       "Fleet Totals": {
         "Συνολική Παραγωγή (MWh)": 35852.0,
