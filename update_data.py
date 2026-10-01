@@ -424,11 +424,16 @@ def fetch_latest_co2_price(today_str):
 def process_economics(date_str):
     db["daily_economics"] = [d for d in db["daily_economics"] if d.get("Ημερομηνία") != date_str]
 
-    hgsida_val = 50.0  # fallback
-    for h in db["henex_indices"]:
-        if h.get("Ημερομηνία") == date_str:
-            hgsida_val = h.get("HGSIDA (€/MWh)", 50.0)
-            break
+    # Το ΗΕνΕξ δημοσιεύει το HGSIDA αργότερα μέσα στη μέρα (το πρωινό run στις 07:00 συνήθως
+    # προλαβαίνει πριν βγει) -- αν δεν υπάρχει ΑΚΟΜΑ γνήσια εγγραφή, δεν γράφουμε economics
+    # καθόλου για σήμερα, αντί να προχωράμε με fallback 50.0 και να παράγουμε μισό-σωστή
+    # εγγραφή κόστους. Το dashboard ήδη δείχνει σωστά "δεν υπάρχουν ακόμα δεδομένα" όταν λείπει
+    # η εγγραφή -- το μεσημεριανό run θα τη γράψει πλήρη μόλις βγει το ΗΕνΕξ.
+    henex_entry = next((h for h in db["henex_indices"] if h.get("Ημερομηνία") == date_str), None)
+    if henex_entry is None:
+        print(f"  [{date_str}] HGSIDA δεν έχει δημοσιευτεί ακόμα -- economics αναβάλλονται για το επόμενο run.")
+        return
+    hgsida_val = henex_entry.get("HGSIDA (€/MWh)", 50.0)
 
     co2_val = 85.0  # fallback
     co2_estimated = True
