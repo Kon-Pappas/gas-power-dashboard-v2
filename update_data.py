@@ -308,21 +308,31 @@ def process_henex(date_str):
                 df.columns = df.iloc[header_idx]
                 df = df.iloc[header_idx+1:]
                 hgsida = hgsiwd = hgmbi = hgmsi = 0.0
+                found_da = False
                 for _, row in df.iterrows():
                     contract = str(row.get("Contract", "")).strip()
-                    if contract == "DA": hgsida = pd.to_numeric(str(row.get("HGSIDA", 0)).replace(',', '.'), errors='coerce')
+                    if contract == "DA":
+                        hgsida = pd.to_numeric(str(row.get("HGSIDA", 0)).replace(',', '.'), errors='coerce')
+                        if pd.notna(hgsida) and hgsida > 0:
+                            found_da = True
                     elif contract == "WD":
                         hgsiwd = pd.to_numeric(str(row.get("HGSIWD", 0)).replace(',', '.'), errors='coerce')
                         hgmbi = pd.to_numeric(str(row.get("HGMBI", 0)).replace(',', '.'), errors='coerce')
                         hgmsi = pd.to_numeric(str(row.get("HGMSI", 0)).replace(',', '.'), errors='coerce')
-                db["henex_indices"].append({
-                    "Ημερομηνία": date_str, 
-                    "HGSIDA (€/MWh)": 0.0 if pd.isna(hgsida) else float(hgsida),
-                    "HGSIWD (€/MWh)": 0.0 if pd.isna(hgsiwd) else float(hgsiwd),
-                    "HGMBI (€/MWh)": 0.0 if pd.isna(hgmbi) else float(hgmbi),
-                    "HGMSI (€/MWh)": 0.0 if pd.isna(hgmsi) else float(hgmsi)
-                })
-                break
+                # ΔΙΟΡΘΩΣΗ: το ΗΕνΕξ δημοσιεύει μερικές φορές πρώτα ένα "άδειο" αρχείο (μόνο headers,
+                # καμία γραμμή DA) πριν συμπληρωθούν τα πραγματικά δεδομένα -- πριν, αυτό γραφόταν σαν
+                # επιτυχία με HGSIDA=0.0 και η συνάρτηση δεν ξαναδοκίμαζε τις επόμενες εκδόσεις (v02/v03).
+                # Τώρα: δεχόμαστε την εγγραφή ΜΟΝΟ αν βρέθηκε πραγματική γραμμή DA με τιμή > 0.
+                if found_da:
+                    db["henex_indices"].append({
+                        "Ημερομηνία": date_str,
+                        "HGSIDA (€/MWh)": float(hgsida),
+                        "HGSIWD (€/MWh)": 0.0 if pd.isna(hgsiwd) else float(hgsiwd),
+                        "HGMBI (€/MWh)": 0.0 if pd.isna(hgmbi) else float(hgmbi),
+                        "HGMSI (€/MWh)": 0.0 if pd.isna(hgmsi) else float(hgmsi)
+                    })
+                    break
+                # αλλιώς: συνεχίζουμε στην επόμενη έκδοση (v02/v03) αντί να κάνουμε break σε κενό αρχείο
         except: pass
 
 def process_dam(date_str):
@@ -430,10 +440,12 @@ def process_economics(date_str):
     # εγγραφή κόστους. Το dashboard ήδη δείχνει σωστά "δεν υπάρχουν ακόμα δεδομένα" όταν λείπει
     # η εγγραφή -- το μεσημεριανό run θα τη γράψει πλήρη μόλις βγει το ΗΕνΕξ.
     henex_entry = next((h for h in db["henex_indices"] if h.get("Ημερομηνία") == date_str), None)
-    if henex_entry is None:
+    hgsida_val = henex_entry.get("HGSIDA (€/MWh)", 0.0) if henex_entry else 0.0
+    # Δίχτυ ασφαλείας: ΟΥΤΕ το HGSIDA μπορεί γνήσια να είναι 0 (ποτέ δεν συμβαίνει στην πράξη) --
+    # αν η εγγραφή λείπει Η ΕΧΕΙ 0, θεωρούμε ότι το ΗΕνΕξ δεν έχει δημοσιεύσει ακόμα.
+    if henex_entry is None or hgsida_val <= 0:
         print(f"  [{date_str}] HGSIDA δεν έχει δημοσιευτεί ακόμα -- economics αναβάλλονται για το επόμενο run.")
         return
-    hgsida_val = henex_entry.get("HGSIDA (€/MWh)", 50.0)
 
     co2_val = 85.0  # fallback
     co2_estimated = True
