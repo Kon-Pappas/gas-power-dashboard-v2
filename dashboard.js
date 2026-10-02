@@ -8,7 +8,7 @@ let selectorsInitialized = false;
 let smartDefaultApplied = false; 
 
 // ==========================================
-// WATERFALL LOADING SEQUENCE (Ακριβής ρυθμός εμφάνισης)
+// WATERFALL LOADING SEQUENCE (Ασφαλής & Διορθωμένη)
 // ==========================================
 function runWaterfallLoader(onComplete) {
     const steps = [
@@ -28,7 +28,14 @@ function runWaterfallLoader(onComplete) {
             const barEl = document.getElementById(s.bar);
             const pctEl = document.getElementById(s.pct);
 
-            if (rowEl) rowEl.classList.remove('opacity-0');
+            // Αν κάποιο στοιχείο δεν βρεθεί, προχωράμε στο επόμενο για να μην κολλήσει
+            if (!rowEl) {
+                currentStep++;
+                processStep();
+                return;
+            }
+
+            rowEl.classList.remove('opacity-0');
 
             let p = 0;
             const interval = setInterval(() => {
@@ -43,7 +50,7 @@ function runWaterfallLoader(onComplete) {
                         pctEl.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
                     }
                     currentStep++;
-                    setTimeout(processStep, 200); // Μικρή παύση πριν την επόμενη γραμμή
+                    setTimeout(processStep, 150);
                 }
             }, s.duration / 10);
         } else {
@@ -61,7 +68,7 @@ function runWaterfallLoader(onComplete) {
                     setTimeout(() => overlay.style.display = 'none', 500);
                 }
                 if (typeof onComplete === 'function') onComplete();
-            }, 600);
+            }, 500);
         }
     }
 
