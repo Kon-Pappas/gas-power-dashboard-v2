@@ -172,7 +172,6 @@ function getCanonicalUnitName(rawName) {
     if (clean.includes("HERON") || clean.includes("ΘΗΣ ΗΡΩΝ") || clean.includes("ΗΡΩΝ")) return "ΘΗΣ ΗΡΩΝ";
     if (clean.includes("MEGALOPOLI") || clean.includes("ΜΕΓΑΛΟΠΟΛΗ")) return "ΜΕΓΑΛΟΠΟΛΗ 5";
     if (clean.includes("THISVI") || clean.includes("ΘΗΣΒ")) return "ELPEDISON_THISVI";
-    // Ονόματα από το sheet GenericConstraints του ISP: ELPEDISON_THIS_G (Θίσβη) / ELPEDISON_THES_G (Θεσσαλονίκη)
     if (clean.includes("ELPEDISON") && clean.includes("THIS")) return "ELPEDISON_THISVI";
     if (clean.includes("ELPEDISON") && clean.includes("THES")) return "ELPEDISON_THESS";
     if (clean.includes("KORINTHOS") || clean.includes("ΚΟΡΙΝΘΟΣ")) return "KORINTHOS_POWER";
@@ -326,7 +325,6 @@ function updateOverviewTab() {
 
     const kpiIspEl = document.getElementById('kpiTotalIsp');
     const kpiScadaEl = document.getElementById('kpiTotalScada');
-    // Αφαίρεση δεκαδικών ψηφίων (0 decimal places)
     if (kpiIspEl) kpiIspEl.innerText = totalIsp.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     if (kpiScadaEl) kpiScadaEl.innerText = totalScada.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
 
@@ -410,7 +408,6 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
-                            // Αφαίρεση δεκαδικών από το tooltip των MWh
                             label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' MWh';
                             return label;
                         }
@@ -419,7 +416,19 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
             }, 
             scales: { 
                 x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } }, 
-                y: { grid: { color: '#334155' }, title: { display: true, text: 'MWh' } } 
+                y: { 
+                    grid: { color: '#334155' }, 
+                    title: { display: true, text: 'MWh' },
+                    ticks: {
+                        // 2ο Tweak: Μετατροπή σε 'k' στα κινητά (< 640px)
+                        callback: function(value) {
+                            if (window.innerWidth < 640 && Math.abs(value) >= 1000) {
+                                return (value / 1000) + 'k';
+                            }
+                            return value;
+                        }
+                    }
+                } 
             } 
         } 
     });
@@ -473,7 +482,6 @@ function updateEconomicsTab() {
             : 'No real CO2 price is available for this day. An estimated value is used.';
         co2Badge.style.display = dayEco["CO2 Price Estimated"] ? 'inline' : 'none';
     }
-    // Αφαίρεση δεκαδικών από τα συνολικά MWh
     document.getElementById('kpiEcoScada').innerText = totals["Συνολική Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     document.getElementById('kpiAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2);
     document.getElementById('kpiTotalEcoCost').innerText = formatEuro(totals["Συνολικό Κόστος Στόλου (€)"]);
@@ -515,10 +523,8 @@ function updateEconomicsTab() {
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
 
-        // Αφαίρεση δεκαδικών από τα παραχθέντα MWh του πίνακα
         const MWh = u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
         const Eff = unitEff > 0 ? unitEff.toFixed(1) + '%' : '-';
-        // Το CO2 παραμένει με 1 δεκαδικό ως ζητήθηκε "καθαρά" (μόνο για MWh)
         const CO2 = u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
         const SRMC = u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2);
         const Cost = formatEuro(u["Συνολικό Κόστος (€)"]);
@@ -766,8 +772,6 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
 // ==========================================
 // TAB 4: SYSTEM NEEDS (SURPLUS & CONSTRAINTS)
 // ==========================================
-// Μέρα με διαθέσιμο SCADA: ΙΔΙΟΣ κανόνας με το dropdown ημερομηνιών (συνολική παραγωγή Φ.Α. > 0).
-// Κρίνεται ΜΟΝΟ από το SCADA, ποτέ από τα constraints/surplus: μέρα χωρίς constraints ή με 0 MWh είναι έγκυρη μέρα.
 function getScadaReadyDays() {
     const totals = {}, unitSums = {};
     (rawData && rawData.scada ? rawData.scada : []).forEach(d => {
@@ -824,7 +828,6 @@ function updateSurplusTab() {
         }
     });
 
-    // Δίχτυ ασφαλείας: μονάδα constraint που δεν ταιριάζει με καμία μονάδα SCADA θα μετρούσε σιωπηλά 0 MWh
     const scadaCanonNames = new Set(rawData.scadaHourly.map(r => getCanonicalUnitName(String(Object.values(r)[1]).trim())));
     const warnedUnits = new Set();
     Object.values(constraintsByDay).forEach(units => {
@@ -874,7 +877,6 @@ function updateSurplusTab() {
         }
     });
 
-    // Εκτός γραφήματος μένουν ΜΟΝΟ οι μέρες χωρίς SCADA (pending). Μέρα με 0 constraints ή 0 surplus μένει μέσα.
     const readyDays = getScadaReadyDays();
     const allDatesInMonth = [...new Set([...Object.keys(dailyConstrainedMwh), ...Object.keys(dailySurplusMap)])]
         .filter(day => readyDays.has(day))
@@ -899,7 +901,6 @@ function updateSurplusTab() {
         sumConstraints += c;
     });
 
-    // Αφαίρεση δεκαδικών από τα συνολικά MWh στο Tab 4
     document.getElementById('kpiMonthSurplus').innerText = sumSurplus.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     document.getElementById('kpiMonthConstraints').innerText = sumConstraints.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
 
@@ -947,7 +948,6 @@ function renderSurplusChart(labels, surplusData, constraintsData) {
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
-                            // Αφαίρεση δεκαδικών από το tooltip των MWh
                             label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' MWh';
                             return label;
                         }
@@ -956,7 +956,19 @@ function renderSurplusChart(labels, surplusData, constraintsData) {
             },
             scales: {
                 x: { grid: { display: false }, title: { display: true, text: 'Day of Month', color: '#64748b' } },
-                y: { grid: { color: '#334155' }, title: { display: true, text: 'MWh' } }
+                y: { 
+                    grid: { color: '#334155' }, 
+                    title: { display: true, text: 'MWh' },
+                    ticks: {
+                        // 2ο Tweak: Μετατροπή σε 'k' στα κινητά (< 640px)
+                        callback: function(value) {
+                            if (window.innerWidth < 640 && Math.abs(value) >= 1000) {
+                                return (value / 1000) + 'k';
+                            }
+                            return value;
+                        }
+                    }
+                }
             }
         } 
     });
