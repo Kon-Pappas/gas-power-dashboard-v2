@@ -8,15 +8,15 @@ let selectorsInitialized = false;
 let smartDefaultApplied = false; 
 
 // ==========================================
-// WATERFALL LOADING SEQUENCE (Ασφαλής & Διορθωμένη)
+// WATERFALL LOADING SEQUENCE (Με σωστούς χρόνους)
 // ==========================================
 function runWaterfallLoader(onComplete) {
     const steps = [
-        { row: 'loadRow1', bar: 'loadBar1', pct: 'loadPct1', duration: 400 },
-        { row: 'loadRow2', bar: 'loadBar2', pct: 'loadPct2', duration: 400 },
-        { row: 'loadRow3', bar: 'loadBar3', pct: 'loadPct3', duration: 400 },
-        { row: 'loadRow4', bar: 'loadBar4', pct: 'loadPct4', duration: 400 },
-        { row: 'loadRow5', bar: 'loadBar5', pct: 'loadPct5', duration: 400 }
+        { row: 'loadRow1', bar: 'loadBar1', pct: 'loadPct1', duration: 600 },
+        { row: 'loadRow2', bar: 'loadBar2', pct: 'loadPct2', duration: 600 },
+        { row: 'loadRow3', bar: 'loadBar3', pct: 'loadPct3', duration: 600 },
+        { row: 'loadRow4', bar: 'loadBar4', pct: 'loadPct4', duration: 600 },
+        { row: 'loadRow5', bar: 'loadBar5', pct: 'loadPct5', duration: 600 }
     ];
 
     let currentStep = 0;
@@ -28,7 +28,6 @@ function runWaterfallLoader(onComplete) {
             const barEl = document.getElementById(s.bar);
             const pctEl = document.getElementById(s.pct);
 
-            // Αν κάποιο στοιχείο δεν βρεθεί, προχωράμε στο επόμενο για να μην κολλήσει
             if (!rowEl) {
                 currentStep++;
                 processStep();
@@ -50,7 +49,8 @@ function runWaterfallLoader(onComplete) {
                         pctEl.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
                     }
                     currentStep++;
-                    setTimeout(processStep, 150);
+                    // Αναμονή 0.5s (500ms) πριν ξεκινήσει η επόμενη γραμμή
+                    setTimeout(processStep, 500); 
                 }
             }, s.duration / 10);
         } else {
@@ -61,6 +61,7 @@ function runWaterfallLoader(onComplete) {
                 readyRow.classList.remove('opacity-0');
                 readyRow.classList.remove('translate-y-2');
             }
+            // Αναμονή 1.5s (1500ms) στο "Dashboard is ready!" πριν κλείσει το modal
             setTimeout(() => {
                 const overlay = document.getElementById('loading-overlay');
                 if (overlay) {
@@ -68,7 +69,7 @@ function runWaterfallLoader(onComplete) {
                     setTimeout(() => overlay.style.display = 'none', 500);
                 }
                 if (typeof onComplete === 'function') onComplete();
-            }, 500);
+            }, 1500);
         }
     }
 
@@ -307,7 +308,7 @@ function getUnitMetadata(unitName) {
 function switchTab(tabId) {
     const tabs = ['overview', 'economics', 'ispScada', 'surplus'];
     
-    const activeClasses = "flex items-center justify-center w-full h-full bg-blue-600 md:bg-transparent text-white md:text-blue-400 font-bold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-blue-500 md:border-blue-400 py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center shadow-lg md:shadow-none";
+    const activeClasses = "flex items-center justify-center w-full h-full bg-blue-600 md:bg-transparent text-white md:text-blue-400 font-bold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-blue-500 md:border-blue-400 py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leadingtight text-xs sm:text-sm md:text-base text-center shadow-lg md:shadow-none";
     const inactiveClasses = "flex items-center justify-center w-full h-full bg-slate-800/80 md:bg-transparent text-slate-400 md:text-slate-500 hover:bg-slate-700 md:hover:bg-transparent md:hover:text-blue-300 font-medium md:font-semibold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-slate-700 md:border-transparent py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center";
 
     tabs.forEach(t => {
