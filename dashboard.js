@@ -8,6 +8,76 @@ let selectorsInitialized = false;
 let smartDefaultApplied = false; 
 
 // ==========================================
+// WATERFALL LOADING SEQUENCE (Ακριβής ρυθμός εμφάνισης)
+// ==========================================
+function runWaterfallLoader(onComplete) {
+    const steps = [
+        { row: 'loadRow1', bar: 'loadBar1', pct: 'loadPct1', duration: 400 },
+        { row: 'loadRow2', bar: 'loadBar2', pct: 'loadPct2', duration: 400 },
+        { row: 'loadRow3', bar: 'loadBar3', pct: 'loadPct3', duration: 400 },
+        { row: 'loadRow4', bar: 'loadBar4', pct: 'loadPct4', duration: 400 },
+        { row: 'loadRow5', bar: 'loadBar5', pct: 'loadPct5', duration: 400 }
+    ];
+
+    let currentStep = 0;
+
+    function processStep() {
+        if (currentStep < steps.length) {
+            const s = steps[currentStep];
+            const rowEl = document.getElementById(s.row);
+            const barEl = document.getElementById(s.bar);
+            const pctEl = document.getElementById(s.pct);
+
+            if (rowEl) rowEl.classList.remove('opacity-0');
+
+            let p = 0;
+            const interval = setInterval(() => {
+                p += 10;
+                if (p > 100) p = 100;
+                if (barEl) barEl.style.width = p + '%';
+                if (pctEl) pctEl.innerText = p + '%';
+
+                if (p === 100) {
+                    clearInterval(interval);
+                    if (pctEl) {
+                        pctEl.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+                    }
+                    currentStep++;
+                    setTimeout(processStep, 200); // Μικρή παύση πριν την επόμενη γραμμή
+                }
+            }, s.duration / 10);
+        } else {
+            const readyRow = document.getElementById('loadRow6');
+            const mainSpinner = document.getElementById('mainSpinner');
+            if (mainSpinner) mainSpinner.classList.remove('animate-spin');
+            if (readyRow) {
+                readyRow.classList.remove('opacity-0');
+                readyRow.classList.remove('translate-y-2');
+            }
+            setTimeout(() => {
+                const overlay = document.getElementById('loading-overlay');
+                if (overlay) {
+                    overlay.classList.add('opacity-0');
+                    setTimeout(() => overlay.style.display = 'none', 500);
+                }
+                if (typeof onComplete === 'function') onComplete();
+            }, 600);
+        }
+    }
+
+    processStep();
+}
+
+// Εκκίνηση waterfall μόλις φορτώσει η σελίδα
+document.addEventListener('DOMContentLoaded', () => {
+    runWaterfallLoader(() => {
+        if (typeof updateDashboard === 'function') {
+            updateDashboard();
+        }
+    });
+});
+
+// ==========================================
 // HELPERS
 // ==========================================
 function parseDate(dateObj) {
@@ -46,11 +116,9 @@ function initExtraSelectors() {
     
     if (!ds || !rawData) return;
     
-    // ΕΞΥΠΝΗ ΛΟΓΙΚΗ ΕΛΕΓΧΟΥ (Smart Logic)
     if (!smartDefaultApplied && ds.options.length > 0) {
         let latestCompleteDate = null;
         
-        // Σαρώνουμε τις ημερομηνίες για να δούμε ποιες ΔΕΝ έχουν SCADA
         Array.from(ds.options).forEach(opt => {
             const dateStr = opt.value;
             const scadaDay = rawData.scada ? rawData.scada.filter(d => parseDate(Object.values(d)[0]) === dateStr) : [];
@@ -63,7 +131,6 @@ function initExtraSelectors() {
                 }
             });
 
-            // Αν δεν υπάρχει TOTAL GAS UNITS, τα αθροίζουμε μόνοι μας
             if (totalScada === 0 && scadaDay.length > 0) {
                 scadaDay.forEach(d => {
                     let uName = String(Object.values(d)[1]).trim();
@@ -73,7 +140,6 @@ function initExtraSelectors() {
                 });
             }
 
-            // Μαρκάρουμε τη μέρα ανάλογα με τα SCADA
             if (totalScada === 0) {
                 opt.dataset.partial = 'true';
                 opt.text = dateStr + ' (Pending SCADA)';
@@ -85,7 +151,6 @@ function initExtraSelectors() {
             }
         });
 
-        // Αν η αρχική επιλογή του συστήματος "πέσει" σε μέρα χωρίς SCADA
         const currentOpt = ds.options[ds.selectedIndex];
         if (currentOpt && currentOpt.dataset.partial === 'true' && latestCompleteDate) {
             ds.value = latestCompleteDate;
@@ -104,7 +169,6 @@ function initExtraSelectors() {
     selectorsInitialized = true;
 }
 
-// ΕΝΗΜΕΡΩΣΗ ΤΟΥ UI BADGE
 function updateStatusBadge() {
     const ds = document.getElementById('dateSelect');
     const badge = document.getElementById('dataStatusBadge');
@@ -155,7 +219,6 @@ function createDiagonalPattern(colorHex) {
     return ctx.createPattern(canvas, 'repeat');
 }
 
-// ΕΞΥΠΝΗ ΑΝΤΙΣΤΟΙΧΙΣΗ (Mapping) ΟΝΟΜΑΤΩΝ
 function getCanonicalUnitName(rawName) {
     if (!rawName) return "UNKNOWN";
     let clean = String(rawName).trim().toUpperCase();
@@ -184,7 +247,6 @@ function getCanonicalUnitName(rawName) {
     return clean;
 }
 
-// ΠΑΓΚΟΣΜΙΑ ΣΥΝΑΡΤΗΣΗ ΣΥΝΤΟΜΟΓΡΑΦΙΩΝ UI
 function getShortUnitName(canonicalName) {
     const map = {
         "AG_NIKOLAOS2": "AgNikol2",
@@ -345,7 +407,6 @@ function updateOverviewTab() {
 
     unitsArray.forEach(u => {
         labels.push(getShortUnitName(u.name)); 
-        
         classLabels.push(u.meta.class);
         dataIsp.push(u.isp);
         dataScada.push(u.scada);
@@ -420,7 +481,6 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
                     grid: { color: '#334155' }, 
                     title: { display: true, text: 'MWh' },
                     ticks: {
-                        // 2ο Tweak: Μετατροπή σε 'k' στα κινητά (< 640px)
                         callback: function(value) {
                             if (window.innerWidth < 640 && Math.abs(value) >= 1000) {
                                 return (value / 1000) + 'k';
@@ -960,7 +1020,6 @@ function renderSurplusChart(labels, surplusData, constraintsData) {
                     grid: { color: '#334155' }, 
                     title: { display: true, text: 'MWh' },
                     ticks: {
-                        // 2ο Tweak: Μετατροπή σε 'k' στα κινητά (< 640px)
                         callback: function(value) {
                             if (window.innerWidth < 640 && Math.abs(value) >= 1000) {
                                 return (value / 1000) + 'k';
