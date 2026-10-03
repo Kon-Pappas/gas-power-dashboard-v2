@@ -76,14 +76,10 @@ function runWaterfallLoader(onComplete) {
     processStep();
 }
 
-// Εκκίνηση waterfall μόλις φορτώσει η σελίδα
-document.addEventListener('DOMContentLoaded', () => {
-    runWaterfallLoader(() => {
-        if (typeof updateDashboard === 'function') {
-            updateDashboard();
-        }
-    });
-});
+// ΣΗΜΕΙΩΣΗ: το waterfall ΔΕΝ ξεκινάει πια μόνο του εδώ. Καλείται ρητά από το data.js
+// (fetchMarketData), ΜΟΝΟ αφού έχουν πράγματι φορτωθεί τα δεδομένα -- έτσι υπάρχει ένα
+// μόνο σημείο που αποφασίζει πότε κρύβεται το overlay και πότε καλείται updateDashboard(),
+// αντί για δύο ανεξάρτητα χρονόμετρα να παλεύουν για το ίδιο element.
 
 // ==========================================
 // HELPERS
