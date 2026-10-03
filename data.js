@@ -201,21 +201,36 @@ async function fetchMarketData() {
 
         updateProgress(100, lang === 'el' ? "Ολοκλήρωση Dashboard..." : "Finalizing Dashboard...");
 
-        if (overlay) {
+        // Τα δεδομένα είναι ΗΔΗ έτοιμα εδώ. Το waterfall animation (αν υπάρχει στη σελίδα) παίζει
+        // καθαρά αισθητικά και ΑΥΤΟ πλέον είναι το ΜΟΝΟ σημείο που κρύβει το overlay και καλεί
+        // setLang/updateDashboard -- όχι δύο ανεξάρτητα χρονόμετρα να παλεύουν για το ίδιο element.
+        const finish = () => { if (typeof setLang === 'function') setLang(currentLang); };
+        if (typeof runWaterfallLoader === 'function') {
+            runWaterfallLoader(finish);
+        } else if (overlay) {
             setTimeout(() => {
                 overlay.classList.add('opacity-0');
                 setTimeout(() => overlay.style.display = 'none', 300);
             }, 300);
+            finish();
+        } else {
+            finish();
         }
-        
-        if (typeof setLang === 'function') setLang(currentLang);
 
     } catch (error) {
         clearInterval(progressInterval);
         console.error("Error loading local market data:", error);
-        if (loadingSubtitle) {
-            loadingSubtitle.innerText = "Error loading local data. Is historical.json present?";
-            loadingSubtitle.classList.add('text-rose-400');
+        // ΔΙΟΡΘΩΣΗ: πριν, σε αποτυχία fetch το overlay έμενε ΚΟΛΛΗΜΕΝΟ στην οθόνη για πάντα
+        // (το catch δεν το έκρυβε ποτέ), μπλοκάροντας κάθε κλικ στη σελίδα -- συμπεριλαμβανομένου
+        // του κουμπιού Methodology. Τώρα δείχνουμε καθαρό μήνυμα σφάλματος ΜΕΣΑ στο ίδιο το
+        // overlay, με δυνατότητα να το κλείσει ο χρήστης χειροκίνητα, αντί να μένει παγιδευμένος.
+        if (overlay) {
+            overlay.innerHTML = `
+                <div class="max-w-sm text-center px-4">
+                    <div class="text-rose-400 text-lg font-bold mb-2">Σφάλμα φόρτωσης δεδομένων</div>
+                    <div class="text-slate-400 text-sm mb-4">Το historical.json δεν βρέθηκε ή απέτυχε η φόρτωση. Δοκίμασε ανανέωση της σελίδας.</div>
+                    <button onclick="document.getElementById('loading-overlay').style.display='none'" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-600 transition">Κλείσιμο</button>
+                </div>`;
         }
     }
 }
