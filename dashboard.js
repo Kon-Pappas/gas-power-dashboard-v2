@@ -12,11 +12,11 @@ let smartDefaultApplied = false;
 // ==========================================
 function runWaterfallLoader(onComplete) {
     const steps = [
-        { row: 'loadRow1', bar: 'loadBar1', pct: 'loadPct1', duration: 600 },
-        { row: 'loadRow2', bar: 'loadBar2', pct: 'loadPct2', duration: 600 },
-        { row: 'loadRow3', bar: 'loadBar3', pct: 'loadPct3', duration: 600 },
-        { row: 'loadRow4', bar: 'loadBar4', pct: 'loadPct4', duration: 600 },
-        { row: 'loadRow5', bar: 'loadBar5', pct: 'loadPct5', duration: 600 }
+        { row: 'loadRow1', bar: 'loadBar1', pct: 'loadPct1', duration: 400 },
+        { row: 'loadRow2', bar: 'loadBar2', pct: 'loadPct2', duration: 400 },
+        { row: 'loadRow3', bar: 'loadBar3', pct: 'loadPct3', duration: 400 },
+        { row: 'loadRow4', bar: 'loadBar4', pct: 'loadPct4', duration: 400 },
+        { row: 'loadRow5', bar: 'loadBar5', pct: 'loadPct5', duration: 400 }
     ];
 
     let currentStep = 0;
@@ -49,8 +49,8 @@ function runWaterfallLoader(onComplete) {
                         pctEl.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
                     }
                     currentStep++;
-                    // Αναμονή 0.5s (500ms) πριν ξεκινήσει η επόμενη γραμμή
-                    setTimeout(processStep, 500); 
+                    // Αναμονή 0.3s (300ms) πριν ξεκινήσει η επόμενη γραμμή
+                    setTimeout(processStep, 300); 
                 }
             }, s.duration / 10);
         } else {
@@ -61,7 +61,7 @@ function runWaterfallLoader(onComplete) {
                 readyRow.classList.remove('opacity-0');
                 readyRow.classList.remove('translate-y-2');
             }
-            // Αναμονή 1.5s (1500ms) στο "Dashboard is ready!" πριν κλείσει το modal
+            // Αναμονή 1s (1000ms) στο "Dashboard is ready!" πριν κλείσει το modal
             setTimeout(() => {
                 const overlay = document.getElementById('loading-overlay');
                 if (overlay) {
@@ -69,7 +69,7 @@ function runWaterfallLoader(onComplete) {
                     setTimeout(() => overlay.style.display = 'none', 500);
                 }
                 if (typeof onComplete === 'function') onComplete();
-            }, 1500);
+            }, 1000);
         }
     }
 
