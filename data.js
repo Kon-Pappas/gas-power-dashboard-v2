@@ -26,6 +26,8 @@ const i18n = {
         scopeTooltip: "Refers exclusively to natural gas fired power plants (CCGT/OCGT) in the Greek Interconnected System.",
         lastUpdate: "Last Update:",
         nextUpdate: "Next Update:",
+        lastUpdateMobile: "Updated:",
+        nextUpdateMobile: "Next:",
         dateLabel: "Date:",
         tabOverview: "Daily Overview",
         tabEconomics: "Daily Economics",
@@ -107,6 +109,8 @@ const i18n = {
         scopeTooltip: "Αφορά αποκλειστικά τις μονάδες ηλεκτροπαραγωγής από Φυσικό Αέριο (CCGT/OCGT) στο Διασυνδεδεμένο Σύστημα.",
         lastUpdate: "Τελευταία Ενημέρωση:",
         nextUpdate: "Επόμενη Ενημέρωση:",
+        lastUpdateMobile: "Ενημερώθηκε:",
+        nextUpdateMobile: "Επόμενη:",
         dateLabel: "Ημερομηνία:",
         tabOverview: "Ημερήσια Επισκόπηση",
         tabEconomics: "Ημερήσια Οικονομικά",
@@ -215,10 +219,10 @@ function setLang(lang) {
     
     document.getElementById('pageTitle').innerText = t.title;
     document.getElementById('mainTitle').innerText = t.title;
-    document.getElementById('dataSourceText').innerText = t.source;
-    document.getElementById('scopeBadge').title = t.scopeTooltip;
-    document.getElementById('lastUpdateLabel').innerText = t.lastUpdate;
-    document.getElementById('nextUpdateLabel').innerText = t.nextUpdate;
+    document.getElementById('lastUpdateLabel').innerText = t.lastUpdateMobile || t.lastUpdate;
+    document.getElementById('nextUpdateLabel').innerText = t.nextUpdateMobile || t.nextUpdate;
+    document.getElementById('lastUpdateLabelDesktop').innerText = t.lastUpdate;
+    document.getElementById('nextUpdateLabelDesktop').innerText = t.nextUpdate;
     
     if(document.getElementById('btnMethodologyText')) document.getElementById('btnMethodologyText').innerText = t.btnMethodology;
     renderMethodologyModal();
