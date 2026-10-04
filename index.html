@@ -412,6 +412,11 @@
                 </div>
                 <button onclick="closeMethodologyModal()" class="text-slate-500 hover:text-rose-400 transition text-3xl leading-none flex-shrink-0">&times;</button>
             </div>
+
+            <div class="flex gap-2 bg-slate-800/60 rounded-lg p-1 mx-6 mt-4 flex-shrink-0">
+                <button id="btnMethodologyShort" onclick="setMethodologyDepth('short')">Short</button>
+                <button id="btnMethodologyDetailed" onclick="setMethodologyDepth('detailed')">Detailed</button>
+            </div>
             
             <div class="text-sm text-slate-300 leading-relaxed px-6 py-4 overflow-y-auto" id="modalBody"></div>
             
@@ -423,6 +428,7 @@
 
     <script>
         function openMethodologyModal() {
+            if (typeof renderMethodologyModal === 'function') renderMethodologyModal();
             const modal = document.getElementById('methodologyModal');
             modal.classList.remove('hidden');
             setTimeout(() => {
