@@ -297,6 +297,26 @@ def extract_constraints(xl, date_str):
         print(f"  [{date_str}] Constraints: μονάδες εκτός λίστας Φ.Α. (έλεγξε αν χρειάζεται να προστεθούν): {sorted(unknown_skipped)}")
     print(f"  [{date_str}] Constraints: {len(seen)} γραμμές Φ.Α.")
 
+def find_isp_quarter_columns(df, header_idx, date_str):
+    """Στήλες των τετάρτων (15λεπτων) του ISP από την επικεφαλίδα του μπλοκ «Thermal Units».
+    Στο αρχείο οι τιμές των τετάρτων είναι στις στήλες 1…N και η στήλη «TOTAL» ακολουθεί αμέσως μετά (N = 96 σε κανονική μέρα,
+    100 σε μέρα 25 ωρών, 92 σε μέρα 23 ωρών). Το N προκύπτει από το ημερολόγιο (hours_in_day × 4), όχι από σταθερά.
+    Επιστρέφει (λίστα στηλών τετάρτων, στήλη TOTAL ή None)."""
+    hdr = [str(v).strip() for v in df.iloc[header_idx].tolist()]
+    tcol = next((i for i, v in enumerate(hdr) if i >= 1 and v.upper() == "TOTAL"), None)
+    n_expected = hours_in_day(date_str) * 4
+    if tcol is None:
+        print(f"  [{date_str}] ISP: δεν βρέθηκε στήλη TOTAL στην επικεφαλίδα -- διαβάζονται {n_expected} τέταρτα χωρίς έλεγχο.")
+        return list(range(1, 1 + n_expected)), None
+    n_file = tcol - 1
+    n = n_expected
+    if n_file != n_expected:
+        print(f"  [{date_str}] ISP: η μέρα έχει {n_expected} τέταρτα αλλά το αρχείο {n_file}.")
+        n = min(n_file, n_expected)
+    if n != 96:
+        print(f"  [{date_str}] ISP: {n} τέταρτα (μέρα αλλαγής ώρας).")
+    return list(range(1, 1 + n)), tcol
+
 def process_isp(date_str):
     url = get_admie_excel_url(date_str, "ISP2ISPResults")
     if not url: return
@@ -338,15 +358,25 @@ def process_isp(date_str):
                 end_idx_matches = df.iloc[start_idx+1:][end_mask].index
                 end_idx = end_idx_matches[0] if len(end_idx_matches) > 0 else len(df)
                 gas_df = df.iloc[start_idx+1:end_idx].copy().dropna(subset=[0])
+                q_cols, t_col = find_isp_quarter_columns(df, start_idx, date_str)
                 total_isp = 0.0
+                mismatches = []
                 for _, row in gas_df.iterrows():
                     unit = str(row[0]).strip()
                     if not unit or unit.lower() == 'nan': continue
                     if any(l in unit.upper() for l in ["AG_DIMITRIOS", "PTOLEMAIDA", "MEGALOPOLI4", "MEGALOPOLI3", "MELITI", "AGIOS DIMITRIOS"]): continue
-                    vals = pd.to_numeric(row.iloc[2:98].astype(str).str.replace(' ', '').str.replace(',', '.'), errors='coerce')
+                    # D18: τα τέταρτα 1…N (N από το ημερολόγιο). Η παλιά ανάγνωση iloc[2:98] έχανε το 1ο τέταρτο και,
+                    # σε κανονική μέρα, πρόσθετε και τη στήλη TOTAL ως 97ο τέταρτο (+23-24%)· σε μέρα 25 ωρών έχανε 1 ώρα.
+                    vals = pd.to_numeric(row.iloc[q_cols].astype(str).str.replace(' ', '').str.replace(',', '.'), errors='coerce')
                     daily_mwh = float(round(vals.sum() / 4, 3))
+                    if t_col is not None:   # έλεγχος με το σύνολο που γράφει το ίδιο το αρχείο
+                        ft = pd.to_numeric(str(row.iloc[t_col]).replace(' ', '').replace(',', '.'), errors='coerce')
+                        if not pd.isna(ft) and abs(daily_mwh - float(ft)) > 1.0:
+                            mismatches.append(f"{unit}: τέταρτα={daily_mwh:.0f} TOTAL={float(ft):.0f}")
                     total_isp += daily_mwh
                     db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit, "Παραγωγή (MWh)": daily_mwh})
+                if mismatches:
+                    print(f"  [{date_str}] ⚠ ISP: το άθροισμα των τετάρτων διαφέρει από τη στήλη TOTAL του αρχείου -> " + "; ".join(mismatches))
                 if total_isp > 0:
                     db["isp_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": "TOTAL GAS UNITS", "Παραγωγή (MWh)": float(round(total_isp, 3))})
     except Exception as e:

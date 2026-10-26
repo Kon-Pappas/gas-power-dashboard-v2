@@ -7,7 +7,8 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 - **Batch 1 (26 Oct 2026) — done:** updates only from cron-job.org at 07:06 and 13:00, no `schedule:`, Actions updated, one job at a time (D07, D09, D10); real *Last / Next update* from `data/meta.json` (D08); Tailwind and Chart.js pinned (D09); atomic writes (D10); Methodology text corrected (D12); README and `docs/` (D13)
 - **Batch 2 (26 Oct 2026) — done:** language remembered with `kp_lang` (D15); the accent defined in one place, blue, with 28 decorative uses and the header values (D11, D14)
 - **Batch 3 (26 Oct 2026) — done:** the SCADA hours from the calendar with a check against the file's SUM column, and the page reads hours by name (D17); the day-ahead prices removed and the Methodology text corrected (D16)
-- Batch 4: loading overlay as in the hub (K01), with real progress in step 1 (first as a sample in a browser)
+- **Batch 4 (26 Oct 2026) — code done, history to recalculate:** the ISP read from the quarter-hours of the calendar and checked against the file's TOTAL (D18); the exclusions written down (D19)
+- Batch 5: loading overlay as in the hub (K01), with real progress in step 1 (first as a sample in a browser)
 
 ## Phase 2: data colours
 
@@ -36,11 +37,12 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Correctness (alongside the phases)
 
-- Missing values and bare `except` (K13, K14). Clock-change days are done for the SCADA (D17); K20 remains
+- Missing values and bare `except` (K13, K14). Clock-change days are done for the SCADA (D17) and the ISP (D18); K20 remains
 
 ## Dated checks
 
 - **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Before 4 Nov 2026:** the fix of D17 must be online, so that the 10-day re-check repairs the 25 Oct record. **Before 28 Mar 2027 (23 hours):** K20
+- **After batch 4 is online — the ISP history (K21):** five manual runs of *Daily Energy Data Update* with Start Date and End Date: 2026-06-01 → 2026-06-30, 2026-07-01 → 2026-07-31, 2026-08-01 → 2026-08-31, 2026-09-01 → 2026-09-30, 2026-10-01 → 2026-10-15, one after the other. After each, the ISP / SCADA ratio of its days has to be about 0.8–1.2 (it was 1.12–1.35 before) and the log must have no `⚠ ISP` line
 - **After every batch:** compare the repository with the zip, byte by byte; check that the Pages build is green; run the page in Chromium at 360 and 320 px
 - **Every two weeks:** measure the size of the data (K11)
 
