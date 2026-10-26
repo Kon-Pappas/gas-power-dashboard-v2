@@ -4,8 +4,6 @@
 let overviewChartInst = null;
 let monthlyChartInst = null;
 let surplusChartInst = null;
-let selectorsInitialized = false;
-let smartDefaultApplied = false; 
 
 // ==========================================
 // WATERFALL LOADING SEQUENCE (Με σωστούς χρόνους)
@@ -73,84 +71,7 @@ function getHourNumber(timeStr) {
     return parseInt(s, 10) || -1;
 }
 
-function initExtraSelectors() {
-    const ds = document.getElementById('dateSelect');
-    const ms = document.getElementById('monthSelect');
-    
-    if (!ds || !rawData) return;
-    
-    if (!smartDefaultApplied && ds.options.length > 0) {
-        let latestCompleteDate = null;
-        
-        Array.from(ds.options).forEach(opt => {
-            const dateStr = opt.value;
-            const scadaDay = rawData.scada ? rawData.scada.filter(d => parseDate(Object.values(d)[0]) === dateStr) : [];
-            let totalScada = 0;
-            
-            scadaDay.forEach(d => {
-                let uName = String(Object.values(d)[1]).trim();
-                if (uName === "TOTAL GAS UNITS" || uName.includes("Σύνολο")) {
-                    totalScada += parseNum(Object.values(d)[2]);
-                }
-            });
 
-            if (totalScada === 0 && scadaDay.length > 0) {
-                scadaDay.forEach(d => {
-                    let uName = String(Object.values(d)[1]).trim();
-                    if (uName !== "TOTAL GAS UNITS" && !uName.includes("Σύνολο") && uName !== "NAN") {
-                        totalScada += parseNum(Object.values(d)[2]);
-                    }
-                });
-            }
-
-            if (totalScada === 0) {
-                opt.dataset.partial = 'true';
-                opt.text = dateStr + ' (Pending SCADA)';
-            } else {
-                opt.dataset.partial = 'false';
-                if (!latestCompleteDate || dateStr > latestCompleteDate) {
-                    latestCompleteDate = dateStr;
-                }
-            }
-        });
-
-        const currentOpt = ds.options[ds.selectedIndex];
-        if (currentOpt && currentOpt.dataset.partial === 'true' && latestCompleteDate) {
-            ds.value = latestCompleteDate;
-        }
-
-        smartDefaultApplied = true;
-    }
-
-    if (ms && ms.options.length === 0 && ds.options.length > 0) {
-        const allDates = Array.from(ds.options).map(opt => opt.value);
-        const months = [...new Set(allDates.map(d => d.substring(0, 7)))];
-        ms.innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
-    }
-    
-    updateStatusBadge();
-    selectorsInitialized = true;
-}
-
-function updateStatusBadge() {
-    const ds = document.getElementById('dateSelect');
-    const badge = document.getElementById('dataStatusBadge');
-    if (!ds || !badge) return;
-
-    const currentOpt = ds.options[ds.selectedIndex];
-    if (!currentOpt) return;
-
-    badge.classList.remove('hidden');
-    const lang = (typeof currentLang !== 'undefined') ? currentLang : 'en';
-
-    if (currentOpt.dataset.partial === 'true') {
-        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded border border-orange-500/50 bg-orange-500/10 text-orange-400 whitespace-nowrap transition-colors';
-        badge.innerText = lang === 'el' ? '🟠 Μόνο Πρόγραμμα (ISP)' : '🟠 Pending SCADA (ISP only)';
-    } else {
-        badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 whitespace-nowrap transition-colors';
-        badge.innerText = lang === 'el' ? '🟢 Πλήρη Δεδομένα' : '🟢 Complete Data';
-    }
-}
 
 function createDiagonalPattern(colorHex) {
     const canvas = document.createElement('canvas');
@@ -260,41 +181,138 @@ function getUnitMetadata(unitName) {
 // ==========================================
 // TAB SWITCHING CONTROLLER
 // ==========================================
-function switchTab(tabId) {
-    const tabs = ['overview', 'economics', 'ispScada', 'surplus'];
-    
-    const activeClasses = "flex items-center justify-center w-full h-full bg-acc-600 md:bg-transparent text-white md:text-acc-400 font-bold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-acc-500 md:border-acc-400 py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leadingtight text-xs sm:text-sm md:text-base text-center shadow-lg md:shadow-none";
-    const inactiveClasses = "flex items-center justify-center w-full h-full bg-slate-800/80 md:bg-transparent text-slate-400 md:text-slate-500 hover:bg-slate-700 md:hover:bg-transparent md:hover:text-acc-300 font-medium md:font-semibold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-slate-700 md:border-transparent py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center";
+// ==========================================
+// ΚΕΛΥΦΟΣ: ΕΠΙΛΟΓΗ ΗΜΕΡΑΣ / ΜΗΝΑ, PILL, TABS (D22, όπως BESS D22–D24 και H06)
+// ==========================================
+// Ένα κουτί επιλογής: «Ημέρα» στα tabs Overview και Economics, «Μήνας» στα Monthly και Surplus. Το pill
+// πληρότητας ανήκει στην επιλεγμένη ημέρα, γι' αυτό φαίνεται μόνο στα tabs με ημέρα, μέσα στο κουτί.
+let currentTab = 'overview';
+const TABS = {
+    overview: ['tabBtnOverview', 'viewOverview'],
+    economics: ['tabBtnEconomics', 'viewEconomics'],
+    ispScada: ['tabBtnIspScada', 'viewIspScada'],
+    surplus: ['tabBtnSurplus', 'viewSurplus']
+};
+const DAY_TABS = ['overview', 'economics'];
+// Κινητό (< 768 px): κουμπιά 2 + 2 με ύψος 48 px· υπολογιστής: καρτέλες με γραμμή από κάτω. Στα 768–1023 px το
+// κείμενο είναι μικρότερο και σπάει σε δύο γραμμές, γιατί το «Generic Constraints & Surplus» δεν χωράει σε 1/4 πλάτους.
+const TAB_BASE = 'tab-btn flex items-center justify-center text-xs md:text-sm lg:text-base font-bold rounded-lg md:rounded-none min-h-12 py-1 w-full transition whitespace-normal leading-tight px-2 border md:border-0 md:border-b-2 cursor-pointer ';
+const TAB_ON = 'bg-acc-400 text-slate-900 border-acc-400 md:bg-transparent md:text-acc-400 md:border-b-acc-400';
+const TAB_OFF = 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white md:bg-transparent md:border-transparent md:hover:text-acc-200';
 
-    tabs.forEach(t => {
-        const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
-        const view = document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1));
-        
-        if (t === tabId) {
-            btn.className = activeClasses;
-            view.classList.remove('hidden');
-        } else {
-            btn.className = inactiveClasses;
-            view.classList.add('hidden');
-        }
+function paintTabs() {
+    Object.entries(TABS).forEach(([key, [btn, view]]) => {
+        const on = key === currentTab, b = document.getElementById(btn);
+        b.className = TAB_BASE + (on ? TAB_ON : TAB_OFF);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+        document.getElementById(view).classList.toggle('hidden', !on);
     });
+}
 
-    const dateWrap = document.getElementById('dateSelectorWrapper');
-    const monthWrap = document.getElementById('monthSelectorWrapper');
-    
-    if (tabId === 'overview' || tabId === 'economics') {
-        if (dateWrap) dateWrap.classList.remove('hidden');
-        if (monthWrap) monthWrap.classList.add('hidden');
-    } else {
-        if (dateWrap) dateWrap.classList.add('hidden');
-        if (monthWrap) monthWrap.classList.remove('hidden');
-    }
-
+function switchTab(tabId) {
+    if (!TABS[tabId]) return;
+    currentTab = tabId;
+    paintTabs();
+    updatePicker();
     if (tabId === 'overview') updateOverviewTab();
     if (tabId === 'economics') updateEconomicsTab();
-    if (tabId === 'ispScada') updateMonthlyTab(); 
-    if (tabId === 'surplus') updateSurplusTab(); 
+    if (tabId === 'ispScada') updateMonthlyTab();
+    if (tabId === 'surplus') updateSurplusTab();
+    updateStatusBadge();
 }
+
+function todayAthens() {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Athens' }).format(new Date());   // YYYY-MM-DD
+}
+const isPhone = () => window.matchMedia('(max-width: 767px)').matches;
+
+// Ημερομηνίες στη γλώσσα του επισκέπτη: «26 Οκτ 2026» / «26 Oct 2026»· στο κινητό χωρίς έτος όταν όλες είναι της ίδιας χρονιάς
+function fmtDay(iso, noYear) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const opts = { day: 'numeric', month: 'short', timeZone: 'UTC' };
+    if (!noYear) opts.year = 'numeric';
+    return new Intl.DateTimeFormat(i18n[currentLang].locale, opts).format(new Date(Date.UTC(y, m - 1, d)));
+}
+function fmtMonth(ym) {
+    const [y, m] = ym.split('-').map(Number);
+    const s = new Intl.DateTimeFormat(i18n[currentLang].locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(y, m - 1, 1)));
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// Ποιες ημέρες έχουν SCADA (σύνολο αερίου > 0), με ένα πέρασμα στα δεδομένα
+function scadaCompleteness() {
+    const tot = {}, units = {};
+    (rawData.scada || []).forEach(r => {
+        const v = Object.values(r), date = parseDate(v[0]), name = String(v[1]).trim(), val = parseNum(v[2]);
+        if (name === 'TOTAL GAS UNITS' || name.includes('Σύνολο')) tot[date] = (tot[date] || 0) + val;
+        else if (name !== 'NAN') units[date] = (units[date] || 0) + val;
+    });
+    return (date) => ((tot[date] || 0) > 0 ? tot[date] : (units[date] || 0)) > 0;
+}
+
+function fillPickers() {
+    const dSel = document.getElementById('dateSelect'), mSel = document.getElementById('monthSelect');
+    if (!dSel || !mSel || !rawData) return;
+    const t = i18n[currentLang], today = todayAthens();
+    const dates = [...new Set([...rawData.isp, ...rawData.scada].map(r => Object.values(r)[0]))].filter(x => x).sort().reverse();
+    const complete = scadaCompleteness();
+    const noYear = isPhone() && new Set(dates.map(x => x.substring(0, 4))).size === 1;
+
+    const keepDay = dates.includes(dSel.value) ? dSel.value : null;
+    dSel.innerHTML = '';
+    dates.forEach(date => {
+        const pending = !complete(date), opt = document.createElement('option');
+        opt.value = date;
+        opt.textContent = fmtDay(date, noYear) + (date === today ? ` (${t.today})` : '') + (pending ? ' ⚠' : '');
+        opt.dataset.partial = pending ? 'true' : 'false';
+        dSel.appendChild(opt);
+    });
+    // Πρώτη φορά: η πιο πρόσφατη ΠΛΗΡΗΣ ημέρα (αν η τελευταία περιμένει SCADA). Μετά κρατιέται η επιλογή του επισκέπτη.
+    dSel.value = keepDay || dates.find(complete) || dates[0] || '';
+
+    const months = [...new Set(dates.map(x => x.substring(0, 7)))];
+    const keepMonth = months.includes(mSel.value) ? mSel.value : null;
+    mSel.innerHTML = months.map(m => `<option value="${m}">${fmtMonth(m)}</option>`).join('');
+    mSel.value = keepMonth || months[0] || '';
+}
+
+function updatePicker() {
+    const t = i18n[currentLang], monthTab = !DAY_TABS.includes(currentTab);
+    const label = document.getElementById('pickerLabel');
+    if (label) { label.textContent = monthTab ? t.monthLabel : t.dateLabel; label.setAttribute('for', monthTab ? 'monthSelect' : 'dateSelect'); }
+    const dSel = document.getElementById('dateSelect'), mSel = document.getElementById('monthSelect');
+    if (dSel) dSel.classList.toggle('hidden', monthTab);
+    if (mSel) mSel.classList.toggle('hidden', !monthTab);
+}
+
+// Αλλαγή επιλογής: ξαναζωγραφίζονται μόνο τα tabs που εξαρτώνται από αυτήν
+function onDateChange() { updateOverviewTab(); updateEconomicsTab(); updateStatusBadge(); }
+function onMonthChange() { updateMonthlyTab(); updateSurplusTab(); }
+
+function updateStatusBadge() {
+    const badge = document.getElementById('dataStatusBadge');
+    if (!badge) return;
+    const sel = document.getElementById('dateSelect'), opt = sel && sel.options[sel.selectedIndex];
+    if (!DAY_TABS.includes(currentTab) || !opt) { badge.className = 'hidden'; return; }
+    const t = i18n[currentLang], pending = opt.dataset.partial === 'true';
+    // Πράσινο = πλήρες (D11)· πορτοκαλί = περιμένει το SCADA
+    badge.className = 'flex shrink-0 items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] md:text-xs font-bold shadow-sm ' +
+        (pending ? 'border-orange-500/30 bg-orange-500/10 text-orange-400' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400');
+    badge.querySelector('div').className = 'w-1.5 h-1.5 md:w-2 md:h-2 rounded-full shrink-0 ' + (pending ? 'bg-orange-500 animate-pulse' : 'bg-emerald-500');
+    document.getElementById('dataStatusTextShort').innerText = pending ? t.pillPendingShort : t.pillCompleteShort;
+    document.getElementById('dataStatusTextLong').innerText = pending ? t.pillPending : t.pillComplete;
+}
+
+// Καλείται στην εκκίνηση και σε κάθε αλλαγή γλώσσας (μέσω updateDashboard): ξαναγράφει ημερομηνίες, ετικέτα και pill
+function initExtraSelectors() {
+    if (!rawData || !rawData.isp) return;
+    fillPickers();
+    updatePicker();
+    updateStatusBadge();
+}
+
+// Όταν η οθόνη περνά το όριο των 768 px (π.χ. περιστροφή κινητού) αλλάζει η μορφή των ημερομηνιών (με ή χωρίς έτος)
+window.matchMedia('(max-width: 767px)').addEventListener('change', () => { if (appReady) { fillPickers(); updatePicker(); updateStatusBadge(); } });
 
 // ==========================================
 // MASTER UPDATE TRIGGER

@@ -38,6 +38,14 @@ const i18n = {
         tabIspScada: "Monthly Analytics",
         tabSurplus: "Generic Constraints & Surplus",
         btnMethodology: "Methodology & Assumptions",
+        btnMethodologyShort: "Methodology",
+        locale: "en-GB",
+        today: "today",
+        monthLabel: "Month:",
+        pillComplete: "Complete data",
+        pillCompleteShort: "Complete",
+        pillPending: "Pending SCADA",
+        pillPendingShort: "Pending",
         btnClose: "Close",
         modalTitle: "Methodology & Core Assumptions",
         btnShort: "Short",
@@ -116,12 +124,20 @@ const i18n = {
         nextUpdate: "Επόμενη Ενημέρωση:",
         lastUpdateMobile: "Ενημερώθηκε:",
         nextUpdateMobile: "Επόμενη:",
-        dateLabel: "Ημερομηνία:",
+        dateLabel: "Ημέρα:",
         tabOverview: "Ημερήσια Επισκόπηση",
         tabEconomics: "Ημερήσια Οικονομικά",
         tabIspScada: "Μηνιαία Ανάλυση",
         tabSurplus: "Περιορισμοί Συστήματος & Πλεόνασμα",
         btnMethodology: "Μεθοδολογία & Παραδοχές",
+        btnMethodologyShort: "Μεθοδολογία",
+        locale: "el-GR",
+        today: "σήμερα",
+        monthLabel: "Μήνας:",
+        pillComplete: "Πλήρη δεδομένα",
+        pillCompleteShort: "Πλήρη",
+        pillPending: "Εκκρεμεί SCADA",
+        pillPendingShort: "Εκκρεμεί",
         btnClose: "Κλείσιμο",
         modalTitle: "Μεθοδολογία & Βασικές Παραδοχές",
         btnShort: "Σύντομη",
@@ -206,7 +222,7 @@ function renderMethodologyModal() {
     if (btnShort && btnDetailed) {
         btnShort.innerText = t.btnShort;
         btnDetailed.innerText = t.btnDetailed;
-        const active = "flex-1 px-4 py-2 rounded-lg text-sm font-semibold bg-acc-600 text-white transition";
+        const active = "flex-1 px-4 py-2 rounded-lg text-sm font-semibold bg-acc-400 text-slate-900 transition";
         const inactive = "flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-slate-400 hover:text-slate-200 transition";
         btnShort.className = methodologyDepth === 'short' ? active : inactive;
         btnDetailed.className = methodologyDepth === 'detailed' ? active : inactive;
@@ -239,6 +255,7 @@ function setLang(lang) {
     document.getElementById('nextUpdateLabelDesktop').innerText = t.nextUpdate;
     
     if(document.getElementById('btnMethodologyText')) document.getElementById('btnMethodologyText').innerText = t.btnMethodology;
+    const bms = document.getElementById('btnMethodologyTextShort'); if (bms) bms.innerText = t.btnMethodologyShort;
     renderMethodologyModal();
     if(document.getElementById('btnClose')) document.getElementById('btnClose').innerText = t.btnClose;
 
@@ -247,16 +264,13 @@ function setLang(lang) {
     document.getElementById('tabBtnIspScada').innerText = t.tabIspScada;
     document.getElementById('tabBtnSurplus').innerText = t.tabSurplus;
     
-    if(document.getElementById('dateLabel')) document.getElementById('dateLabel').innerText = t.dateLabel;
+    // GR | EN: το ενεργό παίρνει το accent με σκούρα γράμματα (hub)
+    const LANG_ON = 'flex items-center justify-center px-4 rounded bg-acc-400 text-slate-900 transition';
+    const LANG_OFF = 'flex items-center justify-center px-4 rounded text-slate-400 hover:text-white transition';
+    document.getElementById('btnGr').className = lang === 'el' ? LANG_ON : LANG_OFF;
+    document.getElementById('btnEn').className = lang === 'en' ? LANG_ON : LANG_OFF;
 
-    if(lang === 'el') {
-        document.getElementById('btnGr').className = "px-2 py-1 rounded bg-acc-600 text-white transition";
-        document.getElementById('btnEn').className = "px-2 py-1 rounded text-slate-400 hover:text-white transition";
-    } else {
-        document.getElementById('btnEn').className = "px-2 py-1 rounded bg-acc-600 text-white transition";
-        document.getElementById('btnGr').className = "px-2 py-1 rounded text-slate-400 hover:text-white transition";
-    }
-
+    fitMetaRow();
     if (appReady && typeof updateDashboard === "function") updateDashboard();
 }
 
@@ -272,12 +286,32 @@ function fmtAthens(iso) {
     const p = Object.fromEntries(ATHENS_FMT.formatToParts(d).map(x => [x.type, x.value]));
     return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
 }
+// Σύντομη μορφή για το κινητό (D22): «26/10 07:07», χωρίς έτος, ώστε Ενημερώθηκε και Επόμενη να χωράνε σε μία γραμμή
+function fmtAthensShort(iso) {
+    const d = new Date(iso);
+    if (!iso || isNaN(d)) return '-';
+    const p = Object.fromEntries(ATHENS_FMT.formatToParts(d).map(x => [x.type, x.value]));
+    return `${p.day}/${p.month} ${p.hour}:${p.minute}`;
+}
 // Εφαρμογή του meta.json στην κεφαλίδα (Τελευταία / Επόμενη ενημέρωση). Αν λείπει: «-».
+// Στο κινητό οι δύο ώρες μπαίνουν σε μία γραμμή· αν δεν χωράνε (π.χ. ελληνικά στα 320 px) πηγαίνουν η μία κάτω από την άλλη
+function fitMetaRow() {
+    const row = document.getElementById('metaRow'), sep = document.getElementById('metaSep');
+    if (!row) return;
+    row.classList.remove('flex-col', 'items-start', 'gap-y-0.5'); row.classList.add('items-center'); if (sep) sep.classList.remove('hidden');
+    if (row.scrollWidth > row.clientWidth + 1) {
+        row.classList.remove('items-center'); row.classList.add('flex-col', 'items-start', 'gap-y-0.5'); if (sep) sep.classList.add('hidden');
+    }
+}
+window.addEventListener('resize', fitMetaRow);
+
 function applyMeta(meta) {
-    const lastEl = document.getElementById('lastUpdateVal');
-    const nextEl = document.getElementById('nextUpdateVal');
-    if (lastEl) lastEl.innerText = meta ? fmtAthens(meta.fetched) : '-';
-    if (nextEl) nextEl.innerText = meta ? fmtAthens(meta.next_update) : '-';
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+    set('lastUpdateVal', meta ? fmtAthens(meta.fetched) : '-');
+    set('lastUpdateValShort', meta ? fmtAthensShort(meta.fetched) : '-');
+    set('nextUpdateVal', meta ? fmtAthens(meta.next_update) : '-');
+    set('nextUpdateValShort', meta ? fmtAthensShort(meta.next_update) : '-');
+    fitMetaRow();
 }
 
 // Τα δεδομένα του historical.json στη μνήμη + η λίστα ημερομηνιών
@@ -290,13 +324,6 @@ function applyData(json) {
     rawData.daily_surplus = json.daily_surplus || [];
     rawData.daily_gas_constraints = json.daily_gas_constraints || [];
     rawData.daily_economics = json.daily_economics || [];
-
-    const dates = [...new Set([
-        ...rawData.isp.map(d => Object.values(d)[0]),
-        ...rawData.scada.map(d => Object.values(d)[0])
-    ])].filter(d => d).sort().reverse();
-    const dateSelect = document.getElementById('dateSelect');
-    if (dateSelect) dateSelect.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
 }
 
 // ==========================================================================================
@@ -366,6 +393,7 @@ async function boot() {
         // Βήματα 2…5: ένα ανά tab, με τη σειρά των tabs
         if (typeof applyDataColors === 'function') applyDataColors();
         initExtraSelectors();
+        paintTabs();
         await loadStep(2, async () => { updateOverviewTab(); });
         await loadStep(3, async () => { updateEconomicsTab(); });
         await loadStep(4, async () => { updateMonthlyTab(); });

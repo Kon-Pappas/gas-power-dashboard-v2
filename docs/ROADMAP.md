@@ -16,7 +16,8 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 3: house shell
 
-- One picker box, dates in the visitor's language, status pill inside the box (K18, H06), the mobile breakpoint (decision on 768 px pending, K05), modal with Esc and focus (K06), header labels that fit one line (K17, decision on the date format pending)
+- **Batch 7 (26 Oct 2026) — done:** the shell of the hub: the phone layout stops at 768 px, one picker box with the pill inside, dates in the visitor's language, the header times on one line, the tab grid (D22)
+- Next (batch 8): the Methodology modal with Esc, focus and no scroll behind it (K06)
 
 ## Phase 4: texts
 
@@ -48,9 +49,9 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Open decisions (owner)
 
-1. Mobile breakpoint 1024 → 768 px (K05)
-2. Emoji in labels: keep, or coloured dots (K07)
-3. Where the constraints are calculated: browser or Python (K10)
-4. Cost table on phones: cards or accordion (K09)
-5. Date format of the header on phones, with or without the year (K17)
-6. A full list of pinned dependencies (K19)
+1. Emoji in labels: keep, or coloured dots (K07)
+2. Where the constraints are calculated: browser or Python (K10)
+3. Cost table on phones: cards or accordion (K09)
+4. A full list of pinned dependencies (K19)
+
+Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22).
