@@ -1,8 +1,10 @@
 name: Daily Energy Data Update
 
+# Ενημέρωση ΜΟΝΟ από το εξωτερικό cron-job.org (07:06 και 13:00, ώρα Ελλάδος, ζώνη Europe/Athens),
+# που καλεί αυτό το workflow μέσω workflow_dispatch. Σκόπιμα ΔΕΝ υπάρχει schedule:
+# το native schedule του GitHub καθυστερεί απρόβλεπτα και, μετά την αλλαγή ώρας, θα ξεκινούσε 06:00 Ελλάδας,
+# πριν δημοσιευτεί το SCADA (~06:05). Βλ. docs/DECISIONS.md (D07).
 on:
-  schedule:
-    - cron: '0 4 * * *' # 07:00 ώρα Ελλάδος
   workflow_dispatch:
     inputs:
       start_date:
@@ -17,20 +19,26 @@ on:
 permissions:
   contents: write
 
+# Ένα run τη φορά: ένα manual backfill που συμπίπτει με τα 07:06 / 13:00 περιμένει στην ουρά
+# αντί να τρέξει παράλληλα και να αποτύχει το push.
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
 jobs:
   update-data:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
-        
+
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
@@ -48,8 +56,8 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/historical.json
-          
+          git add data/historical.json data/meta.json
+
           if git diff --staged --quiet; then
             echo "Δεν βρέθηκαν νέα δεδομένα (ή δεν υπάρχει αλλαγή). Παράβλεψη commit."
           else
