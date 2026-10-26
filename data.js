@@ -44,7 +44,7 @@ const i18n = {
             <p class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-2 mt-4">All Tabs</p>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Scope:</strong> gas-fired (CCGT) units on the Transmission System (IPTO/ADMIE) that appear in its files. Lignite units (e.g. Ptolemaida5) and large hydro (e.g. Agras) are excluded even where present in the same source files.</li>
-                <li><strong class="text-slate-200">Sources:</strong> IPTO/ADMIE (ISP = schedule, SCADA = actual operation, published the next morning) and HEnEx (gas price indices, Day-Ahead Market price). Updated daily; the last 10 days are re-checked to catch late publications.</li>
+                <li><strong class="text-slate-200">Sources:</strong> IPTO/ADMIE (ISP = schedule, SCADA = actual operation, published the next morning) and HEnEx (gas price indices, Day-Ahead Market price). Updated twice daily (07:06 and 13:00, Greek time); the last 10 days are re-checked to catch late publications.</li>
                 <li><strong class="text-slate-200">Pending data:</strong> a day with no SCADA yet is marked "Pending SCADA" and shown using ISP only. A day with no HGSIDA yet has its economics deferred to the next run rather than shown incomplete.</li>
             </ul>
 
@@ -72,8 +72,8 @@ const i18n = {
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Scope:</strong> refers exclusively to natural gas (CCGT) power plants connected to the Transmission System (IPTO/ADMIE) that appear in its published files. Lignite units (e.g. Ptolemaida5) and large hydro (e.g. Agras) are excluded even when they appear in the same source files as the gas units. Co-generation units with locked 24/7 output (e.g. Alouminio) are likewise excluded from constraint tracking, since their output isn't market-responsive.</li>
                 <li><strong class="text-slate-200">Sources:</strong> Data is fetched daily from IPTO's (ADMIE) official reports (ISP & SCADA) and HEnEx (Day-Ahead Market & NGAS Indices).</li>
-                <li><strong class="text-slate-200">Updates:</strong> daily in the morning via a scheduled job. The last 10 days are re-checked on every run to catch late publications and corrections.</li>
-                <li><strong class="text-slate-200">Data Completeness:</strong> SCADA telemetry for a given day is published by IPTO the following morning; until then, that day is marked "Pending SCADA" and shown using ISP data only. Similarly, when HGSIDA hasn't been published yet for the current day (HEnEx typically publishes later in the day), that day's economics are deferred entirely to the next run rather than calculated with an incomplete or zero value.</li>
+                <li><strong class="text-slate-200">Updates:</strong> twice daily, at 07:06 and 13:00 Greek time, via a scheduled job. The last 10 days are re-checked on every run to catch late publications and corrections.</li>
+                <li><strong class="text-slate-200">Data Completeness:</strong> SCADA telemetry for a given day is published by IPTO the following morning; until then, that day is marked "Pending SCADA" and shown using ISP data only. Similarly, HEnEx publishes the HGSIDA index for a given day on the following day, by around midday; until it appears, that day's economics are deferred entirely to the next run rather than calculated with an incomplete or zero value.</li>
             </ul>
 
             <p class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-2 mt-4">Daily Overview</p>
@@ -127,7 +127,7 @@ const i18n = {
             <p class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-2 mt-4">Όλα τα Tabs</p>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Εύρος:</strong> μονάδες φυσικού αερίου (CCGT) στο Σύστημα Μεταφοράς (ΑΔΜΗΕ) που εμφανίζονται στα αρχεία του. Λιγνιτικές μονάδες (π.χ. Πτολεμαΐδα5) και μεγάλα υδροηλεκτρικά (π.χ. Άγρας) εξαιρούνται, ακόμα κι όταν εμφανίζονται στα ίδια αρχεία-πηγές.</li>
-                <li><strong class="text-slate-200">Πηγές:</strong> ΑΔΜΗΕ (ISP = πρόγραμμα, SCADA = πραγματική λειτουργία, δημοσιεύεται το επόμενο πρωί) και HEnEx (δείκτες τιμής αερίου, τιμή Αγοράς Επόμενης Ημέρας). Ενημέρωση καθημερινά· οι τελευταίες 10 μέρες επανελέγχονται για καθυστερημένες δημοσιεύσεις.</li>
+                <li><strong class="text-slate-200">Πηγές:</strong> ΑΔΜΗΕ (ISP = πρόγραμμα, SCADA = πραγματική λειτουργία, δημοσιεύεται το επόμενο πρωί) και HEnEx (δείκτες τιμής αερίου, τιμή Αγοράς Επόμενης Ημέρας). Ενημέρωση δύο φορές την ημέρα (07:06 και 13:00, ώρα Ελλάδος)· οι τελευταίες 10 μέρες επανελέγχονται για καθυστερημένες δημοσιεύσεις.</li>
                 <li><strong class="text-slate-200">Ελλιπή δεδομένα:</strong> μέρα χωρίς SCADA ακόμα σημειώνεται "Pending SCADA" και δείχνεται μόνο με ISP. Μέρα χωρίς HGSIDA ακόμα αναβάλλει τα economics για το επόμενο run, αντί να δείχνει ελλιπή εγγραφή.</li>
             </ul>
 
@@ -155,8 +155,8 @@ const i18n = {
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Εύρος:</strong> αφορά αποκλειστικά μονάδες φυσικού αερίου (CCGT) συνδεδεμένες στο Σύστημα Μεταφοράς (ΑΔΜΗΕ) που εμφανίζονται στα δημοσιευμένα αρχεία του. Λιγνιτικές μονάδες (π.χ. Πτολεμαΐδα5) και μεγάλα υδροηλεκτρικά (π.χ. Άγρας) εξαιρούνται ακόμα κι όταν εμφανίζονται στα ίδια αρχεία-πηγές με τις μονάδες αερίου. Μονάδες συμπαραγωγής με κλειδωμένη παραγωγή 24/7 (π.χ. Αλουμίνιο) εξαιρούνται επίσης από την παρακολούθηση constraints, αφού η παραγωγή τους δεν ανταποκρίνεται στην αγορά.</li>
                 <li><strong class="text-slate-200">Πηγές Δεδομένων:</strong> Αντλούνται καθημερινά από τον ΑΔΜΗΕ (ISP & SCADA) και το HEnEx (Day-Ahead Market & Δείκτες NGAS).</li>
-                <li><strong class="text-slate-200">Ενημερώσεις:</strong> καθημερινά το πρωί, μέσω προγραμματισμένης εργασίας. Οι τελευταίες 10 μέρες επανελέγχονται σε κάθε run για καθυστερημένες δημοσιεύσεις και διορθώσεις.</li>
-                <li><strong class="text-slate-200">Πληρότητα Δεδομένων:</strong> Τα δεδομένα SCADA για μια ημέρα δημοσιεύονται από τον ΑΔΜΗΕ το επόμενο πρωί· μέχρι τότε η ημέρα εμφανίζεται ως "Pending SCADA" με βάση μόνο τα δεδομένα ISP. Αντίστοιχα, όταν το HGSIDA δεν έχει δημοσιευτεί ακόμα για τη σημερινή μέρα (το HEnEx συνήθως δημοσιεύει αργότερα μέσα στη μέρα), τα economics της μέρας αναβάλλονται εξολοκλήρου για το επόμενο run, αντί να υπολογιστούν με ελλιπή ή μηδενική τιμή.</li>
+                <li><strong class="text-slate-200">Ενημερώσεις:</strong> δύο φορές την ημέρα, στις 07:06 και στις 13:00 (ώρα Ελλάδος), μέσω προγραμματισμένης εργασίας. Οι τελευταίες 10 μέρες επανελέγχονται σε κάθε run για καθυστερημένες δημοσιεύσεις και διορθώσεις.</li>
+                <li><strong class="text-slate-200">Πληρότητα Δεδομένων:</strong> Τα δεδομένα SCADA για μια ημέρα δημοσιεύονται από τον ΑΔΜΗΕ το επόμενο πρωί· μέχρι τότε η ημέρα εμφανίζεται ως "Pending SCADA" με βάση μόνο τα δεδομένα ISP. Αντίστοιχα, το HEnEx δημοσιεύει το HGSIDA μιας ημέρας την επόμενη, γύρω στο μεσημέρι· μέχρι τότε τα economics της ημέρας αναβάλλονται εξολοκλήρου για το επόμενο run, αντί να υπολογιστούν με ελλιπή ή μηδενική τιμή.</li>
             </ul>
 
             <p class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-2 mt-4">Ημερήσια Επισκόπηση</p>
@@ -246,24 +246,32 @@ function setLang(lang) {
     if (typeof updateDashboard === "function") updateDashboard();
 }
 
-function updateFreshness(dates) {
-    if (!dates || dates.length === 0) return;
-    const latestDate = dates[0];
-    let parts = latestDate.split('-');
-    let formattedLatest = latestDate;
-    let formattedNext = "-";
-    
-    if (parts.length === 3) {
-        formattedLatest = `${parts[2]}/${parts[1]}/${parts[0]} 08:00`;
-        let d = new Date(parts[0], parts[1] - 1, parseInt(parts[2]) + 1);
-        let day = String(d.getDate()).padStart(2, '0');
-        let month = String(d.getMonth() + 1).padStart(2, '0');
-        let year = d.getFullYear();
-        formattedNext = `${day}/${month}/${year} 08:00`;
+// Τελευταία / Επόμενη ενημέρωση: τις γράφει το Python στο data/meta.json (hub D06: `fetched` και `next_update`,
+// UTC). Η σελίδα μόνο τις δείχνει, σε ώρα Ελλάδος (σωστά και στην αλλαγή ώρας). Αν λείπει το αρχείο: «-».
+const ATHENS_FMT = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Athens', day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+});
+function fmtAthens(iso) {
+    const d = new Date(iso);
+    if (!iso || isNaN(d)) return '-';
+    const p = Object.fromEntries(ATHENS_FMT.formatToParts(d).map(x => [x.type, x.value]));
+    return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
+}
+async function loadMeta() {
+    const lastEl = document.getElementById('lastUpdateVal');
+    const nextEl = document.getElementById('nextUpdateVal');
+    try {
+        const res = await fetch('data/meta.json', { cache: 'no-cache' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const meta = await res.json();
+        if (lastEl) lastEl.innerText = fmtAthens(meta.fetched);
+        if (nextEl) nextEl.innerText = fmtAthens(meta.next_update);
+    } catch (err) {
+        console.warn('meta.json δεν φορτώθηκε:', err);
+        if (lastEl) lastEl.innerText = '-';
+        if (nextEl) nextEl.innerText = '-';
     }
-    
-    document.getElementById('lastUpdateVal').innerText = formattedLatest;
-    document.getElementById('nextUpdateVal').innerText = formattedNext;
 }
 
 // ΑΣΦΑΛΗΣ & ΟΜΑΛΗ ΡΟΗ ΦΟΡΤΩΣΗΣ (BULLETPROOF FETCH ΓΙΑ ΤΟΠΙΚΟ ΑΡΧΕΙΟ)
@@ -339,7 +347,7 @@ async function fetchMarketData() {
             dateSelect.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
         }
 
-        updateFreshness(dates);
+        loadMeta();
 
         updateProgress(100, lang === 'el' ? "Ολοκλήρωση Dashboard..." : "Finalizing Dashboard...");
 

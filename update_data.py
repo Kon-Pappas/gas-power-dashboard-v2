@@ -14,8 +14,14 @@ import time
 # CONFIGURATION
 # ==========================================
 DATA_FILE = 'data/historical.json'
+META_FILE = 'data/meta.json'
 ADMIE_API_URL = "https://www.admie.gr/getOperationMarketFile"
 TZ = pytz.timezone('Europe/Athens')
+
+# Ώρες των εξωτερικών εκτελέσεων (cron-job.org, ώρα Ελλάδος): πρωί μετά τη δημοσίευση του SCADA (~06:05)
+# και μεσημέρι μετά τη δημοσίευση του HGSIDA. Είναι η ΜΟΝΗ πηγή για το «Επόμενη ενημέρωση» της σελίδας.
+# Αν αλλάξουν τα jobs στο cron-job.org, αλλάζει και αυτή η λίστα (docs/DECISIONS.md, D07).
+UPDATE_SCHEDULE = ["07:06", "13:00"]
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -547,6 +553,43 @@ def process_economics(date_str):
 # ==========================================
 # MAIN EXECUTION
 # ==========================================
+# ==========================================
+# META (Τελευταία / Επόμενη ενημέρωση) + ΑΤΟΜΙΚΗ ΕΓΓΡΑΦΗ
+# ==========================================
+def compute_next_update(now):
+    """Η πρώτη προγραμματισμένη ώρα (UPDATE_SCHEDULE, ώρα Ελλάδος) αυστηρά μετά το `now`.
+    Οι ώρες 07:06 και 13:00 δεν πέφτουν ποτέ στην ώρα αλλαγής ώρας (03:00-04:00), άρα το localize είναι σαφές."""
+    base = now.astimezone(TZ).date()
+    for day_offset in range(0, 3):
+        day = base + timedelta(days=day_offset)
+        for hhmm in UPDATE_SCHEDULE:
+            h, m = (int(x) for x in hhmm.split(":"))
+            candidate = TZ.localize(datetime(day.year, day.month, day.day, h, m))
+            if candidate > now:
+                return candidate
+    raise RuntimeError("UPDATE_SCHEDULE κενό ή μη έγκυρο")
+
+def atomic_write_json(path, obj, **dump_kwargs):
+    """Γράφει σε προσωρινό αρχείο και μετά το αντικαθιστά με os.replace: ποτέ μισογραμμένο αρχείο."""
+    tmp_path = path + ".tmp"
+    with open(tmp_path, 'w', encoding='utf-8') as f:
+        json.dump(obj, f, ensure_ascii=False, **dump_kwargs)
+    os.replace(tmp_path, path)
+
+def write_meta(now):
+    """data/meta.json, ίδιο σχήμα με BESS και Flows (hub D06): `fetched` = πότε έτρεξε η λήψη και
+    `next_update` = η επόμενη προγραμματισμένη εκτέλεση, και τα δύο σε UTC (...Z). Η ώρα Ελλάδος λογαριάζεται
+    με τη ζώνη ώρας, άρα είναι σωστή και πριν/μετά την αλλαγή ώρας· η σελίδα μόνο τα δείχνει, σε ώρα Ελλάδος.
+    Μοναδικός writer αυτό το script, ΜΟΝΟ αφού γραφτούν επιτυχώς τα δεδομένα."""
+    def to_utc_z(dt):
+        return dt.astimezone(pytz.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    meta = {
+        "fetched": to_utc_z(now),
+        "next_update": to_utc_z(compute_next_update(now)),
+    }
+    atomic_write_json(META_FILE, meta, indent=2)
+    return meta
+
 def wipe_date(target_date_str):
     """Διαγράφει οριστικά ΟΛΑ τα δεδομένα μιας συγκεκριμένης ημερομηνίας πριν το backfill."""
     db["isp_generation"] = [d for d in db["isp_generation"] if d.get("Ημερομηνία") != target_date_str]
@@ -602,7 +645,8 @@ if __name__ == "__main__":
         
         time.sleep(1)
 
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(db, f, ensure_ascii=False, indent=2)
+    atomic_write_json(DATA_FILE, db, indent=2)
+    meta = write_meta(datetime.now(TZ))
+    print(f"meta.json: fetched={meta['fetched']} next_update={meta['next_update']}")
         
     print("\n✔ Job Completed Successfully!")
