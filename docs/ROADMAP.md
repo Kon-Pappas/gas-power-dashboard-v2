@@ -6,7 +6,8 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 - **Batch 1 (26 Oct 2026) — done:** updates only from cron-job.org at 07:06 and 13:00, no `schedule:`, Actions updated, one job at a time (D07, D09, D10); real *Last / Next update* from `data/meta.json` (D08); Tailwind and Chart.js pinned (D09); atomic writes (D10); Methodology text corrected (D12); README and `docs/` (D13)
 - **Batch 2 (26 Oct 2026) — done:** language remembered with `kp_lang` (D15); the accent defined in one place, blue, with 28 decorative uses and the header values (D11, D14)
-- Batch 3: loading overlay as in the hub (K01), with real progress in step 1
+- **Batch 3 (26 Oct 2026) — done:** the SCADA hours from the calendar with a check against the file's SUM column, and the page reads hours by name (D17); the day-ahead prices removed and the Methodology text corrected (D16)
+- Batch 4: loading overlay as in the hub (K01), with real progress in step 1 (first as a sample in a browser)
 
 ## Phase 2: data colours
 
@@ -30,16 +31,16 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 7: data
 
-- Decide first where the constraints are calculated (K10): in Python, the page would not need the hourly SCADA, which is 46 % of the file
+- Decide first where the constraints are calculated (K10): in Python, the page would not need the hourly SCADA, which is half of the file (49.5 %)
 - Then monthly files with a manifest **only if** the measured size justifies it (K11); refresh with ETag instead of `?v=<time>`
 
 ## Correctness (alongside the phases)
 
-- Clock-change days, missing values, bare `except`, the DAM skip rule (K12–K15): after the check below
+- Missing values and bare `except` (K13, K14). Clock-change days are done for the SCADA (D17); K20 remains
 
 ## Dated checks
 
-- **26–27 Oct 2026:** the files of 25 Oct (25 hours): the DAM file (published 24 Oct) and the SCADA file (published 26 Oct about 06:05), checked as in BESS (K12)
+- **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Before 4 Nov 2026:** the fix of D17 must be online, so that the 10-day re-check repairs the 25 Oct record. **Before 28 Mar 2027 (23 hours):** K20
 - **After every batch:** compare the repository with the zip, byte by byte; check that the Pages build is green; run the page in Chromium at 360 and 320 px
 - **Every two weeks:** measure the size of the data (K11)
 
@@ -50,3 +51,4 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 3. Where the constraints are calculated: browser or Python (K10)
 4. Cost table on phones: cards or accordion (K09)
 5. Date format of the header on phones, with or without the year (K17)
+6. A full list of pinned dependencies (K19)

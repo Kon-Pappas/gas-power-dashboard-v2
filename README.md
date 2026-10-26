@@ -19,7 +19,7 @@ The *Methodology & Assumptions* button opens a short and a detailed version of t
 ## Data sources
 
 - **IPTO / ADMIE**: ISP results (scheduled; the *GenericConstraints* sheet gives the units and hours of the generic constraints) and System Realization SCADA (actual operation, files marked by IPTO as uncertified). Daily files. Only gas units on the Transmission System; lignite, large hydro and the co-generation unit with locked 24/7 output are left out.
-- **HEnEx**: day-ahead market results (MCP) and the gas price indices (HGSIDA and others). HGSIDA of a day is published the following day, by around midday.
+- **HEnEx**: the gas price indices (HGSIDA and others). HGSIDA of a day is published the following day, by around midday.
 - **oilpriceapi.com**: EUA CO₂ price, free tier (50 requests a month, no historical data): one call per daily run, never in a backfill. A day without a real price shows the last real one (weekends) or €85.00, marked *estimated*.
 
 ## How it is updated

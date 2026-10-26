@@ -10,7 +10,6 @@ let rawData = {
     scada: [], 
     scadaHourly: [], 
     henex: [], 
-    mcpHourly: [], 
     efficiency: [],
     daily_surplus: [],          
     daily_gas_constraints: [],
@@ -47,7 +46,7 @@ const i18n = {
             <p class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">All Tabs</p>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Scope:</strong> gas-fired (CCGT) units on the Transmission System (IPTO/ADMIE) that appear in its files. Lignite units (e.g. Ptolemaida5) and large hydro (e.g. Agras) are excluded even where present in the same source files.</li>
-                <li><strong class="text-slate-200">Sources:</strong> IPTO/ADMIE (ISP = schedule, SCADA = actual operation, published the next morning) and HEnEx (gas price indices, Day-Ahead Market price). Updated twice daily (07:06 and 13:00, Greek time); the last 10 days are re-checked to catch late publications.</li>
+                <li><strong class="text-slate-200">Sources:</strong> IPTO/ADMIE (ISP = schedule, SCADA = actual operation, published the next morning) and HEnEx (gas price indices). Updated twice daily (07:06 and 13:00, Greek time); the last 10 days are re-checked to catch late publications.</li>
                 <li><strong class="text-slate-200">Pending data:</strong> a day with no SCADA yet is marked "Pending SCADA" and shown using ISP only. A day with no HGSIDA yet has its economics deferred to the next run rather than shown incomplete.</li>
             </ul>
 
@@ -64,7 +63,7 @@ const i18n = {
 
             <p class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Generic Constraints & Surplus</p>
             <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400">
-                <li><strong class="text-slate-200">Out-of-merit proxy:</strong> a unit running while MCP is below its fuel cost is shown as constraint-driven, approximating residual ISP surplus. An imperfect proxy — the true surplus can't be independently verified.</li>
+                <li><strong class="text-slate-200">Constraint-driven generation:</strong> the SCADA output of a gas unit during the hours IPTO's ISP2 lists it under a Generic Constraint. It approximates the residual ISP surplus; an imperfect proxy — the true surplus can't be independently verified.</li>
                 <li><strong class="text-slate-200">Pending days excluded:</strong> only days without SCADA are left out of the chart; days with zero constraints or near-zero surplus stay in.</li>
             </ul>
         `,
@@ -74,7 +73,7 @@ const i18n = {
             <p class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">All Tabs</p>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Scope:</strong> refers exclusively to natural gas (CCGT) power plants connected to the Transmission System (IPTO/ADMIE) that appear in its published files. Lignite units (e.g. Ptolemaida5) and large hydro (e.g. Agras) are excluded even when they appear in the same source files as the gas units. Co-generation units with locked 24/7 output (e.g. Alouminio) are likewise excluded from constraint tracking, since their output isn't market-responsive.</li>
-                <li><strong class="text-slate-200">Sources:</strong> Data is fetched daily from IPTO's (ADMIE) official reports (ISP & SCADA) and HEnEx (Day-Ahead Market & NGAS Indices).</li>
+                <li><strong class="text-slate-200">Sources:</strong> Data is fetched daily from IPTO's (ADMIE) official reports (ISP & SCADA) and HEnEx (NGAS gas price indices).</li>
                 <li><strong class="text-slate-200">Updates:</strong> twice daily, at 07:06 and 13:00 Greek time, via a scheduled job. The last 10 days are re-checked on every run to catch late publications and corrections.</li>
                 <li><strong class="text-slate-200">Data Completeness:</strong> SCADA telemetry for a given day is published by IPTO the following morning; until then, that day is marked "Pending SCADA" and shown using ISP data only. Similarly, HEnEx publishes the HGSIDA index for a given day on the following day, by around midday; until it appears, that day's economics are deferred entirely to the next run rather than calculated with an incomplete or zero value.</li>
             </ul>
@@ -93,7 +92,7 @@ const i18n = {
 
             <p class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Generic Constraints & Surplus</p>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
-                <li><strong class="text-slate-200">Out-of-Merit Operation:</strong> Due to the "duck curve" and high RES penetration, IPTO frequently keeps units synchronized via Generic Constraints for system stability. When a unit generates electricity while the Day-Ahead Market (MCP) price is lower than its marginal fuel cost, this is visualized as constraint-driven operation — not market-driven arbitrage. In practice, this is the only available way to approximate the residual surplus left over from the ISP's day-ahead scheduling, though it is an imperfect proxy, since the true magnitude of that residual surplus cannot be independently verified from public data.</li>
+                <li><strong class="text-slate-200">Out-of-Merit Operation:</strong> Due to the "duck curve" and high RES penetration, IPTO frequently keeps units synchronized via Generic Constraints for system stability. The page takes the gas units and the hours of these constraints from the ISP2 schedule (its GenericConstraints sheet) and counts the unit's actual SCADA output inside those hours as constraint-driven generation — not market-driven arbitrage. Prices are not compared: a unit can also run below its cost for other reasons (technical minimum, block orders, balancing), and this view does not count those hours. In practice, this is the only available way to approximate the residual surplus left over from the ISP's scheduling, though it is an imperfect proxy, since the schedule is not a measurement and the true magnitude of that residual surplus cannot be independently verified from public data.</li>
                 <li><strong class="text-slate-200">Which units count:</strong> only gas-fired units are tracked for constraints; lignite and large hydro units appearing in the same ISP file are filtered out, as is the co-generation unit with locked 24/7 output.</li>
                 <li><strong class="text-slate-200">Pending days vs. zero days:</strong> a day is excluded from the chart only when SCADA isn't available yet for it. A day with SCADA but zero recorded constraints, or with very low residual surplus, remains in the chart and is shown as zero — it is not treated the same as a pending day.</li>
             </ul>
@@ -130,7 +129,7 @@ const i18n = {
             <p class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Όλα τα Tabs</p>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Εύρος:</strong> μονάδες φυσικού αερίου (CCGT) στο Σύστημα Μεταφοράς (ΑΔΜΗΕ) που εμφανίζονται στα αρχεία του. Λιγνιτικές μονάδες (π.χ. Πτολεμαΐδα5) και μεγάλα υδροηλεκτρικά (π.χ. Άγρας) εξαιρούνται, ακόμα κι όταν εμφανίζονται στα ίδια αρχεία-πηγές.</li>
-                <li><strong class="text-slate-200">Πηγές:</strong> ΑΔΜΗΕ (ISP = πρόγραμμα, SCADA = πραγματική λειτουργία, δημοσιεύεται το επόμενο πρωί) και HEnEx (δείκτες τιμής αερίου, τιμή Αγοράς Επόμενης Ημέρας). Ενημέρωση δύο φορές την ημέρα (07:06 και 13:00, ώρα Ελλάδος)· οι τελευταίες 10 μέρες επανελέγχονται για καθυστερημένες δημοσιεύσεις.</li>
+                <li><strong class="text-slate-200">Πηγές:</strong> ΑΔΜΗΕ (ISP = πρόγραμμα, SCADA = πραγματική λειτουργία, δημοσιεύεται το επόμενο πρωί) και HEnEx (δείκτες τιμής αερίου). Ενημέρωση δύο φορές την ημέρα (07:06 και 13:00, ώρα Ελλάδος)· οι τελευταίες 10 μέρες επανελέγχονται για καθυστερημένες δημοσιεύσεις.</li>
                 <li><strong class="text-slate-200">Ελλιπή δεδομένα:</strong> μέρα χωρίς SCADA ακόμα σημειώνεται "Pending SCADA" και δείχνεται μόνο με ISP. Μέρα χωρίς HGSIDA ακόμα αναβάλλει τα economics για το επόμενο run, αντί να δείχνει ελλιπή εγγραφή.</li>
             </ul>
 
@@ -147,7 +146,7 @@ const i18n = {
 
             <p class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Περιορισμοί Συστήματος & Πλεόνασμα</p>
             <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400">
-                <li><strong class="text-slate-200">Out-of-merit ως proxy:</strong> μονάδα που λειτουργεί ενώ η MCP είναι χαμηλότερη από το κόστος καυσίμου της δείχνεται ως constraint-driven, προσεγγίζοντας το residual surplus του ISP. Ατελές proxy — το πραγματικό surplus δεν επαληθεύεται ανεξάρτητα.</li>
+                <li><strong class="text-slate-200">Constraint-driven παραγωγή:</strong> η παραγωγή SCADA μονάδας αερίου τις ώρες που το ISP2 του ΑΔΜΗΕ την έχει σε Generic Constraint. Προσεγγίζει το residual surplus του ISP· ατελές proxy — το πραγματικό surplus δεν επαληθεύεται ανεξάρτητα.</li>
                 <li><strong class="text-slate-200">Εξαιρούνται μόνο οι pending μέρες:</strong> μόνο μέρες χωρίς SCADA μένουν εκτός γραφήματος· μέρες με μηδενικά constraints ή σχεδόν μηδενικό surplus εξακολουθούν να απεικονίζονται κανονικά.</li>
             </ul>
         `,
@@ -157,7 +156,7 @@ const i18n = {
             <p class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Όλα τα Tabs</p>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Εύρος:</strong> αφορά αποκλειστικά μονάδες φυσικού αερίου (CCGT) συνδεδεμένες στο Σύστημα Μεταφοράς (ΑΔΜΗΕ) που εμφανίζονται στα δημοσιευμένα αρχεία του. Λιγνιτικές μονάδες (π.χ. Πτολεμαΐδα5) και μεγάλα υδροηλεκτρικά (π.χ. Άγρας) εξαιρούνται ακόμα κι όταν εμφανίζονται στα ίδια αρχεία-πηγές με τις μονάδες αερίου. Μονάδες συμπαραγωγής με κλειδωμένη παραγωγή 24/7 (π.χ. Αλουμίνιο) εξαιρούνται επίσης από την παρακολούθηση constraints, αφού η παραγωγή τους δεν ανταποκρίνεται στην αγορά.</li>
-                <li><strong class="text-slate-200">Πηγές Δεδομένων:</strong> Αντλούνται καθημερινά από τον ΑΔΜΗΕ (ISP & SCADA) και το HEnEx (Day-Ahead Market & Δείκτες NGAS).</li>
+                <li><strong class="text-slate-200">Πηγές Δεδομένων:</strong> Αντλούνται καθημερινά από τον ΑΔΜΗΕ (ISP & SCADA) και το HEnEx (Δείκτες NGAS).</li>
                 <li><strong class="text-slate-200">Ενημερώσεις:</strong> δύο φορές την ημέρα, στις 07:06 και στις 13:00 (ώρα Ελλάδος), μέσω προγραμματισμένης εργασίας. Οι τελευταίες 10 μέρες επανελέγχονται σε κάθε run για καθυστερημένες δημοσιεύσεις και διορθώσεις.</li>
                 <li><strong class="text-slate-200">Πληρότητα Δεδομένων:</strong> Τα δεδομένα SCADA για μια ημέρα δημοσιεύονται από τον ΑΔΜΗΕ το επόμενο πρωί· μέχρι τότε η ημέρα εμφανίζεται ως "Pending SCADA" με βάση μόνο τα δεδομένα ISP. Αντίστοιχα, το HEnEx δημοσιεύει το HGSIDA μιας ημέρας την επόμενη, γύρω στο μεσημέρι· μέχρι τότε τα economics της ημέρας αναβάλλονται εξολοκλήρου για το επόμενο run, αντί να υπολογιστούν με ελλιπή ή μηδενική τιμή.</li>
             </ul>
@@ -176,7 +175,7 @@ const i18n = {
 
             <p class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Περιορισμοί Συστήματος & Πλεόνασμα</p>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
-                <li><strong class="text-slate-200">Λειτουργία Out-of-Merit:</strong> Λόγω υψηλής διείσδυσης ΑΠΕ, ο ΑΔΜΗΕ διατηρεί συχνά μονάδες συγχρονισμένες μέσω Generic Constraints για ευστάθεια συστήματος. Η λειτουργία μονάδας σε ώρες όπου η Τιμή Εκκαθάρισης (MCP) είναι χαμηλότερη από το κόστος καυσίμου της, αποτυπώνεται ως constraint-driven λειτουργία — όχι ως market-driven arbitrage. Στην πράξη, αυτός είναι ο μόνος διαθέσιμος τρόπος προσέγγισης του residual surplus που απομένει από τον ημερήσιο προγραμματισμό (ISP), αν και πρόκειται για ατελές proxy, καθώς το πραγματικό μέγεθος αυτού του πλεονάσματος δεν μπορεί να επιβεβαιωθεί ανεξάρτητα από δημόσια δεδομένα.</li>
+                <li><strong class="text-slate-200">Λειτουργία Out-of-Merit:</strong> Λόγω υψηλής διείσδυσης ΑΠΕ, ο ΑΔΜΗΕ διατηρεί συχνά μονάδες συγχρονισμένες μέσω Generic Constraints για ευστάθεια συστήματος. Η σελίδα παίρνει τις μονάδες αερίου και τις ώρες αυτών των constraints από τον προγραμματισμό ISP2 (το φύλλο GenericConstraints) και μετρά την πραγματική παραγωγή SCADA της μονάδας μέσα σε αυτές τις ώρες ως constraint-driven παραγωγή — όχι ως market-driven arbitrage. Δεν συγκρίνονται τιμές: μια μονάδα μπορεί να λειτουργεί κάτω από το κόστος της και για άλλους λόγους (τεχνικό ελάχιστο, block orders, εξισορρόπηση), και αυτή η προβολή δεν μετρά εκείνες τις ώρες. Στην πράξη, αυτός είναι ο μόνος διαθέσιμος τρόπος προσέγγισης του residual surplus που απομένει από τον προγραμματισμό (ISP), αν και πρόκειται για ατελές proxy, καθώς ο προγραμματισμός δεν είναι μέτρηση και το πραγματικό μέγεθος αυτού του πλεονάσματος δεν μπορεί να επιβεβαιωθεί ανεξάρτητα από δημόσια δεδομένα.</li>
                 <li><strong class="text-slate-200">Ποιες μονάδες μετράνε:</strong> παρακολουθούνται μόνο μονάδες φυσικού αερίου· λιγνιτικές και μεγάλα υδροηλεκτρικά που εμφανίζονται στο ίδιο αρχείο ISP φιλτράρονται έξω, όπως και η μονάδα συμπαραγωγής με κλειδωμένη 24/7 παραγωγή.</li>
                 <li><strong class="text-slate-200">Pending μέρες vs μηδενικές μέρες:</strong> μια μέρα εξαιρείται από το γράφημα μόνο όταν δεν υπάρχει ακόμα SCADA γι' αυτήν. Μέρα με SCADA αλλά μηδενικά καταγεγραμμένα constraints, ή με πολύ χαμηλό residual surplus, παραμένει στο γράφημα και δείχνεται ως μηδέν — δεν αντιμετωπίζεται όπως μια pending μέρα.</li>
             </ul>
@@ -334,7 +333,6 @@ async function fetchMarketData() {
         rawData.scada = json.scada_generation || [];
         rawData.scadaHourly = json.scada_generation_hourly || [];
         rawData.henex = json.henex_indices || [];
-        rawData.mcpHourly = json.dam_mcp_hourly || [];
         rawData.efficiency = json.thermal_efficiency || [];
         rawData.daily_surplus = json.daily_surplus || [];                
         rawData.daily_gas_constraints = json.daily_gas_constraints || []; 

@@ -59,7 +59,7 @@ else:
     db = {}
 
 keys = ["isp_generation", "scada_generation", "scada_generation_hourly", 
-        "henex_indices", "dam_mcp_hourly", "thermal_efficiency", 
+        "henex_indices", "thermal_efficiency", 
         "daily_surplus", "daily_gas_constraints", "co2_prices", "daily_economics"]
 for k in keys:
     if k not in db:
@@ -94,6 +94,29 @@ def fetch_excel(url):
 # ==========================================
 # PROCESSORS (ADMIE & HENEX & CO2)
 # ==========================================
+def hours_in_day(date_str):
+    """Πόσες ώρες έχει η συγκεκριμένη ημερολογιακή μέρα στην Ελλάδα: 24, ή 25 (τέλος Οκτωβρίου), ή 23 (τέλος Μαρτίου).
+    Το template του ΑΔΜΗΕ έχει ΠΑΝΤΑ 25 στήλες ωρών (από τον Ιούνιο 2026), με την 25η μηδενική σε μέρα 24 ωρών,
+    άρα ο αριθμός των ωρών δεν βγαίνει από την επικεφαλίδα· βγαίνει από το ημερολόγιο."""
+    d = datetime.strptime(date_str, "%Y-%m-%d")
+    nxt = d + timedelta(days=1)
+    start = TZ.localize(datetime(d.year, d.month, d.day))
+    end = TZ.localize(datetime(nxt.year, nxt.month, nxt.day))
+    return int(round((end - start).total_seconds() / 3600))
+
+def find_hour_columns(df):
+    """Βρίσκει από την επικεφαλίδα του sheet (γραμμή με τους αριθμούς 1…N και μετά τη λέξη SUM) ποιες στήλες είναι ώρες.
+    Επιστρέφει (λίστα στηλών ωρών, στήλη SUM) ή ([], None) αν δεν βρεθεί επικεφαλίδα με συνεχόμενη αρίθμηση 1…N."""
+    for i in range(min(15, len(df))):
+        row = df.iloc[i].tolist()
+        for j, v in enumerate(row):
+            if j >= 3 and str(v).strip().upper() == "SUM":
+                cols = list(range(2, j))
+                nums = [pd.to_numeric(str(row[c]).strip(), errors='coerce') for c in cols]
+                if cols and all(pd.notna(n) for n in nums) and [int(n) for n in nums] == list(range(1, len(cols) + 1)):
+                    return cols, j
+    return [], None
+
 def process_scada(date_str):
     url = get_admie_excel_url(date_str, "SystemRealizationSCADA")
     if not url: return
@@ -111,12 +134,32 @@ def process_scada(date_str):
         # Λεξικό για την αποθήκευση μοναδικών εγγραφών ανά μονάδα
         daily_units_data = {} 
         
+        # Στήλες ωρών: οι πρώτες N της επικεφαλίδας (01 … και μετά SUM), όπου N = οι ώρες της ημέρας στην Ελλάδα
+        # (24, ή 25 στο τέλος Οκτωβρίου, ή 23 στο τέλος Μαρτίου). Το SUM δεν διαβάζεται ποτέ ως ώρα (D17).
+        header_cols, sum_col = find_hour_columns(df)
+        n_hours = hours_in_day(date_str)
+        if not header_cols:
+            print(f"  [{date_str}] SCADA: δεν βρέθηκε επικεφαλίδα ωρών (1…N, SUM) -- χρησιμοποιούνται 24 ώρες.")
+            hour_cols, sum_col, n_hours = list(range(2, 26)), None, 24
+        else:
+            if n_hours > len(header_cols):
+                print(f"  [{date_str}] SCADA: η μέρα έχει {n_hours} ώρες αλλά η επικεφαλίδα μόνο {len(header_cols)} στήλες ωρών.")
+                n_hours = len(header_cols)
+            hour_cols = header_cols[:n_hours]
+        if n_hours != 24:
+            print(f"  [{date_str}] SCADA: {n_hours} ώρες (μέρα αλλαγής ώρας).")
+
+        def to_num(v):
+            val = pd.to_numeric(str(v).replace(' ', '').replace(',', '.'), errors='coerce')
+            return 0.0 if pd.isna(val) else float(val)
+
         def extract_hourly_data(row):
-            hourly_vals = []
-            for j in range(2, 26):
-                val = pd.to_numeric(str(row.iloc[j]).replace(' ', '').replace(',', '.'), errors='coerce') if j < len(row) else 0
-                hourly_vals.append(0.0 if pd.isna(val) else float(val))
-            return hourly_vals
+            return [to_num(row.iloc[j]) if j < len(row) else 0.0 for j in hour_cols]
+
+        def extract_file_sum(row):
+            return to_num(row.iloc[sum_col]) if (sum_col is not None and sum_col < len(row)) else None
+
+        file_sums = {}   # άθροισμα ανά μονάδα όπως το γράφει το ίδιο το αρχείο (στήλη SUM), για έλεγχο
 
         # 2. Σάρωση για Μονάδες Φυσικού Αερίου (Κλασικό μπλοκ)
         start_mask = df[1].astype(str).str.contains("ΜΟΝΑΔΕΣ Φ. ΑΕΡΙΟΥ|ΜΟΝΑΔΕΣ ΦΥΣΙΚΟΥ ΑΕΡΙΟΥ", case=False, na=False)
@@ -133,6 +176,8 @@ def process_scada(date_str):
                 
                 unit_name = re.sub(r'\s*\((ST|GT\d+)\)', '', raw_name, flags=re.IGNORECASE).strip()
                 hourly_vals = extract_hourly_data(row)
+                fs = extract_file_sum(row)
+                if fs is not None: file_sums[unit_name] = file_sums.get(unit_name, 0.0) + fs
                 
                 # Deduplication: Αν υπάρχει ήδη, αθροίζουμε.
                 if unit_name in daily_units_data:
@@ -154,6 +199,8 @@ def process_scada(date_str):
                  
                  hourly_vals = extract_hourly_data(row)
                  unit_name = "ΑΛΟΥΜΙΝΙΟ" 
+                 fs = extract_file_sum(row)
+                 if fs is not None: file_sums[unit_name] = file_sums.get(unit_name, 0.0) + fs
                  
                  if unit_name in daily_units_data:
                      daily_units_data[unit_name] = [sum(x) for x in zip(daily_units_data[unit_name], hourly_vals)]
@@ -164,17 +211,23 @@ def process_scada(date_str):
         if not daily_units_data: return
         
         total_gas = 0.0
+        mismatches = []
         for unit_name, hourly_vals in daily_units_data.items():
             daily_sum = float(round(sum(hourly_vals), 3))
             total_gas += daily_sum
+            # Αυστηρή ανάγνωση: το άθροισμα των ωρών πρέπει να ισούται με τη στήλη SUM του ίδιου του αρχείου
+            if unit_name in file_sums and abs(daily_sum - file_sums[unit_name]) > 1.0:
+                mismatches.append(f"{unit_name}: ώρες={daily_sum:.0f} SUM={file_sums[unit_name]:.0f}")
             
             db["scada_generation"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name, "Παραγωγή SCADA (MWh)": daily_sum})
             
             hourly_record = {"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name}
-            for h in range(1, 25): 
+            for h in range(1, n_hours + 1):
                 hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
             hourly_record["Ημερήσιο Σύνολο"] = daily_sum
             db["scada_generation_hourly"].append(hourly_record)
+        if mismatches:
+            print(f"  [{date_str}] ⚠ SCADA: το άθροισμα των ωρών διαφέρει από τη στήλη SUM του αρχείου -> " + "; ".join(mismatches))
             
         # Εγγραφή TOTAL 
         if total_gas > 0:
@@ -341,34 +394,6 @@ def process_henex(date_str):
                 # αλλιώς: συνεχίζουμε στην επόμενη έκδοση (v02/v03) αντί να κάνουμε break σε κενό αρχείο
         except: pass
 
-def process_dam(date_str):
-    if any(d.get("Ημερομηνία") == date_str for d in db["dam_mcp_hourly"]): return
-    date_for_url = date_str.replace("-", "")
-    for v in range(1, 4):
-        url = f"https://www.enexgroup.gr/documents/20126/366820/{date_for_url}_EL-DAM_ResultsSummary_EN_v{v:02d}.xlsx"
-        try:
-            resp = requests.get(url, headers=HEADERS, timeout=10)
-            if resp.status_code == 200:
-                xl = pd.ExcelFile(io.BytesIO(resp.content))
-                target_sheet = [s for s in xl.sheet_names if "SPOT_SUMMARY (SELL)" in str(s).upper()]
-                if not target_sheet: continue
-                df = xl.parse(target_sheet[0], header=None)
-                for _, row in df.iterrows():
-                    if "60MIN INDEX" in str(row[0]).upper():
-                        hourly_prices = {}
-                        for h in range(24):
-                            idx = 1 + (h * 4) 
-                            if idx < len(row):
-                                val = pd.to_numeric(str(row.iloc[idx]).replace(',', '.'), errors='coerce')
-                                hourly_prices[f"{(h+1):02d}:00"] = 0.0 if pd.isna(val) else float(round(val, 3))
-                        if len(hourly_prices) == 24:
-                            record = {"Ημερομηνία": date_str}
-                            record.update(hourly_prices)
-                            db["dam_mcp_hourly"].append(record)
-                        break
-                break
-        except: pass
-
 def process_co2(date_str):
     # Δεν κάνει πλέον κλήση API εδώ (βλ. fetch_latest_co2_price). Μόνο εκκαθαρίζει τυχόν
     # ορφανή εγγραφή None, ώστε το process_economics να πέσει καθαρά στο fallback 85.00/estimated.
@@ -490,8 +515,8 @@ def process_economics(date_str):
         unit_co2_cost = 0.0
         unit_tons = 0.0
 
-        for h in range(1, 25):
-            hour_key = f"{h:02d}:00"
+        # όλες οι ώρες που έχει η εγγραφή (23, 24 ή 25 σε μέρες αλλαγής ώρας)
+        for hour_key in sorted(k for k in rec if re.fullmatch(r"\d{2}:00", k)):
             p_hour = rec.get(hour_key, 0.0)
             if p_hour <= 0: continue
 
@@ -604,6 +629,11 @@ if __name__ == "__main__":
     today = datetime.now(TZ)
     print(f"Starting Data Fetch Job at {today.strftime('%Y-%m-%d %H:%M:%S')}")
 
+    # D16: τα ωριαία MCP της Αγοράς Επόμενης Ημέρας δεν χρησιμοποιούνταν από τη σελίδα· το κλειδί φεύγει από το αρχείο.
+    if "dam_mcp_hourly" in db:
+        _n = len(db.pop("dam_mcp_hourly"))
+        print(f"Cleanup: αφαιρέθηκε το dam_mcp_hourly ({_n} ημέρες) -- δεν χρησιμοποιείται πια (D16).")
+
     # Εκκαθάριση: ό,τι δεν είναι μονάδα Φ.Α. (π.χ. η γραμμή AGRAS = υδροηλεκτρικό) φεύγει από τα constraints.
     _before = len(db["daily_gas_constraints"])
     db["daily_gas_constraints"] = [d for d in db["daily_gas_constraints"] if is_gas_constraint_unit(d.get("Gas Factory"))]
@@ -639,7 +669,6 @@ if __name__ == "__main__":
         process_scada(date_str)
         process_isp(date_str)
         process_henex(date_str)
-        process_dam(date_str)
         process_co2(date_str)
         process_economics(date_str)
         

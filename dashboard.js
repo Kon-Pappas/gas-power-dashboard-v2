@@ -923,8 +923,9 @@ function updateSurplusTab() {
             
             for (let h = window.hStart; h <= window.hEnd; h++) {
                 if (h >= 1 && h <= 24) {
-                    let hIdx = h + 1;
-                    let val = parseNum(vals[hIdx]);
+                    // Η ώρα διαβάζεται με το ΟΝΟΜΑ της ("05:00"), όχι με τη θέση της στη γραμμή: σε μέρα 23 ωρών η θέση
+                    // της ώρας 24 θα ήταν το «Ημερήσιο Σύνολο» και θα προσμετρούνταν ως ώρα (D17). Ώρα που δεν υπάρχει = 0.
+                    let val = parseNum(row[String(h).padStart(2, '0') + ':00']);
                     dailyConstrainedMwh[d] += val;
                 }
             }
