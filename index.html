@@ -104,7 +104,7 @@
                     </div>
 
                     <div class="w-full md:w-auto flex gap-2">
-                        <button type="button" onclick="openMethodologyModal()" class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-4 text-xs text-slate-300 transition shadow-sm max-md:bg-slate-950/70 max-md:border-slate-700/60 max-md:hover:bg-slate-900 h-10">
+                        <button type="button" onclick="openMethodologyModal(currentTab)" class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-4 text-xs text-slate-300 transition shadow-sm max-md:bg-slate-950/70 max-md:border-slate-700/60 max-md:hover:bg-slate-900 h-10">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             <span id="btnMethodologyText" class="hidden md:inline">Methodology &amp; Assumptions</span><span id="btnMethodologyTextShort" class="md:hidden">Methodology</span>
                         </button>
@@ -358,50 +358,33 @@
     </footer>
 
     <!-- MODAL: METHODOLOGY -->
-    <div id="methodologyModal" class="fixed inset-0 z-[10000] bg-black/80 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[85vh] shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col" id="modalContent">
-            
-            <div class="flex justify-between items-center border-b border-slate-700 p-6 pb-4 flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="bg-acc-500/20 p-2 rounded-lg text-acc-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    <div id="methodologyModal" onclick="if (event.target === this) closeMethodologyModal()" class="fixed inset-0 z-[10000] bg-black/80 hidden flex items-center justify-center p-3 sm:p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <!-- D23: modal όπως στο hub (BESS D28–D30): σταθερή κεφαλίδα και footer, scroll μόνο στο κείμενο, Esc, focus, ενότητα του tab -->
+        <div id="modalContent" class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl transform scale-95 transition-transform duration-300" style="max-height: 88vh; max-height: 88dvh;" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+            <div class="shrink-0 px-5 pt-4 pb-3 border-b border-slate-700">
+                <div class="flex justify-between items-center gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="bg-acc-500/20 p-2 rounded-lg text-acc-400 shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <h2 class="text-base sm:text-xl font-bold text-slate-100 leading-tight" id="modalTitle">Methodology &amp; Core Assumptions</h2>
                     </div>
-                    <h2 class="text-xl font-bold text-slate-100" id="modalTitle">Methodology & Core Assumptions</h2>
+                    <button type="button" onclick="closeMethodologyModal()" id="modalXBtn" aria-label="Close" class="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 bg-slate-900/40 text-slate-300 hover:text-white hover:border-slate-400 transition focus:outline-none focus-visible:border-acc-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
-                <button onclick="closeMethodologyModal()" class="text-slate-500 hover:text-rose-400 transition text-3xl leading-none flex-shrink-0">&times;</button>
+                <div class="mt-3 flex gap-1 p-1 bg-slate-800 border border-slate-700 rounded-lg" role="group">
+                    <button id="btnMethodologyShort" onclick="setMethodologyDepth('short')" aria-pressed="true" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold bg-acc-400 text-slate-900 transition">Short</button>
+                    <button id="btnMethodologyDetailed" onclick="setMethodologyDepth('detailed')" aria-pressed="false" class="flex-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition">Detailed</button>
+                </div>
             </div>
 
-            <div class="flex gap-2 bg-slate-800/60 rounded-lg p-1 mx-6 mt-4 flex-shrink-0">
-                <button id="btnMethodologyShort" onclick="setMethodologyDepth('short')">Short</button>
-                <button id="btnMethodologyDetailed" onclick="setMethodologyDepth('detailed')">Detailed</button>
-            </div>
-            
-            <div class="text-sm text-slate-300 leading-relaxed px-6 py-4 overflow-y-auto" id="modalBody"></div>
-            
-            <div class="p-6 pt-4 border-t border-slate-800 text-right flex-shrink-0">
-                <button onclick="closeMethodologyModal()" id="btnClose" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-600 transition">Close</button>
+            <div class="relative flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-4 text-sm text-slate-300 leading-relaxed" id="modalBody"></div>
+
+            <div class="shrink-0 px-5 py-3 border-t border-slate-800 text-right">
+                <button type="button" onclick="closeMethodologyModal()" id="btnClose" class="w-full sm:w-auto px-4 py-2 border border-slate-600 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-lg transition focus:outline-none focus-visible:border-acc-400">Close</button>
             </div>
         </div>
     </div>
-
-    <script>
-        function openMethodologyModal() {
-            if (typeof renderMethodologyModal === 'function') renderMethodologyModal();
-            const modal = document.getElementById('methodologyModal');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                document.getElementById('modalContent').classList.remove('scale-95');
-            }, 10);
-        }
-        function closeMethodologyModal() {
-            const modal = document.getElementById('methodologyModal');
-            modal.classList.add('opacity-0');
-            document.getElementById('modalContent').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-    </script>
-
     <script src="data.js" defer></script>
     <script src="dashboard.js" defer></script>
 </body>

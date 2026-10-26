@@ -17,7 +17,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 ## Phase 3: house shell
 
 - **Batch 7 (26 Oct 2026) — done:** the shell of the hub: the phone layout stops at 768 px, one picker box with the pill inside, dates in the visitor's language, the header times on one line, the tab grid (D22)
-- Next (batch 8): the Methodology modal with Esc, focus and no scroll behind it (K06)
+- **Batch 8 (27 Oct 2026) — done:** the Methodology window as in the hub: Esc, focus, no scroll behind it, opens at the section of the tab (D23). **Phase 3 is complete**, except the links *Methodology →* inside the tabs (open decision 5)
 
 ## Phase 4: texts
 
@@ -53,5 +53,6 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 2. Where the constraints are calculated: browser or Python (K10)
 3. Cost table on phones: cards or accordion (K09)
 4. A full list of pinned dependencies (K19)
+5. The links *Methodology →* inside the tabs (hub D29, desktop only) and a Methodology section for the tab Monthly Analytics (K23)
 
 Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22).
