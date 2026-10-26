@@ -17,11 +17,12 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 ## Phase 3: house shell
 
 - **Batch 7 (26 Oct 2026) — done:** the shell of the hub: the phone layout stops at 768 px, one picker box with the pill inside, dates in the visitor's language, the header times on one line, the tab grid (D22)
-- **Batch 8 (27 Oct 2026) — done:** the Methodology window as in the hub: Esc, focus, no scroll behind it, opens at the section of the tab (D23). **Phase 3 is complete**, except the links *Methodology →* inside the tabs (open decision 5)
+- **Batch 8 (27 Oct 2026) — done:** the Methodology window as in the hub: Esc, focus, no scroll behind it, opens at the section of the tab (D23). **Phase 3 is complete**
+- **Batch 9 (27 Oct 2026) — done:** the Methodology covers every figure of the page, with a new section for Monthly Analytics, and the links *Methodology →* in the tabs (D24)
 
 ## Phase 4: texts
 
-- No all-caps labels, capital rule for Greek and English, accents (C01, C02, K07); the Greek page fully Greek, with the five English legends (K08); emoji: keep or replace by coloured dots (decision pending)
+- No all-caps labels, capital rule for Greek and English, accents (C01, C02, K07); the Greek page fully Greek, with the five English legends (K08); emoji: keep or replace by coloured dots (decision pending); rename the cards *Peak / Best Grid Cost* (K24)
 
 ## Phase 5: charts
 
@@ -53,6 +54,5 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 2. Where the constraints are calculated: browser or Python (K10)
 3. Cost table on phones: cards or accordion (K09)
 4. A full list of pinned dependencies (K19)
-5. The links *Methodology →* inside the tabs (hub D29, desktop only) and a Methodology section for the tab Monthly Analytics (K23)
 
-Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22).
+Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22); the texts of the Methodology and the links in the tabs (D24).
