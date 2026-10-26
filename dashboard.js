@@ -13,6 +13,34 @@ let smartDefaultApplied = false;
 // Η οθόνη φόρτωσης και η εκκίνηση είναι στο data.js (boot, D20): κάθε βήμα ζωγραφίζει πραγματικά ένα tab.
 
 // ==========================================
+// ΧΡΩΜΑΤΑ ΔΕΔΟΜΕΝΩΝ (D21)
+// ==========================================
+// Ένα χρώμα ανά οντότητα, ίδιο σε όλα τα tabs. Κανένα δεν είναι το accent (μπλε, D11) και το πράσινο μένει μόνο για
+// «πλήρες / θετικό / ✓». Για να αλλάξει ένα χρώμα, αλλάζει ΕΔΩ και πουθενά αλλού.
+const DATA_COLORS = {
+    hgsida: '#d946ef',        // τιμή αερίου HGSIDA (KPI, γραμμή)
+    srmc: '#fbbf24',          // SRMC στόλου (ίδιο με τις κλάσεις text-amber-400 των πινάκων και KPI)
+    efficiency: '#e2e8f0',    // απόδοση στόλου: ουδέτερο, είναι σκέτο μέγεθος (ίδιο με text-slate-200)
+    surplus: '#cbd5e1',       // residual surplus του ISP: ουδέτερο, είναι σκέτο μέγεθος
+    constraints: '#f43f5e'    // παραγωγή constraint-driven
+};
+// Κλάσεις μονάδων: hex για τα γραφήματα και κλάσεις Tailwind για τις γραμμές του πίνακα (οι κλάσεις γράφονται
+// ολόκληρες για να τις βρίσκει το Tailwind). Το «sticky» είναι το ίδιο χρώμα στο 10% πάνω στο φόντο της σελίδας.
+const CLASS_STYLE = {
+    1: { hex: '#06b6d4', row: 'bg-[#06b6d4]/10 hover:bg-[#06b6d4]/25', sticky: 'bg-[#0f273b]', text: 'text-[#06b6d4]' },   // H-Class (Super-Efficient)
+    2: { hex: '#8b5cf6', row: 'bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/25', sticky: 'bg-[#1b1e3e]', text: 'text-[#8b5cf6]' },   // F-Class (Standard)
+    3: { hex: '#f97316', row: 'bg-[#f97316]/10 hover:bg-[#f97316]/25', sticky: 'bg-[#272128]', text: 'text-[#f97316]' }    // Older Generation & Peakers
+};
+// Τα KPI που παίρνουν το χρώμα της οντότητάς τους από το DATA_COLORS (καλείται στην εκκίνηση)
+function applyDataColors() {
+    [['kpiHgsida', 'hgsida'], ['kpiFleetEff', 'efficiency'], ['kpiMonthSurplus', 'surplus']].forEach(([id, key]) => {
+        const el = document.getElementById(id); if (el) el.style.color = DATA_COLORS[key];
+    });
+    // Τα τετράγωνα του υπομνήματος των κλάσεων (index.html) παίρνουν το χρώμα από το CLASS_STYLE
+    document.querySelectorAll('[data-class-swatch]').forEach(el => { el.style.backgroundColor = CLASS_STYLE[el.dataset.classSwatch].hex; });
+}
+
+// ==========================================
 // HELPERS
 // ==========================================
 function parseDate(dateObj) {
@@ -338,7 +366,7 @@ function updateOverviewTab() {
     const ispColors = [];
     const scadaColors = [];
 
-    const colorMap = { 1: '#06b6d4', 2: '#3b82f6', 3: '#f97316' };
+    const colorMap = { 1: CLASS_STYLE[1].hex, 2: CLASS_STYLE[2].hex, 3: CLASS_STYLE[3].hex };
 
     unitsArray.forEach(u => {
         labels.push(getShortUnitName(u.name)); 
@@ -499,21 +527,8 @@ function updateEconomicsTab() {
         const shortName = getShortUnitName(canonical);
         const meta = getUnitMetadata(u["Μονάδα"]);
 
-        let rowTint = "bg-[#f97316]/10 hover:bg-[#f97316]/25"; 
-        let stickyTint = "bg-[#272128]"; 
-        let classColor = "text-[#f97316]";
-
-        if (meta.order === 1) { 
-            rowTint = "bg-[#06b6d4]/10 hover:bg-[#06b6d4]/25"; 
-            stickyTint = "bg-[#0f273b]"; 
-            classColor = "text-[#06b6d4]";
-        }
-        
-        if (meta.order === 2) { 
-            rowTint = "bg-[#3b82f6]/10 hover:bg-[#3b82f6]/25"; 
-            stickyTint = "bg-[#14223f]"; 
-            classColor = "text-[#3b82f6]";
-        }
+        const cs = CLASS_STYLE[meta.order] || CLASS_STYLE[3];
+        const rowTint = cs.row, stickyTint = cs.sticky, classColor = cs.text;
 
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
@@ -538,7 +553,7 @@ function updateEconomicsTab() {
                 </div>
             </td>
             <td class="p-3 text-right font-mono">${MWh}</td>
-            <td class="hidden sm:table-cell p-3 text-right font-mono text-emerald-400/90">${Eff}</td>
+            <td class="hidden sm:table-cell p-3 text-right font-mono" style="color:${DATA_COLORS.efficiency}">${Eff}</td>
             <td class="hidden sm:table-cell p-3 text-right font-mono text-slate-400">${CO2}</td>
             <td class="hidden sm:table-cell p-3 text-right font-mono text-amber-400">${SRMC}</td>
             <td class="p-3 text-right font-semibold text-slate-300">${Cost}</td>
@@ -556,7 +571,7 @@ function updateEconomicsTab() {
                     </li>
                     <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
                         <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Efficiency</span>
-                        <span class="text-emerald-400 font-mono font-bold">${Eff}</span>
+                        <span class="font-mono font-bold" style="color:${DATA_COLORS.efficiency}">${Eff}</span>
                     </li>
                     <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
                         <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">CO2 Emissions</span>
@@ -683,36 +698,36 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
                 { 
                     label: 'HGSIDA Gas Price', 
                     data: hgsidaData, 
-                    borderColor: '#3b82f6', 
+                    borderColor: DATA_COLORS.hgsida, 
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     tension: 0.3,
                     pointRadius: 3,
-                    pointBackgroundColor: '#3b82f6',
+                    pointBackgroundColor: DATA_COLORS.hgsida,
                     yAxisID: 'y'
                 },
                 { 
                     label: 'Avg Fleet SRMC', 
                     data: srmcData, 
-                    borderColor: '#fbbf24', 
+                    borderColor: DATA_COLORS.srmc, 
                     backgroundColor: 'rgba(251, 191, 36, 0.1)',
                     fill: true,
                     borderWidth: 3,
                     tension: 0.3,
                     pointRadius: 4,
-                    pointBackgroundColor: '#fbbf24',
+                    pointBackgroundColor: DATA_COLORS.srmc,
                     yAxisID: 'y'
                 },
                 {
                     label: 'Fleet Efficiency',
                     data: effData,
-                    borderColor: '#10b981', 
+                    borderColor: DATA_COLORS.efficiency, 
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     borderDash: [5, 5], 
                     tension: 0.3,
                     pointRadius: 3,
-                    pointBackgroundColor: '#10b981',
+                    pointBackgroundColor: DATA_COLORS.efficiency,
                     yAxisID: 'y2' 
                 }
             ] 
@@ -921,13 +936,13 @@ function renderSurplusChart(labels, surplusData, constraintsData) {
                 { 
                     label: 'Residual Energy Surplus', 
                     data: surplusData, 
-                    backgroundColor: '#3b82f6', 
+                    backgroundColor: DATA_COLORS.surplus, 
                     borderRadius: 4
                 }, 
                 { 
                     label: 'Generic Constraints (Out of Merit)', 
                     data: constraintsData, 
-                    backgroundColor: '#f43f5e', 
+                    backgroundColor: DATA_COLORS.constraints, 
                     borderRadius: 4
                 }
             ] 

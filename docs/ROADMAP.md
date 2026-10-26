@@ -12,7 +12,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 2: data colours
 
-- One colour per entity across all tabs; no data colour equal to the accent; green only for "complete / positive" (D11, K04)
+- **Batch 6 (26 Oct 2026) — done:** one colour per entity in one place, no data colour equal to the accent, green only for "complete / positive" (D11, D21). **Phase 2 is complete**
 
 ## Phase 3: house shell
 

@@ -364,6 +364,7 @@ async function boot() {
         await pause(LOAD_STEP);
 
         // Βήματα 2…5: ένα ανά tab, με τη σειρά των tabs
+        if (typeof applyDataColors === 'function') applyDataColors();
         initExtraSelectors();
         await loadStep(2, async () => { updateOverviewTab(); });
         await loadStep(3, async () => { updateEconomicsTab(); });
