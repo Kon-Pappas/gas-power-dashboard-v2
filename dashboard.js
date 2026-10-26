@@ -10,76 +10,7 @@ let smartDefaultApplied = false;
 // ==========================================
 // WATERFALL LOADING SEQUENCE (Με σωστούς χρόνους)
 // ==========================================
-function runWaterfallLoader(onComplete) {
-    const steps = [
-        { row: 'loadRow1', bar: 'loadBar1', pct: 'loadPct1', duration: 400 },
-        { row: 'loadRow2', bar: 'loadBar2', pct: 'loadPct2', duration: 400 },
-        { row: 'loadRow3', bar: 'loadBar3', pct: 'loadPct3', duration: 400 },
-        { row: 'loadRow4', bar: 'loadBar4', pct: 'loadPct4', duration: 400 },
-        { row: 'loadRow5', bar: 'loadBar5', pct: 'loadPct5', duration: 400 }
-    ];
-
-    let currentStep = 0;
-
-    function processStep() {
-        if (currentStep < steps.length) {
-            const s = steps[currentStep];
-            const rowEl = document.getElementById(s.row);
-            const barEl = document.getElementById(s.bar);
-            const pctEl = document.getElementById(s.pct);
-
-            if (!rowEl) {
-                currentStep++;
-                processStep();
-                return;
-            }
-
-            rowEl.classList.remove('opacity-0');
-
-            let p = 0;
-            const interval = setInterval(() => {
-                p += 10;
-                if (p > 100) p = 100;
-                if (barEl) barEl.style.width = p + '%';
-                if (pctEl) pctEl.innerText = p + '%';
-
-                if (p === 100) {
-                    clearInterval(interval);
-                    if (pctEl) {
-                        pctEl.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-400 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-                    }
-                    currentStep++;
-                    // Αναμονή 0.3s (300ms) πριν ξεκινήσει η επόμενη γραμμή
-                    setTimeout(processStep, 300); 
-                }
-            }, s.duration / 10);
-        } else {
-            const readyRow = document.getElementById('loadRow6');
-            const mainSpinner = document.getElementById('mainSpinner');
-            if (mainSpinner) mainSpinner.classList.remove('animate-spin');
-            if (readyRow) {
-                readyRow.classList.remove('opacity-0');
-                readyRow.classList.remove('translate-y-2');
-            }
-            // Αναμονή 1s (1000ms) στο "Dashboard is ready!" πριν κλείσει το modal
-            setTimeout(() => {
-                const overlay = document.getElementById('loading-overlay');
-                if (overlay) {
-                    overlay.classList.add('opacity-0');
-                    setTimeout(() => overlay.style.display = 'none', 500);
-                }
-                if (typeof onComplete === 'function') onComplete();
-            }, 1000);
-        }
-    }
-
-    processStep();
-}
-
-// ΣΗΜΕΙΩΣΗ: το waterfall ΔΕΝ ξεκινάει πια μόνο του εδώ. Καλείται ρητά από το data.js
-// (fetchMarketData), ΜΟΝΟ αφού έχουν πράγματι φορτωθεί τα δεδομένα -- έτσι υπάρχει ένα
-// μόνο σημείο που αποφασίζει πότε κρύβεται το overlay και πότε καλείται updateDashboard(),
-// αντί για δύο ανεξάρτητα χρονόμετρα να παλεύουν για το ίδιο element.
+// Η οθόνη φόρτωσης και η εκκίνηση είναι στο data.js (boot, D20): κάθε βήμα ζωγραφίζει πραγματικά ένα tab.
 
 // ==========================================
 // HELPERS

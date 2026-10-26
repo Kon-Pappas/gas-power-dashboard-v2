@@ -17,6 +17,7 @@ let rawData = {
 };
 
 let currentLang = 'en';
+let appReady = false;   // true όταν ζωγραφιστούν όλα τα tabs στην εκκίνηση (D20): μέχρι τότε το setLang δεν ξαναζωγραφίζει
 // D15 (όπως BESS D04 / Flows): αγγλικά από προεπιλογή· η τελευταία επιλογή του επισκέπτη κρατιέται στον browser του,
 // στο κοινό κλειδί kp_lang (ίδια προέλευση σε όλο το hub), οπότε η γλώσσα τον ακολουθεί από σελίδα σε σελίδα.
 try { const l = localStorage.getItem('kp_lang'); if (l === 'el' || l === 'en') currentLang = l; } catch (e) { /* ιδιωτική περιήγηση */ }
@@ -24,6 +25,7 @@ try { const l = localStorage.getItem('kp_lang'); if (l === 'el' || l === 'en') c
 const i18n = {
     en: {
         title: "Greek Gas-to-Power Market Analytics",
+        load: { title: "System Initialization", g1: "Data fetching", g2: "Building views", s1: "Reading the data", ready: "Dashboard is ready!", error: "The data could not be loaded. Reload the page in a few minutes." },
         source: "Data source: IPTO (ADMIE) & HEnEx official reports",
         scopeTooltip: "Refers exclusively to natural gas fired power plants (CCGT/OCGT) in the Greek Interconnected System.",
         lastUpdate: "Last Update:",
@@ -107,6 +109,7 @@ const i18n = {
     },
     el: {
         title: "Ανάλυση Ελληνικής Αγοράς Φυσικού Αερίου",
+        load: { title: "Εκκίνηση", g1: "Λήψη δεδομένων", g2: "Προετοιμασία προβολών", s1: "Ανάγνωση δεδομένων", ready: "Το dashboard είναι έτοιμο!", error: "Τα δεδομένα δεν φορτώθηκαν. Ανανεώστε τη σελίδα σε λίγα λεπτά." },
         source: "Πηγή δεδομένων: Επίσημα αρχεία ΑΔΜΗΕ (IPTO) & ΕΧΕ (HEnEx)",
         scopeTooltip: "Αφορά αποκλειστικά τις μονάδες ηλεκτροπαραγωγής από Φυσικό Αέριο (CCGT/OCGT) στο Διασυνδεδεμένο Σύστημα.",
         lastUpdate: "Τελευταία Ενημέρωση:",
@@ -220,6 +223,13 @@ function setLang(lang) {
     currentLang = lang;
     try { localStorage.setItem('kp_lang', lang); } catch (e) { /* ιδιωτική περιήγηση */ }
     const t = i18n[lang];
+
+    // Οθόνη φόρτωσης: τα βήματα 2…5 παίρνουν τα ονόματα των tabs, με τη σειρά τους
+    const L = t.load;
+    const stepText = { 1: L.s1, 2: t.tabOverview, 3: t.tabEconomics, 4: t.tabIspScada, 5: t.tabSurplus };
+    const loadIds = { loadTitle: L.title, loadGroup1: L.g1, loadGroup2: L.g2, loadReady: L.ready };
+    Object.entries(loadIds).forEach(([id, txt]) => { const el = document.getElementById(id); if (el) el.textContent = txt; });
+    document.querySelectorAll('.load-row').forEach(r => { const lb = r.querySelector('[data-load-label]'); if (lb) lb.textContent = stepText[r.dataset.step] || ''; });
     
     document.getElementById('pageTitle').innerText = t.title;
     document.getElementById('mainTitle').innerText = t.title;
@@ -247,7 +257,7 @@ function setLang(lang) {
         document.getElementById('btnGr').className = "px-2 py-1 rounded text-slate-400 hover:text-white transition";
     }
 
-    if (typeof updateDashboard === "function") updateDashboard();
+    if (appReady && typeof updateDashboard === "function") updateDashboard();
 }
 
 // Τελευταία / Επόμενη ενημέρωση: τις γράφει το Python στο data/meta.json (hub D06: `fetched` και `next_update`,
@@ -262,130 +272,112 @@ function fmtAthens(iso) {
     const p = Object.fromEntries(ATHENS_FMT.formatToParts(d).map(x => [x.type, x.value]));
     return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
 }
-async function loadMeta() {
+// Εφαρμογή του meta.json στην κεφαλίδα (Τελευταία / Επόμενη ενημέρωση). Αν λείπει: «-».
+function applyMeta(meta) {
     const lastEl = document.getElementById('lastUpdateVal');
     const nextEl = document.getElementById('nextUpdateVal');
-    try {
-        const res = await fetch('data/meta.json', { cache: 'no-cache' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const meta = await res.json();
-        if (lastEl) lastEl.innerText = fmtAthens(meta.fetched);
-        if (nextEl) nextEl.innerText = fmtAthens(meta.next_update);
-    } catch (err) {
-        console.warn('meta.json δεν φορτώθηκε:', err);
-        if (lastEl) lastEl.innerText = '-';
-        if (nextEl) nextEl.innerText = '-';
-    }
+    if (lastEl) lastEl.innerText = meta ? fmtAthens(meta.fetched) : '-';
+    if (nextEl) nextEl.innerText = meta ? fmtAthens(meta.next_update) : '-';
 }
 
-// ΑΣΦΑΛΗΣ & ΟΜΑΛΗ ΡΟΗ ΦΟΡΤΩΣΗΣ (BULLETPROOF FETCH ΓΙΑ ΤΟΠΙΚΟ ΑΡΧΕΙΟ)
-async function fetchMarketData() {
-    const overlay = document.getElementById('loading-overlay');
-    const progressBar = document.getElementById('loading-progress-bar');
-    const progressPercentage = document.getElementById('loading-percentage');
-    const loadingSubtitle = document.getElementById('loading-subtitle');
+// Τα δεδομένα του historical.json στη μνήμη + η λίστα ημερομηνιών
+function applyData(json) {
+    rawData.isp = json.isp_generation || [];
+    rawData.scada = json.scada_generation || [];
+    rawData.scadaHourly = json.scada_generation_hourly || [];
+    rawData.henex = json.henex_indices || [];
+    rawData.efficiency = json.thermal_efficiency || [];
+    rawData.daily_surplus = json.daily_surplus || [];
+    rawData.daily_gas_constraints = json.daily_gas_constraints || [];
+    rawData.daily_economics = json.daily_economics || [];
 
-    function updateProgress(percent, text) {
-        if (progressBar) progressBar.style.width = percent + '%';
-        if (progressPercentage) progressPercentage.innerText = percent + '%';
-        if (loadingSubtitle) loadingSubtitle.innerText = text;
-    }
-
-    const lang = (typeof currentLang !== 'undefined') ? currentLang : 'en';
-
-    const texts = {
-        en: [
-            { p: 25, t: "Initializing local database..." },
-            { p: 60, t: "Reading static JSON payload..." },
-            { p: 90, t: "Processing and normalizing datasets..." }
-        ],
-        el: [
-            { p: 25, t: "Αρχικοποίηση τοπικής βάσης..." },
-            { p: 60, t: "Ανάγνωση στατικού JSON..." },
-            { p: 90, t: "Επεξεργασία & κανονικοποίηση δεδομένων..." }
-        ]
-    };
-
-    let stepIndex = 0;
-    let activeSteps = texts[lang] || texts.en;
-    updateProgress(activeSteps[0].p, activeSteps[0].t);
-
-    let progressInterval = setInterval(() => {
-        stepIndex++;
-        if (stepIndex < activeSteps.length) {
-            updateProgress(activeSteps[stepIndex].p, activeSteps[stepIndex].t);
-        } else {
-            clearInterval(progressInterval);
-        }
-    }, 300);
-
-    try {
-        const response = await fetch(API_URL + "?v=" + new Date().getTime());
-        clearInterval(progressInterval);
-
-        if (!response.ok) throw new Error("Network response was not ok");
-        
-        const json = await response.json();
-        
-        updateProgress(95, lang === 'el' ? "Τελικός συγχρονισμός γραφημάτων..." : "Finalizing chart datasets...");
-
-        rawData.isp = json.isp_generation || [];
-        rawData.scada = json.scada_generation || [];
-        rawData.scadaHourly = json.scada_generation_hourly || [];
-        rawData.henex = json.henex_indices || [];
-        rawData.efficiency = json.thermal_efficiency || [];
-        rawData.daily_surplus = json.daily_surplus || [];                
-        rawData.daily_gas_constraints = json.daily_gas_constraints || []; 
-        rawData.daily_economics = json.daily_economics || []; // <-- Προσθήκη για τα Οικονομικά
-        
-        console.log("Local Data successfully loaded:", rawData);
-
-        const dates = [...new Set([
-            ...rawData.isp.map(d => Object.values(d)[0]),
-            ...rawData.scada.map(d => Object.values(d)[0])
-        ])].filter(d => d).sort().reverse();
-        
-        const dateSelect = document.getElementById('dateSelect');
-        if(dateSelect) {
-            dateSelect.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
-        }
-
-        loadMeta();
-
-        updateProgress(100, lang === 'el' ? "Ολοκλήρωση Dashboard..." : "Finalizing Dashboard...");
-
-        // Τα δεδομένα είναι ΗΔΗ έτοιμα εδώ. Το waterfall animation (αν υπάρχει στη σελίδα) παίζει
-        // καθαρά αισθητικά και ΑΥΤΟ πλέον είναι το ΜΟΝΟ σημείο που κρύβει το overlay και καλεί
-        // setLang/updateDashboard -- όχι δύο ανεξάρτητα χρονόμετρα να παλεύουν για το ίδιο element.
-        const finish = () => { if (typeof setLang === 'function') setLang(currentLang); };
-        if (typeof runWaterfallLoader === 'function') {
-            runWaterfallLoader(finish);
-        } else if (overlay) {
-            setTimeout(() => {
-                overlay.classList.add('opacity-0');
-                setTimeout(() => overlay.style.display = 'none', 300);
-            }, 300);
-            finish();
-        } else {
-            finish();
-        }
-
-    } catch (error) {
-        clearInterval(progressInterval);
-        console.error("Error loading local market data:", error);
-        // ΔΙΟΡΘΩΣΗ: πριν, σε αποτυχία fetch το overlay έμενε ΚΟΛΛΗΜΕΝΟ στην οθόνη για πάντα
-        // (το catch δεν το έκρυβε ποτέ), μπλοκάροντας κάθε κλικ στη σελίδα -- συμπεριλαμβανομένου
-        // του κουμπιού Methodology. Τώρα δείχνουμε καθαρό μήνυμα σφάλματος ΜΕΣΑ στο ίδιο το
-        // overlay, με δυνατότητα να το κλείσει ο χρήστης χειροκίνητα, αντί να μένει παγιδευμένος.
-        if (overlay) {
-            overlay.innerHTML = `
-                <div class="max-w-sm text-center px-4">
-                    <div class="text-rose-400 text-lg font-bold mb-2">Σφάλμα φόρτωσης δεδομένων</div>
-                    <div class="text-slate-400 text-sm mb-4">Το historical.json δεν βρέθηκε ή απέτυχε η φόρτωση. Δοκίμασε ανανέωση της σελίδας.</div>
-                    <button onclick="document.getElementById('loading-overlay').style.display='none'" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-600 transition">Κλείσιμο</button>
-                </div>`;
-        }
-    }
+    const dates = [...new Set([
+        ...rawData.isp.map(d => Object.values(d)[0]),
+        ...rawData.scada.map(d => Object.values(d)[0])
+    ])].filter(d => d).sort().reverse();
+    const dateSelect = document.getElementById('dateSelect');
+    if (dateSelect) dateSelect.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join('');
 }
 
-document.addEventListener('DOMContentLoaded', fetchMarketData);
+// ==========================================================================================
+// ΟΘΟΝΗ ΦΟΡΤΩΣΗΣ & ΕΚΚΙΝΗΣΗ (D20, όπως live-greekpower D47 / Flows D03 / BESS D03)
+// ==========================================================================================
+// Πρώτα η δουλειά, μετά το γέμισμα της μπάρας, μετά το ✓. Χρόνοι ίδιοι με το live.
+// Τα βήματα σε εξέλιξη είναι στο accent (μπλε)· ό,τι έχει τελειώσει (μπάρα, ✓, «έτοιμο») είναι πράσινο,
+// γιατί το πράσινο σημαίνει «πλήρες» σε όλο το hub (D11).
+const REDUCE_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const LOAD_STEP = REDUCE_MOTION ? 120 : 350, LOAD_MIN_READ = REDUCE_MOTION ? 200 : 650, LOAD_READY = REDUCE_MOTION ? 200 : 650;
+const pause = (ms) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve());
+const loadRow = (i) => document.querySelector(`.load-row[data-step="${i}"]`);
+function loadActivate(i) { const r = loadRow(i); if (r) r.classList.remove('opacity-50'); }
+function loadSet(i, pct) { const b = loadRow(i) && loadRow(i).querySelector('[data-load-bar]'); if (b) b.style.width = `${pct}%`; }
+function loadDone(i) {
+    const r = loadRow(i); if (!r) return;
+    const b = r.querySelector('[data-load-bar]');
+    b.style.width = '100%'; b.classList.remove('bg-acc-500'); b.classList.add('bg-emerald-500');
+    r.querySelector('[data-load-ck]').classList.remove('opacity-0');
+}
+async function loadStep(i, work) {          // βήματα 2…5: δουλειά → γέμισμα → ✓
+    loadActivate(i);
+    await pause(20);
+    // Ένα tab που αποτυγχάνει να ζωγραφιστεί δεν κλειδώνει όλη τη σελίδα πίσω από την οθόνη φόρτωσης:
+    // το σφάλμα γράφεται στην κονσόλα και η εκκίνηση συνεχίζει με τα υπόλοιπα.
+    try { await work(); } catch (err) { console.error(`Σφάλμα στο βήμα ${i}:`, err); }
+    const b = loadRow(i).querySelector('[data-load-bar]');
+    b.style.transitionDuration = `${LOAD_STEP}ms`; b.style.transitionTimingFunction = 'linear'; b.style.width = '100%';
+    await pause(LOAD_STEP);
+    loadDone(i);
+}
+
+// Αν τα δεδομένα δεν φορτώσουν: η οθόνη μένει, σταματά το spinner και γράφει μήνυμα (όπως στο live).
+function loadFailed(err) {
+    console.error('Αποτυχία φόρτωσης δεδομένων:', err);
+    const sp = document.getElementById('mainSpinner'); if (sp) sp.classList.add('hidden');
+    const el = document.getElementById('loadError');
+    if (el) { el.textContent = i18n[currentLang].load.error; el.classList.remove('hidden'); }
+}
+
+async function getJSON(path, opts) {
+    const r = await fetch(path, opts);
+    if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+    return r.json();
+}
+
+async function boot() {
+    // Γλώσσα (kp_lang): κείμενα, κουμπιά GR | EN και ετικέτες της οθόνης φόρτωσης (δεν ζωγραφίζει tabs πριν έρθουν τα δεδομένα)
+    try { setLang(currentLang); } catch (e) { console.warn('Αποτυχία εφαρμογής γλώσσας:', e); }
+    try {
+        // Βήμα 1: πραγματική πρόοδος (2 αρχεία: meta + ιστορικό), με ελάχιστο χρόνο ανάγνωσης
+        loadActivate(1);
+        const t0 = Date.now();
+        const files = [
+            getJSON('data/meta.json', { cache: 'no-cache' }).catch((e) => { console.warn('meta.json δεν φορτώθηκε:', e); return null; }),   // όχι κρίσιμο
+            getJSON(API_URL + '?v=' + Date.now())
+        ];
+        let done = 0;
+        const [meta, json] = await Promise.all(files.map((p) => p.then((v) => { loadSet(1, Math.round(++done / files.length * 100)); return v; })));
+        if (!json || !Array.isArray(json.isp_generation) || json.isp_generation.length === 0) throw new Error('historical.json is empty');
+        applyData(json);
+        applyMeta(meta);
+        await pause(Math.max(0, LOAD_MIN_READ - (Date.now() - t0)));
+        loadDone(1);
+        await pause(LOAD_STEP);
+
+        // Βήματα 2…5: ένα ανά tab, με τη σειρά των tabs
+        initExtraSelectors();
+        await loadStep(2, async () => { updateOverviewTab(); });
+        await loadStep(3, async () => { updateEconomicsTab(); });
+        await loadStep(4, async () => { updateMonthlyTab(); });
+        await loadStep(5, async () => { updateSurplusTab(); });
+        appReady = true;
+
+        document.getElementById('mainSpinner').classList.add('hidden');
+        document.getElementById('loadRowFinal').classList.remove('opacity-0', 'translate-y-2');
+        await pause(LOAD_READY);
+        const ov = document.getElementById('loading-overlay');
+        ov.classList.add('opacity-0');
+        setTimeout(() => { ov.style.display = 'none'; }, 500);
+    } catch (err) { loadFailed(err); }
+}
+
+document.addEventListener('DOMContentLoaded', boot);

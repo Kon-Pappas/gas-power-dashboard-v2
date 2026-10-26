@@ -18,92 +18,49 @@
 
     <!-- NEO LOADING OVERLAY (Waterfall Boot Sequence) -->
     <div id="loading-overlay" class="fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-500 px-4">
-        
-        <!-- Main Container (Compact & Mobile Safe) -->
+        <!-- D20: οθόνη φόρτωσης όπως live-greekpower D47 / Flows D03 / BESS D03 -->
         <div class="w-full max-w-sm bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
-            
-            <!-- Header -->
             <div class="flex items-center gap-3 mb-1 border-b border-slate-700/50 pb-3">
-                <div class="w-5 h-5 border-2 border-slate-600 border-t-acc-500 rounded-full animate-spin" id="mainSpinner"></div>
-                <h2 class="text-white text-base font-bold tracking-wide">System Initialization</h2>
+                <div class="w-5 h-5 border-2 border-slate-600 border-t-acc-400 rounded-full animate-spin" id="mainSpinner"></div>
+                <h2 class="text-white text-base font-bold tracking-wide" id="loadTitle">System Initialization</h2>
             </div>
-
-            <!-- Κουτί (Α): Data Fetching -->
             <div class="bg-slate-900/50 rounded-xl p-3 border border-slate-700/50 flex flex-col gap-2">
                 <div class="flex items-center gap-2 mb-1">
                     <svg class="w-3.5 h-3.5 text-acc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Data Fetching</span>
+                    <span class="text-[10px] font-bold text-slate-400 tracking-wider" id="loadGroup1">Data fetching</span>
                 </div>
-                
-                <div class="opacity-0 transition-opacity duration-300" id="loadRow1">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-xs text-slate-300">Reading data files</span>
-                        <span class="text-[10px] font-mono text-emerald-400 font-bold" id="loadPct1">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-acc-500 h-full rounded-full w-0 transition-all duration-300 ease-out" id="loadBar1"></div>
-                    </div>
+                <div class="load-row opacity-50 transition-opacity duration-300" data-step="1">
+                    <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-300" data-load-label></span><svg class="w-3.5 h-3.5 text-emerald-400 opacity-0 transition-opacity duration-300" data-load-ck fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"><div class="bg-acc-500 h-full rounded-full w-0 ease-out" style="transition-property: width, background-color; transition-duration: 300ms;" data-load-bar></div></div>
                 </div>
             </div>
-
-            <!-- Κουτί (Β): Analytics Engine -->
             <div class="bg-slate-900/50 rounded-xl p-3 border border-slate-700/50 flex flex-col gap-3 mt-1">
                 <div class="flex items-center gap-2 mb-1">
-                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Analytics Engine</span>
+                    <svg class="w-3.5 h-3.5 text-acc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    <span class="text-[10px] font-bold text-slate-400 tracking-wider" id="loadGroup2">Building views</span>
                 </div>
-                
-                <!-- Σειρά 2: loading Daily Overview -->
-                <div class="opacity-0 transition-opacity duration-300" id="loadRow2">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-xs text-slate-300">loading Daily Overview</span>
-                        <span class="text-[10px] font-mono text-emerald-400 font-bold" id="loadPct2">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-purple-500 h-full rounded-full w-0 transition-all duration-300 ease-out" id="loadBar2"></div>
-                    </div>
+                <div class="load-row opacity-50 transition-opacity duration-300" data-step="2">
+                    <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-300" data-load-label></span><svg class="w-3.5 h-3.5 text-emerald-400 opacity-0 transition-opacity duration-300" data-load-ck fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"><div class="bg-acc-500 h-full rounded-full w-0 ease-out" style="transition-property: width, background-color; transition-duration: 300ms;" data-load-bar></div></div>
                 </div>
-
-                <!-- Σειρά 3: loading Daily Economics -->
-                <div class="opacity-0 transition-opacity duration-300" id="loadRow3">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-xs text-slate-300">loading Daily Economics</span>
-                        <span class="text-[10px] font-mono text-emerald-400 font-bold" id="loadPct3">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-purple-500 h-full rounded-full w-0 transition-all duration-300 ease-out" id="loadBar3"></div>
-                    </div>
+                <div class="load-row opacity-50 transition-opacity duration-300" data-step="3">
+                    <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-300" data-load-label></span><svg class="w-3.5 h-3.5 text-emerald-400 opacity-0 transition-opacity duration-300" data-load-ck fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"><div class="bg-acc-500 h-full rounded-full w-0 ease-out" style="transition-property: width, background-color; transition-duration: 300ms;" data-load-bar></div></div>
                 </div>
-
-                <!-- Σειρά 4: loading Monthly Analytics -->
-                <div class="opacity-0 transition-opacity duration-300" id="loadRow4">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-xs text-slate-300">loading Monthly Analytics</span>
-                        <span class="text-[10px] font-mono text-emerald-400 font-bold" id="loadPct4">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-purple-500 h-full rounded-full w-0 transition-all duration-300 ease-out" id="loadBar4"></div>
-                    </div>
+                <div class="load-row opacity-50 transition-opacity duration-300" data-step="4">
+                    <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-300" data-load-label></span><svg class="w-3.5 h-3.5 text-emerald-400 opacity-0 transition-opacity duration-300" data-load-ck fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"><div class="bg-acc-500 h-full rounded-full w-0 ease-out" style="transition-property: width, background-color; transition-duration: 300ms;" data-load-bar></div></div>
                 </div>
-
-                <!-- Σειρά 5: loading Generic Constraints & Surplus -->
-                <div class="opacity-0 transition-opacity duration-300" id="loadRow5">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-xs text-slate-300">loading Generic Constraints & Surplus</span>
-                        <span class="text-[10px] font-mono text-emerald-400 font-bold" id="loadPct5">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-purple-500 h-full rounded-full w-0 transition-all duration-300 ease-out" id="loadBar5"></div>
-                    </div>
+                <div class="load-row opacity-50 transition-opacity duration-300" data-step="5">
+                    <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-300" data-load-label></span><svg class="w-3.5 h-3.5 text-emerald-400 opacity-0 transition-opacity duration-300" data-load-ck fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"><div class="bg-acc-500 h-full rounded-full w-0 ease-out" style="transition-property: width, background-color; transition-duration: 300ms;" data-load-bar></div></div>
                 </div>
             </div>
-
-            <!-- Κουτί (Γ): Ready -->
-            <div class="opacity-0 transition-all duration-500 transform translate-y-2 flex items-center justify-center p-3 mt-1 rounded-xl border border-emerald-500/30 bg-emerald-500/10 gap-2" id="loadRow6">
+            <div class="opacity-0 transition-all duration-500 transform translate-y-2 flex items-center justify-center p-3 mt-1 rounded-xl border border-emerald-500/30 bg-emerald-500/10 gap-2" id="loadRowFinal">
                 <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span class="text-emerald-400 font-bold text-sm tracking-wide">Dashboard is ready!</span>
+                <span class="text-emerald-400 font-bold text-sm tracking-wide" id="loadReady">Dashboard is ready!</span>
             </div>
-
+            <p class="hidden text-sm text-red-300 text-center" id="loadError"></p>
         </div>
     </div>
 
