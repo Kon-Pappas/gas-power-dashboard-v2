@@ -5,7 +5,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 ## Phase 1: basics (batches 1–3)
 
 - **Batch 1 (26 Oct 2026) — done:** updates only from cron-job.org at 07:06 and 13:00, no `schedule:`, Actions updated, one job at a time (D07, D09, D10); real *Last / Next update* from `data/meta.json` (D08); Tailwind and Chart.js pinned (D09); atomic writes (D10); Methodology text corrected (D12); README and `docs/` (D13)
-- Batch 2: language remembered with `kp_lang` (K02); the accent defined in one place, blue (D11, K03)
+- **Batch 2 (26 Oct 2026) — done:** language remembered with `kp_lang` (D15); the accent defined in one place, blue, with 28 decorative uses and the header values (D11, D14)
 - Batch 3: loading overlay as in the hub (K01), with real progress in step 1
 
 ## Phase 2: data colours

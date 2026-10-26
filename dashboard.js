@@ -304,8 +304,8 @@ function getUnitMetadata(unitName) {
 function switchTab(tabId) {
     const tabs = ['overview', 'economics', 'ispScada', 'surplus'];
     
-    const activeClasses = "flex items-center justify-center w-full h-full bg-blue-600 md:bg-transparent text-white md:text-blue-400 font-bold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-blue-500 md:border-blue-400 py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leadingtight text-xs sm:text-sm md:text-base text-center shadow-lg md:shadow-none";
-    const inactiveClasses = "flex items-center justify-center w-full h-full bg-slate-800/80 md:bg-transparent text-slate-400 md:text-slate-500 hover:bg-slate-700 md:hover:bg-transparent md:hover:text-blue-300 font-medium md:font-semibold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-slate-700 md:border-transparent py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center";
+    const activeClasses = "flex items-center justify-center w-full h-full bg-acc-600 md:bg-transparent text-white md:text-acc-400 font-bold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-acc-500 md:border-acc-400 py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leadingtight text-xs sm:text-sm md:text-base text-center shadow-lg md:shadow-none";
+    const inactiveClasses = "flex items-center justify-center w-full h-full bg-slate-800/80 md:bg-transparent text-slate-400 md:text-slate-500 hover:bg-slate-700 md:hover:bg-transparent md:hover:text-acc-300 font-medium md:font-semibold rounded-xl md:rounded-none border md:border-0 md:border-b-2 border-slate-700 md:border-transparent py-2.5 md:py-0 md:pb-2 px-2 transition-all whitespace-normal md:whitespace-nowrap leading-tight text-xs sm:text-sm md:text-base text-center";
 
     tabs.forEach(t => {
         const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
