@@ -26,7 +26,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 5: charts
 
-- Own tooltips on the three charts, hours as "00–01", shared Chart.js defaults (K08)
+- **Batch 11 (27 Oct 2026) — done:** own tooltips on the three charts, all numbers in the language of the page, a real calendar axis with gaps, the economics empty state in both languages, the duplicate € removed (D26). **Phase 5 is complete**; the hour axis and the unused plugins of the hub do not apply to this page (no hourly chart, no plugin)
 
 ## Phase 6: mobile
 
@@ -43,7 +43,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Dated checks
 
-- **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Before 4 Nov 2026:** the fix of D17 must be online, so that the 10-day re-check repairs the 25 Oct record. **Before 28 Mar 2027 (23 hours):** K20
+- **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Done 26 Oct 2026:** the fix of D17 went online and the 10-day re-check repaired the 25 Oct record (73,419 MWh, 25 hourly keys). **Before 28 Mar 2027 (23 hours):** K20
 - **26 Oct 2026 — done:** the ISP history (K21 → D18): five manual runs and a sixth for 21–26 Oct, 148 days; the ISP / SCADA ratio went from 1.242 to 1.006 on average
 - **After every batch:** compare the repository with the zip, byte by byte; check that the Pages build is green; run the page in Chromium at 360 and 320 px
 - **Every two weeks:** measure the size of the data (K11)

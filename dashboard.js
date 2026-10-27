@@ -56,7 +56,7 @@ function parseNum(val) {
 }
 
 function formatEuro(amount) {
-    return amount.toLocaleString('el-GR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    return fmtN(amount, 0) + '\u00a0€';
 }
 
 function getHourNumber(timeStr) {
@@ -72,6 +72,120 @@ function getHourNumber(timeStr) {
 }
 
 
+
+// ==========================================
+// ΓΡΑΦΗΜΑΤΑ: αριθμοί και tooltips (D26, όπως BESS D38–D41, Flows και live)
+// ==========================================
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Όλοι οι αριθμοί της σελίδας στη μορφή της γλώσσας (αγγλικά 74,911.5 · ελληνικά 74.911,5), με το σωστό «−» και «–» όταν λείπει η τιμή
+function fmtN(v, dec = 0, signed = false) {
+    if (v === null || v === undefined || Number.isNaN(v)) return '–';
+    return new Intl.NumberFormat(i18n[currentLang].locale, { minimumFractionDigits: dec, maximumFractionDigits: dec, signDisplay: signed ? 'exceptZero' : 'auto' })
+        .format(v).replace('-', '−');
+}
+const roundsToZero = (v, dec = 0) => v === null || v === undefined || Math.abs(v) < 0.5 * Math.pow(10, -dec);
+
+// Δικό μας HTML tooltip (ίδιο με BESS, Flows και live): μένει πάντα μέσα στην οθόνη
+function htmlTip(build) {
+    return (ctx) => {
+        let el = document.getElementById('chart-tip');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'chart-tip';
+            el.className = 'fixed z-[9000] pointer-events-none rounded-lg border border-slate-600 bg-slate-900/95 shadow-2xl px-4 py-3 min-w-[240px] max-w-[92vw] transition-opacity duration-150';
+            el.style.opacity = 0;
+            document.body.appendChild(el);
+        }
+        const tt = ctx.tooltip;
+        if (!tt || tt.opacity === 0 || !tt.dataPoints || !tt.dataPoints.length) { el.style.opacity = 0; return; }
+        const html = build(tt.dataPoints[0].dataIndex);
+        if (!html) { el.style.opacity = 0; return; }
+        el.innerHTML = html;
+        el.style.opacity = 1;
+        const r = ctx.chart.canvas.getBoundingClientRect();
+        const w = el.offsetWidth, h = el.offsetHeight, gap = 14;
+        let x = r.left + tt.caretX + gap;
+        if (x + w > window.innerWidth - 8) x = r.left + tt.caretX - w - gap;
+        x = Math.max(8, Math.min(x, window.innerWidth - w - 8));
+        let y = r.top + (ctx.chart.chartArea ? ctx.chart.chartArea.top : 0);
+        y = Math.max(8, Math.min(y, window.innerHeight - h - 8));
+        el.style.left = `${x}px`; el.style.top = `${y}px`;
+    };
+}
+const tipOff = (build) => ({ enabled: false, external: htmlTip(build) });
+function hideChartTip() { const el = document.getElementById('chart-tip'); if (el) el.style.opacity = 0; }
+window.addEventListener('scroll', hideChartTip, { passive: true });
+
+const tipHead = (left, right = '') => `<div class="flex justify-between items-baseline gap-6 mb-2.5"><span class="text-acc-400 font-bold text-sm">${escapeHtml(left)}</span><span class="text-xs font-bold text-slate-300">${escapeHtml(right)}</span></div>`;
+const tipRule = '<div class="border-t border-dashed border-white/20 my-2"></div>';
+function tipRow(label, value, color, opts = {}) {
+    const sw = color ? `<span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${color}"></span>` : '';
+    const unit = opts.unit === false ? '' : ` <span class="text-[11px] font-normal text-slate-500">${escapeHtml(opts.unit || 'MWh')}</span>`;
+    return `<div class="grid grid-cols-[1fr_auto] gap-4 py-0.5 text-slate-300 text-[13px]">` +
+        `<span class="flex items-center gap-2 min-w-0">${sw}<span class="leading-tight">${escapeHtml(label)}</span></span>` +
+        `<span class="text-right text-slate-100" style="font-variant-numeric:tabular-nums">${value}${unit}</span></div>`;
+}
+const tipNote = (text) => `<div class="text-[11px] text-slate-400 mt-1.5">${escapeHtml(text)}</div>`;
+
+// Κοινές ρυθμίσεις όλων των γραφημάτων (μία φορά ανά σχεδίαση), αριθμοί των αξόνων στη γλώσσα της σελίδας
+function applyChartDefaults() {
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = '#334155';
+    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+    Chart.defaults.font.size = 12;
+    Chart.defaults.locale = i18n[currentLang].locale;
+    Chart.defaults.plugins.legend.labels.boxWidth = 12;
+    Chart.defaults.plugins.legend.labels.boxHeight = 12;
+    Chart.defaults.animation.duration = (typeof REDUCE_MOTION !== 'undefined' && REDUCE_MOTION) ? 0 : 400;
+}
+// Σε κινητό οι χιλιάδες γράφονται «5k» στον κάθετο άξονα: κερδίζουμε οριζόντιο χώρο
+function axisTick(v, idx, ticks) {
+    if (isPhone()) {
+        if (Math.abs(v) >= 1000) { const k = v / 1000; return fmtN(k, Number.isInteger(k) ? 0 : 1) + 'k'; }
+        return fmtN(v, Number.isInteger(v) ? 0 : 1);
+    }
+    return Chart.Ticks.formatters.numeric.call(this, v, idx, ticks);
+}
+const yTicks = { callback: axisTick };
+// Στο κινητό δείχνουμε ΟΛΕΣ τις μονάδες στον οριζόντιο άξονα, κάθετες και μικρότερες· αλλιώς το Chart.js παραλείπει τις μισές
+const unitXTicks = () => isPhone() ? { autoSkip: false, maxRotation: 90, minRotation: 90, font: { size: 10 } } : { maxRotation: 45, minRotation: 45 };
+
+// ---- Daily overview: μία μονάδα, πρόγραμμα (ISP) έναντι πραγματικού (SCADA)
+function unitTip(unit, cls, isp, sc, color) {
+    const T = i18n[currentLang], sel = document.getElementById('dateSelect');
+    const opt = sel && sel.options[sel.selectedIndex], pending = !!opt && opt.dataset.partial === 'true';
+    let html = tipHead(unit, sel && sel.value ? fmtDay(sel.value) : '');
+    if (cls) html += `<div class="text-[11px] text-slate-400 -mt-1.5 mb-2">${escapeHtml(cls)}</div>`;
+    if (roundsToZero(isp) && roundsToZero(sc)) return html + tipNote(pending ? T.tipScadaPending : T.tipNoMove);
+    const striped = `repeating-linear-gradient(45deg, ${color} 0 2px, transparent 2px 4px)`;
+    if (!roundsToZero(isp)) html += tipRow(T.legIsp, fmtN(isp), color);
+    if (!roundsToZero(sc)) html += tipRow(T.legScada, fmtN(sc), striped);
+    if (roundsToZero(sc) && pending) return html + tipNote(T.tipScadaPending);
+    const dev = (sc || 0) - (isp || 0);
+    if (!roundsToZero(sc) && !roundsToZero(dev)) html += tipRule + tipRow(T.tipDev, fmtN(dev, 0, true), null);
+    return html;
+}
+// ---- Monthly analytics: μία ημέρα, τρία μεγέθη (τα κενά της ημέρας είναι null)
+function monthlyTip(i, dates, hgsida, srmc, eff) {
+    const T = i18n[currentLang];
+    let html = tipHead(fmtDay(dates[i]));
+    if (hgsida[i] === null || hgsida[i] === undefined) return html + tipNote(T.tipNoData);
+    if (!roundsToZero(hgsida[i], 2)) html += tipRow(T.legHgsida, fmtN(hgsida[i], 2), DATA_COLORS.hgsida, { unit: '€/MWh' });
+    if (!roundsToZero(srmc[i], 2)) html += tipRow(T.legSrmc, fmtN(srmc[i], 2), DATA_COLORS.srmc, { unit: '€/MWh' });
+    if (!roundsToZero(eff[i], 1)) html += tipRow(T.legEff, fmtN(eff[i], 1), DATA_COLORS.efficiency, { unit: '%' });
+    return html;
+}
+// ---- Generic constraints & surplus: μία ημέρα, δύο μεγέθη
+function surplusTip(i, dates, surplus, constraints) {
+    const T = i18n[currentLang];
+    let html = tipHead(fmtDay(dates[i]));
+    if (surplus[i] === null || surplus[i] === undefined) return html + tipNote(T.tipNoData);
+    if (roundsToZero(surplus[i]) && roundsToZero(constraints[i])) return html + tipNote(T.tipNoSurplus);
+    if (!roundsToZero(surplus[i])) html += tipRow(T.legSurplus, fmtN(surplus[i]), DATA_COLORS.surplus);
+    if (!roundsToZero(constraints[i])) html += tipRow(T.legConstraints, fmtN(constraints[i]), DATA_COLORS.constraints);
+    return html;
+}
 
 function createDiagonalPattern(colorHex) {
     const canvas = document.createElement('canvas');
@@ -170,9 +284,7 @@ function getUnitMetadata(unitName) {
     }
     
     if (result.order === 3) {
-        result.class = (typeof currentLang !== 'undefined' && currentLang === 'el') 
-            ? 'Παλαιότερη Γενιά & Peakers' 
-            : 'Older Generation & Peakers';
+        result.class = i18n[currentLang].lgdOlder;   // το ίδιο όνομα με το υπόμνημα του γραφήματος (D26)
     }
 
     return result;
@@ -212,6 +324,7 @@ function paintTabs() {
 function switchTab(tabId) {
     if (!TABS[tabId]) return;
     currentTab = tabId;
+    hideChartTip();
     paintTabs();
     updatePicker();
     if (tabId === 'overview') updateOverviewTab();
@@ -368,8 +481,8 @@ function updateOverviewTab() {
 
     const kpiIspEl = document.getElementById('kpiTotalIsp');
     const kpiScadaEl = document.getElementById('kpiTotalScada');
-    if (kpiIspEl) kpiIspEl.innerText = totalIsp.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-    if (kpiScadaEl) kpiScadaEl.innerText = totalScada.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    if (kpiIspEl) kpiIspEl.innerText = fmtN(totalIsp, 0);
+    if (kpiScadaEl) kpiScadaEl.innerText = fmtN(totalScada, 0);
 
     const unitsArray = Object.values(unitMap);
     unitsArray.sort((a, b) => {
@@ -404,74 +517,50 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
     const canvas = document.getElementById('overviewChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
+
     if (overviewChartInst) overviewChartInst.destroy();
-    
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.font.family = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    hideChartTip();
+    applyChartDefaults();
+    const T = i18n[currentLang];
 
-    const lang = (typeof currentLang !== 'undefined') ? currentLang : 'en';
-    const labelIsp = (lang === 'el') ? 'Πρόγραμμα (ISP)' : 'Scheduled (ISP)';
-    const labelScada = (lang === 'el') ? 'Πραγματικό (SCADA)' : 'Actual (SCADA)';
-
-    overviewChartInst = new Chart(ctx, { 
-        type: 'bar', 
-        data: { 
-            labels: labels, 
+    overviewChartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
             datasets: [
-                { 
-                    label: labelIsp, 
-                    data: dataIsp, 
-                    backgroundColor: ispColors, 
+                {
+                    label: T.legIsp,
+                    data: dataIsp,
+                    backgroundColor: ispColors,
                     borderRadius: 4,
                     barPercentage: 0.85,
                     categoryPercentage: 0.8
-                }, 
-                { 
-                    label: labelScada, 
-                    data: dataScada, 
-                    backgroundColor: scadaColors, 
+                },
+                {
+                    label: T.legScada,
+                    data: dataScada,
+                    backgroundColor: scadaColors,
                     borderRadius: 4,
-                    borderWidth: 1, 
+                    borderWidth: 1,
                     borderColor: ispColors,
                     barPercentage: 0.85,
                     categoryPercentage: 0.8
                 }
-            ] 
-        }, 
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { 
-                legend: { display: false }, 
-                tooltip: {
-                    callbacks: {
-                        beforeTitle: function(context) { return classLabels[context[0].dataIndex]; },
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' MWh';
-                            return label;
-                        }
-                    }
-                }
-            }, 
-            scales: { 
-                x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } }, 
-                y: { 
-                    grid: { color: '#334155' }, 
-                    title: { display: true, text: 'MWh' },
-                    ticks: {
-                        callback: function(value) {
-                            if (window.innerWidth < 640 && Math.abs(value) >= 1000) {
-                                return (value / 1000) + 'k';
-                            }
-                            return value;
-                        }
-                    }
-                } 
-            } 
-        } 
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: tipOff(i => unitTip(labels[i], classLabels[i], dataIsp[i], dataScada[i], ispColors[i]))
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: unitXTicks() },
+                y: { grid: { color: '#334155' }, title: { display: true, text: 'MWh' }, ticks: yTicks }
+            }
+        }
     });
 }
 
@@ -495,7 +584,7 @@ function updateEconomicsTab() {
     tbody.innerHTML = '';
 
     if (!dayEco || !dayEco.Units || dayEco.Units.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">No economic data available for this date.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">${i18n[currentLang].ecoEmpty}</td></tr>`;
         document.getElementById('kpiHgsida').innerText = '-';
         document.getElementById('kpiCo2').innerText = '-';
         const co2BadgeEmpty = document.getElementById('kpiCo2Badge');
@@ -511,9 +600,9 @@ function updateEconomicsTab() {
     const hgsidaVal = dayEco["HGSIDA (€/MWh)"] || 0;
     const co2PriceVal = dayEco["CO2 Price (€/t)"] || 0;
 
-    document.getElementById('kpiHgsida').innerText = hgsidaVal.toFixed(2);
+    document.getElementById('kpiHgsida').innerText = fmtN(hgsidaVal, 2);
     const kpiCo2El = document.getElementById('kpiCo2');
-    kpiCo2El.innerText = co2PriceVal > 0 ? co2PriceVal.toFixed(2) : '-';
+    kpiCo2El.innerText = co2PriceVal > 0 ? fmtN(co2PriceVal, 2) : '-';
     const co2Badge = document.getElementById('kpiCo2Badge');
     if (co2Badge) {
         const langCo2 = (typeof currentLang !== 'undefined') ? currentLang : 'en';
@@ -523,14 +612,14 @@ function updateEconomicsTab() {
             : 'No real CO2 price is available for this day. An estimated value is used.';
         co2Badge.style.display = dayEco["CO2 Price Estimated"] ? 'inline' : 'none';
     }
-    document.getElementById('kpiEcoScada').innerText = totals["Συνολική Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-    document.getElementById('kpiAvgGasCost').innerText = totals["Μέσο SRMC Στόλου (€/MWh)"].toFixed(2);
-    document.getElementById('kpiTotalEcoCost').innerText = formatEuro(totals["Συνολικό Κόστος Στόλου (€)"]);
+    document.getElementById('kpiEcoScada').innerText = fmtN(totals["Συνολική Παραγωγή (MWh)"], 0);
+    document.getElementById('kpiAvgGasCost').innerText = fmtN(totals["Μέσο SRMC Στόλου (€/MWh)"], 2);
+    document.getElementById('kpiTotalEcoCost').innerText = fmtN(totals["Συνολικό Κόστος Στόλου (€)"], 0);   // το € είναι ήδη στο HTML δίπλα στο νούμερο
     
     const totalMwh = totals["Συνολική Παραγωγή (MWh)"];
     const totalFuelCost = totals["Συνολικό Κόστος Καυσίμου (€)"];
     const avgFleetEff = (totalFuelCost > 0 && hgsidaVal > 0) ? (totalMwh * hgsidaVal / totalFuelCost) * 100 : 0;
-    document.getElementById('kpiFleetEff').innerText = avgFleetEff > 0 ? avgFleetEff.toFixed(1) : '-';
+    document.getElementById('kpiFleetEff').innerText = avgFleetEff > 0 ? fmtN(avgFleetEff, 1) : '-';
 
     let sortedUnits = [...dayEco.Units];
     sortedUnits.sort((a, b) => {
@@ -551,10 +640,10 @@ function updateEconomicsTab() {
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
 
-        const MWh = u["Παραγωγή (MWh)"].toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-        const Eff = unitEff > 0 ? unitEff.toFixed(1) + '%' : '-';
-        const CO2 = u["Εκπομπές CO2 (t)"].toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' t';
-        const SRMC = u["SRMC Μέσος Όρος (€/MWh)"].toFixed(2);
+        const MWh = fmtN(u["Παραγωγή (MWh)"], 0);
+        const Eff = unitEff > 0 ? fmtN(unitEff, 1) + '%' : '-';
+        const CO2 = fmtN(u["Εκπομπές CO2 (t)"], 1) + ' t';
+        const SRMC = fmtN(u["SRMC Μέσος Όρος (€/MWh)"], 2);
         const Cost = formatEuro(u["Συνολικό Κόστος (€)"]);
 
         const tr = document.createElement('tr');
@@ -649,7 +738,7 @@ function updateMonthlyTab() {
         .filter(d => parseDate(d.Ημερομηνία).startsWith(selectedMonth))
         .sort((a, b) => parseDate(a.Ημερομηνία).localeCompare(parseDate(b.Ημερομηνία)));
 
-    const labels = [];
+    const byDay = {};
     const hgsidaData = [];
     const srmcData = [];
     const effData = [];
@@ -662,7 +751,6 @@ function updateMonthlyTab() {
     monthData.forEach(day => {
         const dateStr = parseDate(day.Ημερομηνία);
         const dayNum = dateStr.split('-')[2];
-        labels.push(dayNum);
 
         const hgsida = day["HGSIDA (€/MWh)"] || 0;
         const totals = day["Fleet Totals"];
@@ -672,9 +760,7 @@ function updateMonthlyTab() {
         const totalFuelCost = totals["Συνολικό Κόστος Καυσίμου (€)"];
         const eff = (totalFuelCost > 0 && hgsida > 0) ? (totalMwh * hgsida / totalFuelCost) * 100 : 0;
 
-        hgsidaData.push(hgsida);
-        srmcData.push(srmc);
-        effData.push(eff);
+        byDay[dayNum] = { hgsida, srmc, eff };
 
         if (srmc > 0 && srmc < minCost) { minCost = srmc; minCostDay = dayNum; }
         if (srmc > maxCost) { maxCost = srmc; maxCostDay = dayNum; }
@@ -683,40 +769,57 @@ function updateMonthlyTab() {
         if (eff > maxEff) { maxEff = eff; maxEffDay = dayNum; }
     });
 
-    document.getElementById('kpiPeakCost').innerText = maxCost !== -Infinity ? maxCost.toFixed(2) : '-';
+    // Άξονας από την 1η ως την τελευταία ημέρα με δεδομένα: μια ημέρα που λείπει φαίνεται ως κενό και όχι ως «πήδημα» του άξονα (D26)
+    const labels = [], dates = [];
+    const lastDay = Math.max(0, ...Object.keys(byDay).map(Number));
+    for (let n = 1; n <= lastDay; n++) {
+        const dd = String(n).padStart(2, '0'), v = byDay[dd];
+        labels.push(dd); dates.push(`${selectedMonth}-${dd}`);
+        hgsidaData.push(v ? v.hgsida : null); srmcData.push(v ? v.srmc : null); effData.push(v ? v.eff : null);
+    }
+
+    document.getElementById('kpiPeakCost').innerText = maxCost !== -Infinity ? fmtN(maxCost, 2) : '-';
     document.getElementById('kpiPeakCostDay').innerText = maxCostDay ? `${i18n[currentLang].dayWord} ${maxCostDay}` : '';
     
-    document.getElementById('kpiBestCost').innerText = minCost !== Infinity ? minCost.toFixed(2) : '-';
+    document.getElementById('kpiBestCost').innerText = minCost !== Infinity ? fmtN(minCost, 2) : '-';
     document.getElementById('kpiBestCostDay').innerText = minCostDay ? `${i18n[currentLang].dayWord} ${minCostDay}` : '';
     
-    document.getElementById('kpiWorstEff').innerText = minEff !== Infinity ? minEff.toFixed(1) : '-';
+    document.getElementById('kpiWorstEff').innerText = minEff !== Infinity ? fmtN(minEff, 1) : '-';
     document.getElementById('kpiWorstEffDay').innerText = minEffDay ? `${i18n[currentLang].dayWord} ${minEffDay}` : '';
     
-    document.getElementById('kpiMaxEff').innerText = maxEff !== -Infinity ? maxEff.toFixed(1) : '-';
+    document.getElementById('kpiMaxEff').innerText = maxEff !== -Infinity ? fmtN(maxEff, 1) : '-';
     document.getElementById('kpiMaxEffDay').innerText = maxEffDay ? `${i18n[currentLang].dayWord} ${maxEffDay}` : '';
 
-    renderMonthlyChart(labels, hgsidaData, srmcData, effData);
+    renderMonthlyChart(labels, dates, hgsidaData, srmcData, effData);
 }
 
-function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
+function renderMonthlyChart(labels, dates, hgsidaData, srmcData, effData) {
     const canvas = document.getElementById('monthlyChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
-    if (monthlyChartInst) monthlyChartInst.destroy();
-    
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.font.family = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-    monthlyChartInst = new Chart(ctx, { 
-        type: 'line', 
-        data: { 
-            labels: labels, 
+    if (monthlyChartInst) monthlyChartInst.destroy();
+    hideChartTip();
+    applyChartDefaults();
+    const T = i18n[currentLang];
+
+    monthlyChartInst = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
             datasets: [
-                { 
-                    label: i18n[currentLang].legHgsida, 
-                    data: hgsidaData, 
-                    borderColor: DATA_COLORS.hgsida, 
+                {
+                    // Αόρατο βοηθητικό dataset: ένα σημείο ανά ημέρα, ώστε το tooltip να δουλεύει και πάνω από ημέρα χωρίς δεδομένα
+                    // (το Chart.js αγνοεί τα null σημεία στην αλληλεπίδραση). Δεν φαίνεται ούτε στο υπόμνημα.
+                    label: '',
+                    data: labels.map(() => 0),
+                    showLine: false, pointRadius: 0, pointHoverRadius: 0, borderWidth: 0, hitRadius: 0,
+                    yAxisID: 'y'
+                },
+                {
+                    label: T.legHgsida,
+                    data: hgsidaData,
+                    borderColor: DATA_COLORS.hgsida,
                     backgroundColor: 'transparent',
                     borderWidth: 2,
                     tension: 0.3,
@@ -724,10 +827,10 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
                     pointBackgroundColor: DATA_COLORS.hgsida,
                     yAxisID: 'y'
                 },
-                { 
-                    label: i18n[currentLang].legSrmc, 
-                    data: srmcData, 
-                    borderColor: DATA_COLORS.srmc, 
+                {
+                    label: T.legSrmc,
+                    data: srmcData,
+                    borderColor: DATA_COLORS.srmc,
                     backgroundColor: 'rgba(251, 191, 36, 0.1)',
                     fill: true,
                     borderWidth: 3,
@@ -737,63 +840,49 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
                     yAxisID: 'y'
                 },
                 {
-                    label: i18n[currentLang].legEff,
+                    label: T.legEff,
                     data: effData,
-                    borderColor: DATA_COLORS.efficiency, 
+                    borderColor: DATA_COLORS.efficiency,
                     backgroundColor: 'transparent',
                     borderWidth: 2,
-                    borderDash: [5, 5], 
+                    borderDash: [5, 5],
                     tension: 0.3,
                     pointRadius: 3,
                     pointBackgroundColor: DATA_COLORS.efficiency,
-                    yAxisID: 'y2' 
+                    yAxisID: 'y2'
                 }
-            ] 
-        }, 
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { 
-                legend: { display: true, position: 'top', labels: { boxWidth: 15, font: { size: 12 }, usePointStyle: true } }, 
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label = label + ': ';
-                            if (context.dataset.yAxisID === 'y2') {
-                                label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' %';
-                            } else {
-                                label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €/MWh';
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }, 
-            scales: { 
-                x: { grid: { color: '#1e293b' }, title: { display: true, text: i18n[currentLang].axisDay, color: '#64748b' } }, 
-                y: { 
-                    type: 'linear', 
-                    display: true, 
-                    position: 'left', 
-                    grid: { color: '#334155' }, 
-                    title: { display: true, text: i18n[currentLang].axisCost },
-                    min: 0
-                },
-                y2: { 
-                    type: 'linear', 
-                    display: true, 
-                    position: 'right', 
-                    min: 40, 
-                    max: 60, 
-                    grid: { drawOnChartArea: false }, 
-                    title: { display: true, text: i18n[currentLang].axisEff } 
-                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: true, position: 'top', labels: { font: { size: 12 }, usePointStyle: true, filter: (item) => item.text !== '' } },
+                tooltip: tipOff(i => monthlyTip(i, dates, hgsidaData, srmcData, effData))
             },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false }
-        } 
+            scales: {
+                x: { grid: { color: '#1e293b' }, title: { display: true, text: T.axisDay, color: '#64748b' } },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { color: '#334155' },
+                    title: { display: true, text: T.axisCost },
+                    min: 0,
+                    ticks: yTicks
+                },
+                y2: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    min: 40,
+                    max: 60,
+                    grid: { drawOnChartArea: false },
+                    title: { display: true, text: T.axisEff }
+                }
+            }
+        }
     });
 }
 
@@ -911,93 +1000,77 @@ function updateSurplusTab() {
         .filter(day => readyDays.has(day))
         .sort();
     
-    const labels = [];
+    const labels = [], dates = [];
     const surplusData = [];
     const constraintsData = [];
     let sumSurplus = 0;
     let sumConstraints = 0;
 
-    allDatesInMonth.forEach(day => {
-        labels.push(day.split('-')[2]); 
-        
-        let s = Math.abs(dailySurplusMap[day] || 0); 
+    // Άξονας από την 1η ως την τελευταία ημέρα με δεδομένα· οι ημέρες που λείπουν (χωρίς SCADA) μένουν κενές (D26)
+    const present = new Set(allDatesInMonth);
+    const lastDay = allDatesInMonth.length ? Math.max(...allDatesInMonth.map(x => Number(x.split('-')[2]))) : 0;
+    for (let n = 1; n <= lastDay; n++) {
+        const dd = String(n).padStart(2, '0'), day = `${selectedMonth}-${dd}`;
+        labels.push(dd); dates.push(day);
+        if (!present.has(day)) { surplusData.push(null); constraintsData.push(null); continue; }
+
+        let s = Math.abs(dailySurplusMap[day] || 0);
         let c = dailyConstrainedMwh[day] || 0;
-        
+
         surplusData.push(s);
         constraintsData.push(c);
-        
+
         sumSurplus += s;
         sumConstraints += c;
-    });
+    }
 
-    document.getElementById('kpiMonthSurplus').innerText = sumSurplus.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-    document.getElementById('kpiMonthConstraints').innerText = sumConstraints.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    document.getElementById('kpiMonthSurplus').innerText = fmtN(sumSurplus, 0);
+    document.getElementById('kpiMonthConstraints').innerText = fmtN(sumConstraints, 0);
 
-    renderSurplusChart(labels, surplusData, constraintsData);
+    renderSurplusChart(labels, dates, surplusData, constraintsData);
 }
 
-function renderSurplusChart(labels, surplusData, constraintsData) {
+function renderSurplusChart(labels, dates, surplusData, constraintsData) {
     const canvas = document.getElementById('surplusChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
-    if (surplusChartInst) surplusChartInst.destroy();
-    
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.font.family = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-    surplusChartInst = new Chart(ctx, { 
-        type: 'bar', 
-        data: { 
-            labels: labels, 
+    if (surplusChartInst) surplusChartInst.destroy();
+    hideChartTip();
+    applyChartDefaults();
+    const T = i18n[currentLang];
+
+    surplusChartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
             datasets: [
-                { 
-                    label: i18n[currentLang].legSurplus, 
-                    data: surplusData, 
-                    backgroundColor: DATA_COLORS.surplus, 
+                {
+                    label: T.legSurplus,
+                    data: surplusData,
+                    backgroundColor: DATA_COLORS.surplus,
                     borderRadius: 4
-                }, 
-                { 
-                    label: i18n[currentLang].legConstraints, 
-                    data: constraintsData, 
-                    backgroundColor: DATA_COLORS.constraints, 
+                },
+                {
+                    label: T.legConstraints,
+                    data: constraintsData,
+                    backgroundColor: DATA_COLORS.constraints,
                     borderRadius: 4
                 }
-            ] 
-        }, 
-        options: { 
-            responsive: true, 
+            ]
+        },
+        options: {
+            responsive: true,
             maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { position: 'top', labels: { boxWidth: 15, font: { size: 12 } } },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            label += context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' MWh';
-                            return label;
-                        }
-                    }
-                }
+                legend: { position: 'top', labels: { font: { size: 12 } } },
+                tooltip: tipOff(i => surplusTip(i, dates, surplusData, constraintsData))
             },
             scales: {
-                x: { grid: { display: false }, title: { display: true, text: i18n[currentLang].axisDay, color: '#64748b' } },
-                y: { 
-                    grid: { color: '#334155' }, 
-                    title: { display: true, text: 'MWh' },
-                    ticks: {
-                        callback: function(value) {
-                            if (window.innerWidth < 640 && Math.abs(value) >= 1000) {
-                                return (value / 1000) + 'k';
-                            }
-                            return value;
-                        }
-                    }
-                }
+                x: { grid: { display: false }, title: { display: true, text: T.axisDay, color: '#64748b' } },
+                y: { grid: { color: '#334155' }, title: { display: true, text: 'MWh' }, ticks: yTicks }
             }
-        } 
+        }
     });
 }
