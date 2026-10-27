@@ -40,6 +40,7 @@ const i18n = {
         btnMethodology: "Methodology & Assumptions",
         btnMethodologyShort: "Methodology",
         methodLink: "Methodology →",
+        toTop: "Back to top: date, methodology and tabs",
         lblTotalIsp: "Total ISP (MWh)",
         lblTotalScada: "Total SCADA (MWh)",
         ttlOverview: "Daily generation: ISP vs SCADA",
@@ -63,10 +64,6 @@ const i18n = {
         thCo2: "CO2 (t)",
         thSrmc: "SRMC",
         thCost: "Cost (€)",
-        accClass: "Class",
-        accEff: "Efficiency",
-        accCo2: "CO2 emissions",
-        accSrmc: "Average SRMC",
         lblHighSrmc: "Highest fleet SRMC",
         lblLowSrmc: "Lowest fleet SRMC",
         lblLowEff: "Lowest efficiency",
@@ -221,6 +218,7 @@ const i18n = {
         btnMethodology: "Μεθοδολογία & Παραδοχές",
         btnMethodologyShort: "Μεθοδολογία",
         methodLink: "Μεθοδολογία →",
+        toTop: "Επιστροφή επάνω: ημερομηνία, μεθοδολογία και tabs",
         lblTotalIsp: "Συνολικό ISP (MWh)",
         lblTotalScada: "Συνολικό SCADA (MWh)",
         ttlOverview: "Ημερήσια παραγωγή: ISP και SCADA",
@@ -244,10 +242,6 @@ const i18n = {
         thCo2: "CO2 (t)",
         thSrmc: "SRMC",
         thCost: "Κόστος (€)",
-        accClass: "Κλάση",
-        accEff: "Απόδοση",
-        accCo2: "Εκπομπές CO2",
-        accSrmc: "Μέσο SRMC",
         lblHighSrmc: "Υψηλότερο SRMC στόλου",
         lblLowSrmc: "Χαμηλότερο SRMC στόλου",
         lblLowEff: "Χαμηλότερη απόδοση",
@@ -515,6 +509,7 @@ function setLang(lang) {
     document.querySelectorAll('.meth-link').forEach(el => { el.textContent = t.methodLink; });
     // Όλα τα κείμενα των tabs (ετικέτες, τίτλοι, υπότιτλοι, υπομνήματα, κεφαλίδες πίνακα) από το i18n (D25)
     document.querySelectorAll('[data-i18n]').forEach(el => { const v = t[el.dataset.i18n]; if (v !== undefined) el.textContent = v; });
+    const toTopBtn = document.getElementById('toTopBtn'); if (toTopBtn) { toTopBtn.setAttribute('aria-label', t.toTop); toTopBtn.title = t.toTop; }
     renderMethodologyModal();
     if(document.getElementById('btnClose')) document.getElementById('btnClose').innerText = t.btnClose;
 

@@ -30,7 +30,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 6: mobile
 
-- The cost table: cards or the present accordion (decision pending, K09); secondary-controls box, 3 + 2 tabs grid where it applies, up-arrow (H06)
+- **Batch 12 (27 Oct 2026) — done:** the cost table as cards below 768 px, the up-arrow, a dash where data is missing, the economics row (D27). **Phase 6 is complete** except the 10 px of K22 at 1024 px (owner's decision)
 
 ## Phase 7: data
 
@@ -51,8 +51,8 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 ## Open decisions (owner)
 
 1. Where the constraints are calculated: browser or Python (K10)
-2. Cost table on phones: cards or accordion (K09)
-3. A full list of pinned dependencies (K19)
+2. A full list of pinned dependencies (K19)
+3. The economics row from 1024 to 1279 px: 3 cards per row, or leave it (K22)
 
-Decided on 27 Oct 2026: no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25).
+Decided on 27 Oct 2026: no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25); the cost table as cards on phones (D27).
 Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22); the texts of the Methodology and the links in the tabs (D24).

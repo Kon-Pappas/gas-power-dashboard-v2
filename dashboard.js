@@ -76,6 +76,8 @@ function getHourNumber(timeStr) {
 // ==========================================
 // ΓΡΑΦΗΜΑΤΑ: αριθμοί και tooltips (D26, όπως BESS D38–D41, Flows και live)
 // ==========================================
+// Τιμή που λείπει (δεν έφτασαν τα δεδομένα) γράφεται «–», ποτέ «0» ούτε «-» (D27, όπως BESS D50)
+const DASH = '–';
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // Όλοι οι αριθμοί της σελίδας στη μορφή της γλώσσας (αγγλικά 74,911.5 · ελληνικά 74.911,5), με το σωστό «−» και «–» όταν λείπει η τιμή
@@ -481,8 +483,8 @@ function updateOverviewTab() {
 
     const kpiIspEl = document.getElementById('kpiTotalIsp');
     const kpiScadaEl = document.getElementById('kpiTotalScada');
-    if (kpiIspEl) kpiIspEl.innerText = fmtN(totalIsp, 0);
-    if (kpiScadaEl) kpiScadaEl.innerText = fmtN(totalScada, 0);
+    if (kpiIspEl) kpiIspEl.innerText = ispDay.length ? fmtN(totalIsp, 0) : DASH;
+    if (kpiScadaEl) kpiScadaEl.innerText = scadaDay.length ? fmtN(totalScada, 0) : DASH;
 
     const unitsArray = Object.values(unitMap);
     unitsArray.sort((a, b) => {
@@ -582,17 +584,20 @@ function updateEconomicsTab() {
     const tbody = document.getElementById('economicsTableBody');
     if (!tbody) return;
     tbody.innerHTML = '';
+    const cards = document.getElementById('economicsCards');   // κάτω από 768 px ο πίνακας γίνεται κάρτες (D27)
+    if (cards) { cards.innerHTML = ''; cards.setAttribute('aria-label', i18n[currentLang].ttlEcoTable); }
 
     if (!dayEco || !dayEco.Units || dayEco.Units.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">${i18n[currentLang].ecoEmpty}</td></tr>`;
-        document.getElementById('kpiHgsida').innerText = '-';
-        document.getElementById('kpiCo2').innerText = '-';
+        if (cards) cards.innerHTML = `<div class="p-4 text-center text-slate-500 text-sm">${i18n[currentLang].ecoEmpty}</div>`;
+        document.getElementById('kpiHgsida').innerText = DASH;
+        document.getElementById('kpiCo2').innerText = DASH;
         const co2BadgeEmpty = document.getElementById('kpiCo2Badge');
         if (co2BadgeEmpty) co2BadgeEmpty.style.display = 'none';
-        document.getElementById('kpiFleetEff').innerText = '-';
-        document.getElementById('kpiAvgGasCost').innerText = '-';
-        document.getElementById('kpiEcoScada').innerText = '0';
-        document.getElementById('kpiTotalEcoCost').innerText = '0 €';
+        document.getElementById('kpiFleetEff').innerText = DASH;
+        document.getElementById('kpiAvgGasCost').innerText = DASH;
+        document.getElementById('kpiEcoScada').innerText = DASH;
+        document.getElementById('kpiTotalEcoCost').innerText = DASH;
         return;
     }
 
@@ -602,7 +607,7 @@ function updateEconomicsTab() {
 
     document.getElementById('kpiHgsida').innerText = fmtN(hgsidaVal, 2);
     const kpiCo2El = document.getElementById('kpiCo2');
-    kpiCo2El.innerText = co2PriceVal > 0 ? fmtN(co2PriceVal, 2) : '-';
+    kpiCo2El.innerText = co2PriceVal > 0 ? fmtN(co2PriceVal, 2) : DASH;
     const co2Badge = document.getElementById('kpiCo2Badge');
     if (co2Badge) {
         const langCo2 = (typeof currentLang !== 'undefined') ? currentLang : 'en';
@@ -619,7 +624,7 @@ function updateEconomicsTab() {
     const totalMwh = totals["Συνολική Παραγωγή (MWh)"];
     const totalFuelCost = totals["Συνολικό Κόστος Καυσίμου (€)"];
     const avgFleetEff = (totalFuelCost > 0 && hgsidaVal > 0) ? (totalMwh * hgsidaVal / totalFuelCost) * 100 : 0;
-    document.getElementById('kpiFleetEff').innerText = avgFleetEff > 0 ? fmtN(avgFleetEff, 1) : '-';
+    document.getElementById('kpiFleetEff').innerText = avgFleetEff > 0 ? fmtN(avgFleetEff, 1) : DASH;
 
     let sortedUnits = [...dayEco.Units];
     sortedUnits.sort((a, b) => {
@@ -635,94 +640,53 @@ function updateEconomicsTab() {
         const meta = getUnitMetadata(u["Μονάδα"]);
 
         const cs = CLASS_STYLE[meta.order] || CLASS_STYLE[3];
-        const rowTint = cs.row, stickyTint = cs.sticky, classColor = cs.text;
+        const rowTint = cs.row, stickyTint = cs.sticky;
 
         const unitFuelCost = u["Κόστος Καυσίμου (€)"];
         const unitEff = (unitFuelCost > 0 && hgsidaVal > 0) ? (u["Παραγωγή (MWh)"] * hgsidaVal / unitFuelCost) * 100 : 0;
 
         const MWh = fmtN(u["Παραγωγή (MWh)"], 0);
-        const Eff = unitEff > 0 ? fmtN(unitEff, 1) + '%' : '-';
+        const Eff = unitEff > 0 ? fmtN(unitEff, 1) + '%' : DASH;
         const CO2 = fmtN(u["Εκπομπές CO2 (t)"], 1) + ' t';
         const SRMC = fmtN(u["SRMC Μέσος Όρος (€/MWh)"], 2);
         const Cost = formatEuro(u["Συνολικό Κόστος (€)"]);
 
         const tr = document.createElement('tr');
-        tr.className = `main-row ${rowTint} transition-all duration-300 cursor-pointer sm:cursor-default group`;
-        tr.onclick = () => window.toggleMobileRow(tr);
-
+        tr.className = `main-row ${rowTint} transition-all duration-300`;
         tr.innerHTML = `
             <td class="p-3 font-bold text-slate-200 sticky left-0 z-10 ${stickyTint} sm:bg-transparent shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] sm:shadow-none">
-                <div class="flex justify-between items-center pr-1 sm:pr-0">
-                    <span>${shortName}</span>
-                    <svg class="w-4 h-4 text-slate-500 sm:hidden chevron transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
+                <div class="flex justify-between items-center pr-1 sm:pr-0"><span>${shortName}</span></div>
             </td>
             <td class="p-3 text-right font-mono">${MWh}</td>
-            <td class="hidden sm:table-cell p-3 text-right font-mono" style="color:${DATA_COLORS.efficiency}">${Eff}</td>
-            <td class="hidden sm:table-cell p-3 text-right font-mono text-slate-400">${CO2}</td>
-            <td class="hidden sm:table-cell p-3 text-right font-mono text-amber-400">${SRMC}</td>
+            <td class="p-3 text-right font-mono" style="color:${DATA_COLORS.efficiency}">${Eff}</td>
+            <td class="p-3 text-right font-mono text-slate-400">${CO2}</td>
+            <td class="p-3 text-right font-mono text-amber-400">${SRMC}</td>
             <td class="p-3 text-right font-semibold text-slate-300">${Cost}</td>
         `;
         tbody.appendChild(tr);
 
-        const trExpand = document.createElement('tr');
-        trExpand.className = `expand-row hidden sm:hidden ${rowTint.split(' ')[0]} transition-all border-b-2 border-slate-800/80`;
-        trExpand.innerHTML = `
-            <td colspan="3" class="p-4 px-5">
-                <ul class="space-y-3 text-sm">
-                    <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
-                        <span class="text-slate-400 text-[10px] font-semibold">${i18n[currentLang].accClass}</span>
-                        <span class="${classColor} font-semibold text-xs">${meta.class}</span>
-                    </li>
-                    <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
-                        <span class="text-slate-400 text-[10px] font-semibold">${i18n[currentLang].accEff}</span>
-                        <span class="font-mono font-bold" style="color:${DATA_COLORS.efficiency}">${Eff}</span>
-                    </li>
-                    <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
-                        <span class="text-slate-400 text-[10px] font-semibold">${i18n[currentLang].accCo2}</span>
-                        <span class="text-slate-300 font-mono">${CO2}</span>
-                    </li>
-                    <li class="flex justify-between items-center pb-1">
-                        <span class="text-slate-400 text-[10px] font-semibold">${i18n[currentLang].accSrmc}</span>
-                        <span class="text-amber-400 font-mono font-bold">${SRMC} €/MWh</span>
-                    </li>
-                </ul>
-            </td>
-        `;
-        tbody.appendChild(trExpand);
+        // Κάρτα για το κινητό (Flows D23): μονάδα και κόστος στην πρώτη γραμμή, τα τέσσερα νούμερα στη δεύτερη, δεξιά στοιχισμένα· οι μονάδες μέτρησης λένε ποιο είναι ποιο
+        if (cards) {
+            const unit = (s) => `<span class="text-[11px] text-slate-500">${s}</span>`;
+            const card = document.createElement('div');
+            card.setAttribute('role', 'listitem');
+            card.className = 'rounded-lg border border-slate-700/60 px-3 py-2.5';
+            card.style.cssText = `border-left:3px solid ${cs.hex}; background:${cs.hex}14`;
+            card.innerHTML = `
+                <div class="flex justify-between items-baseline gap-3">
+                    <span class="font-bold text-slate-200">${shortName}</span>
+                    <span class="font-semibold text-slate-100 tabular-nums">${fmtN(u["Συνολικό Κόστος (€)"], 0)} ${unit('€')}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-x-5 gap-y-1 mt-2 text-xs text-right tabular-nums">
+                    <div class="text-slate-300">${MWh} ${unit('MWh')}</div>
+                    <div style="color:${DATA_COLORS.efficiency}">${unitEff > 0 ? fmtN(unitEff, 1) + ' ' + unit('%') : DASH}</div>
+                    <div class="text-slate-400">${fmtN(u["Εκπομπές CO2 (t)"], 1)} ${unit('t')}</div>
+                    <div class="text-amber-400">${SRMC} ${unit('€/MWh')}</div>
+                </div>`;
+            cards.appendChild(card);
+        }
     });
 }
-
-window.toggleMobileRow = function(clickedRow) {
-    if (window.innerWidth >= 640) return; 
-
-    const expandRow = clickedRow.nextElementSibling;
-    if (!expandRow || !expandRow.classList.contains('expand-row')) return;
-    
-    const isExpanded = !expandRow.classList.contains('hidden');
-    
-    const allMain = document.querySelectorAll('#economicsTableBody .main-row');
-    const allExpand = document.querySelectorAll('#economicsTableBody .expand-row');
-    
-    allMain.forEach(r => {
-        r.classList.remove('opacity-20');
-        const chevron = r.querySelector('.chevron');
-        if(chevron) chevron.style.transform = 'rotate(0deg)';
-    });
-    allExpand.forEach(r => r.classList.add('hidden'));
-
-    if (!isExpanded) {
-        expandRow.classList.remove('hidden');
-        const chevron = clickedRow.querySelector('.chevron');
-        if(chevron) chevron.style.transform = 'rotate(180deg)';
-        
-        allMain.forEach(r => {
-            if (r !== clickedRow) r.classList.add('opacity-20');
-        });
-    }
-};
 
 // ==========================================
 // TAB 3: MONTHLY ANALYTICS 
@@ -778,16 +742,16 @@ function updateMonthlyTab() {
         hgsidaData.push(v ? v.hgsida : null); srmcData.push(v ? v.srmc : null); effData.push(v ? v.eff : null);
     }
 
-    document.getElementById('kpiPeakCost').innerText = maxCost !== -Infinity ? fmtN(maxCost, 2) : '-';
+    document.getElementById('kpiPeakCost').innerText = maxCost !== -Infinity ? fmtN(maxCost, 2) : DASH;
     document.getElementById('kpiPeakCostDay').innerText = maxCostDay ? `${i18n[currentLang].dayWord} ${maxCostDay}` : '';
     
-    document.getElementById('kpiBestCost').innerText = minCost !== Infinity ? fmtN(minCost, 2) : '-';
+    document.getElementById('kpiBestCost').innerText = minCost !== Infinity ? fmtN(minCost, 2) : DASH;
     document.getElementById('kpiBestCostDay').innerText = minCostDay ? `${i18n[currentLang].dayWord} ${minCostDay}` : '';
     
-    document.getElementById('kpiWorstEff').innerText = minEff !== Infinity ? fmtN(minEff, 1) : '-';
+    document.getElementById('kpiWorstEff').innerText = minEff !== Infinity ? fmtN(minEff, 1) : DASH;
     document.getElementById('kpiWorstEffDay').innerText = minEffDay ? `${i18n[currentLang].dayWord} ${minEffDay}` : '';
     
-    document.getElementById('kpiMaxEff').innerText = maxEff !== -Infinity ? fmtN(maxEff, 1) : '-';
+    document.getElementById('kpiMaxEff').innerText = maxEff !== -Infinity ? fmtN(maxEff, 1) : DASH;
     document.getElementById('kpiMaxEffDay').innerText = maxEffDay ? `${i18n[currentLang].dayWord} ${maxEffDay}` : '';
 
     renderMonthlyChart(labels, dates, hgsidaData, srmcData, effData);
@@ -1024,8 +988,8 @@ function updateSurplusTab() {
         sumConstraints += c;
     }
 
-    document.getElementById('kpiMonthSurplus').innerText = fmtN(sumSurplus, 0);
-    document.getElementById('kpiMonthConstraints').innerText = fmtN(sumConstraints, 0);
+    document.getElementById('kpiMonthSurplus').innerText = labels.length ? fmtN(sumSurplus, 0) : DASH;
+    document.getElementById('kpiMonthConstraints').innerText = labels.length ? fmtN(sumConstraints, 0) : DASH;
 
     renderSurplusChart(labels, dates, surplusData, constraintsData);
 }
@@ -1074,3 +1038,30 @@ function renderSurplusChart(labels, dates, surplusData, constraintsData) {
         }
     });
 }
+
+// ==========================================
+// ΚΟΥΜΠΙ «ΕΠΑΝΩ» (κινητό, D27, όπως BESS D72): εμφανίζεται όταν τα tabs έχουν βγει από την οθόνη και σε γυρίζει στην κορυφή,
+// όπου είναι η επιλογή ημερομηνίας, η μεθοδολογία, η γλώσσα και τα tabs. Δεν πιάνει μόνιμο χώρο.
+// ==========================================
+function scrollToTop() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+}
+(function initToTop() {
+    const btn = document.getElementById('toTopBtn');
+    const first = document.querySelector('[role="tab"]');
+    const nav = first && first.parentElement;
+    if (!btn || !nav) return;
+    let ticking = false;
+    const update = () => {
+        ticking = false;
+        const show = nav.getBoundingClientRect().bottom < 0;      // τα tabs έχουν περάσει πάνω από την οθόνη
+        btn.classList.toggle('opacity-0', !show);
+        btn.classList.toggle('pointer-events-none', !show);
+        btn.tabIndex = show ? 0 : -1;
+        btn.setAttribute('aria-hidden', show ? 'false' : 'true');
+    };
+    window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+})();
