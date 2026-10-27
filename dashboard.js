@@ -378,7 +378,8 @@ function fillPickers() {
     dates.forEach(date => {
         const pending = !complete(date), opt = document.createElement('option');
         opt.value = date;
-        opt.textContent = fmtDay(date, noYear) + (date === today ? ` (${t.today})` : '') + (pending ? ' ⚠' : '');
+        // Στο κινητό το «(σήμερα)» δεν χωράει στο πεδίο (στα ελληνικά κόβεται): το ⚠ λέει ήδη ότι η ημέρα περιμένει (K27)
+        opt.textContent = fmtDay(date, noYear) + (date === today && !isPhone() ? ` (${t.today})` : '') + (pending ? ' ⚠' : '');
         opt.dataset.partial = pending ? 'true' : 'false';
         dSel.appendChild(opt);
     });

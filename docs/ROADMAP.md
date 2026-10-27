@@ -30,11 +30,11 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 6: mobile
 
-- **Batch 12 (27 Oct 2026) — done:** the cost table as cards below 768 px, the up-arrow, a dash where data is missing, the economics row (D27). **Phase 6 is complete** except the 10 px of K22 at 1024 px (owner's decision)
+- **Batch 12 (27 Oct 2026) — done:** the cost table as cards below 768 px, the up-arrow, a dash where data is missing, the economics row (D27). **Batch 13 (27 Oct 2026) — done:** the three cards per row and the shorter date label (D28). **Phase 6 is complete**
 
 ## Phase 7: data
 
-- Decide first where the constraints are calculated (K10): in Python, the page would not need the hourly SCADA, which is half of the file (49.5 %)
+- **K10 analysed 27 Oct 2026** (evidence and plan in K10): a Python copy of the calculation equals the page on all 148 days; the hourly SCADA must stay available to Python (a file of 14 days the page does not download); the data file would go from 212 to 103 KB gzip. Awaiting the owner's decision, then two batches (expand, then contract)
 - Then monthly files with a manifest **only if** the measured size justifies it (K11); refresh with ETag instead of `?v=<time>`
 
 ## Correctness (alongside the phases)
@@ -52,7 +52,6 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 1. Where the constraints are calculated: browser or Python (K10)
 2. A full list of pinned dependencies (K19)
-3. The economics row from 1024 to 1279 px: 3 cards per row, or leave it (K22)
 
-Decided on 27 Oct 2026: no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25); the cost table as cards on phones (D27).
+Decided on 27 Oct 2026: three cards per row from 1024 to 1279 px and the shorter date label on phones (D28); no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25); the cost table as cards on phones (D27).
 Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22); the texts of the Methodology and the links in the tabs (D24).
