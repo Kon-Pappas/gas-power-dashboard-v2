@@ -33,13 +33,59 @@ const i18n = {
         lastUpdateMobile: "Updated:",
         nextUpdateMobile: "Next:",
         dateLabel: "Date:",
-        tabOverview: "Daily Overview",
-        tabEconomics: "Daily Economics",
-        tabIspScada: "Monthly Analytics",
-        tabSurplus: "Generic Constraints & Surplus",
+        tabOverview: "Daily overview",
+        tabEconomics: "Daily economics",
+        tabIspScada: "Monthly analytics",
+        tabSurplus: "Generic constraints & surplus",
         btnMethodology: "Methodology & Assumptions",
         btnMethodologyShort: "Methodology",
         methodLink: "Methodology →",
+        lblTotalIsp: "Total ISP (MWh)",
+        lblTotalScada: "Total SCADA (MWh)",
+        ttlOverview: "Daily generation: ISP vs SCADA",
+        subOverview: "Units sorted by efficiency class",
+        lgdClasses: "Thermal classes",
+        lgdOlder: "Older generation & peakers",
+        lgdDataType: "Data type",
+        lgdIspSolid: "ISP (solid)",
+        lgdScadaStriped: "SCADA (striped)",
+        lblHgsida: "HGSIDA price",
+        lblCo2: "EUA CO2 price",
+        lblFleetEff: "Fleet efficiency",
+        lblAvgSrmc: "Average fleet SRMC",
+        lblGasGen: "Gas generation",
+        lblTotalCost: "Total estimated cost",
+        ttlEcoTable: "Daily theoretical cost per unit",
+        subEcoTable: "SRMC = (HGSIDA / dynamic efficiency) + (dynamic CO2 factor × EUA price), with hourly load interpolation. Cost = SRMC × MWh.",
+        thUnit: "Unit",
+        thOutput: "Output (MWh)",
+        thEff: "Efficiency",
+        thCo2: "CO2 (t)",
+        thSrmc: "SRMC",
+        thCost: "Cost (€)",
+        accClass: "Class",
+        accEff: "Efficiency",
+        accCo2: "CO2 emissions",
+        accSrmc: "Average SRMC",
+        lblHighSrmc: "Highest fleet SRMC",
+        lblLowSrmc: "Lowest fleet SRMC",
+        lblLowEff: "Lowest efficiency",
+        lblHighEff: "Highest efficiency",
+        dayWord: "Day",
+        ttlMonthly: "Monthly market and fleet performance",
+        subMonthly: "Gas price, fleet SRMC and fleet efficiency, one point per day",
+        legHgsida: "HGSIDA gas price",
+        legSrmc: "Average fleet SRMC",
+        legEff: "Fleet efficiency",
+        axisDay: "Day of month",
+        axisCost: "Cost (€/MWh)",
+        axisEff: "Efficiency (%)",
+        lblMonthSurplus: "Monthly residual surplus (ISP)",
+        lblMonthConstraints: "Monthly constraint-driven generation (SCADA)",
+        ttlSurplus: "Residual surplus vs constraint-driven generation",
+        subSurplus: "Daily values from the ISP and the hourly SCADA",
+        legSurplus: "Residual surplus (ISP)",
+        legConstraints: "Constraint-driven generation (SCADA)",
         locale: "en-GB",
         today: "today",
         monthLabel: "Month:",
@@ -48,27 +94,27 @@ const i18n = {
         pillPending: "Pending SCADA",
         pillPendingShort: "Pending",
         btnClose: "Close",
-        modalTitle: "Methodology & Core Assumptions",
+        modalTitle: "Methodology, assumptions and limitations",
         btnShort: "Short",
         btnDetailed: "Detailed",
         modalBodyShort: `
             <p class="mb-3">An independent tool for monitoring natural gas power plants in the Greek market, built on open data. Figures are estimates and indications, not official statistics.</p>
 
-            <p data-sec="all" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">All Tabs</p>
+            <h3 data-sec="all" class="mt-4 mb-2 text-xs font-bold text-acc-400">All tabs</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Scope:</strong> gas-fired (CCGT) units on the Transmission System (IPTO/ADMIE) that appear in its files. Lignite units (e.g. Ptolemaida5) and large hydro (e.g. Agras) are excluded even where present in the same source files.</li>
                 <li><strong class="text-slate-200">Sources:</strong> IPTO/ADMIE (ISP = IPTO's scheduling of the 24 hours: ISP1 is the first run, around 18:00 the day before, and ISP2 the second, around midnight of the same day, which is the one used here; SCADA = actual operation, published the next morning), HEnEx (gas price indices) and OilPriceAPI (EU carbon price, €/t). Updated twice daily (07:06 and 13:00, Greek time); the last 10 days are re-checked to catch late publications.</li>
                 <li><strong class="text-slate-200">Pending data:</strong> a day with no SCADA yet is marked "Pending SCADA" and shown using ISP only. A day with no HGSIDA yet has its economics deferred to the next run rather than shown incomplete.</li>
             </ul>
 
-            <p data-sec="overview" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Daily Overview</p>
+            <h3 data-sec="overview" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily overview</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">ISP vs SCADA:</strong> the ISP shows what was scheduled, SCADA what actually happened. Differences between them are expected.</li>
                 <li><strong class="text-slate-200">Totals and chart:</strong> the two totals add up the gas units of the selected day (Alouminio included). Solid bar = ISP, striped bar = SCADA. A day with no SCADA yet shows ISP only.</li>
-                <li><strong class="text-slate-200">Classes:</strong> units are grouped by an assumed efficiency into H-Class (Super-Efficient, 2 units), F-Class (Standard, 8) and Older Generation &amp; Peakers (3). The grouping is the analyst's, compiled from public web sources, and is given with reservations.</li>
+                <li><strong class="text-slate-200">Classes:</strong> units are grouped by an assumed efficiency into H-Class (Super-Efficient, 2 units), F-Class (Standard, 8) and Older generation &amp; peakers (3). The grouping is the analyst's, compiled from public web sources, and is given with reservations.</li>
             </ul>
 
-            <p data-sec="economics" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Daily Economics</p>
+            <h3 data-sec="economics" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily economics</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Cost model:</strong> a theoretical cost, not realized revenue — one reference gas index (HGSIDA) and a standardized CO2 cost per unit class.</li>
                 <li><strong class="text-slate-200">CO2 price:</strong> when a real price isn't available, we use the last known real price (weekends) or a flat €85.00 (if none exists), marked "estimated".</li>
@@ -76,14 +122,14 @@ const i18n = {
                 <li><strong class="text-slate-200">Efficiency:</strong> not a nameplate figure but the day's effective efficiency = MWh × HGSIDA ÷ fuel cost; it depends on how heavily the units were loaded.</li>
             </ul>
 
-            <p data-sec="monthly" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Monthly Analytics</p>
+            <h3 data-sec="monthly" class="mt-4 mb-2 text-xs font-bold text-acc-400">Monthly analytics</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">What it shows:</strong> one point per day of the selected month, not monthly averages. Only days with complete economics (SCADA and HGSIDA) appear; the current month fills in day by day.</li>
-                <li><strong class="text-slate-200">The three lines:</strong> HGSIDA price and average fleet SRMC (€/MWh, left axis) and fleet efficiency (%, right axis), as defined in Daily Economics.</li>
-                <li><strong class="text-slate-200">The four cards:</strong> the extreme days of the month, with their date: highest and lowest average fleet SRMC (Peak / Best Grid Cost) and lowest and highest fleet efficiency (Worst / Max Efficiency). They change as days are added.</li>
+                <li><strong class="text-slate-200">The three lines:</strong> HGSIDA price and average fleet SRMC (€/MWh, left axis) and fleet efficiency (%, right axis), as defined in Daily economics.</li>
+                <li><strong class="text-slate-200">The four cards:</strong> the extreme days of the month, with their date: highest and lowest average fleet SRMC and lowest and highest fleet efficiency. They change as days are added.</li>
             </ul>
 
-            <p data-sec="surplus" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Generic Constraints & Surplus</p>
+            <h3 data-sec="surplus" class="mt-4 mb-2 text-xs font-bold text-acc-400">Generic constraints &amp; surplus</h3>
             <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400">
                 <li><strong class="text-slate-200">Constraint-driven generation:</strong> the SCADA output of a gas unit during the hours IPTO's ISP2 lists it under a Generic Constraint. It approximates the residual ISP surplus; an imperfect proxy — the true surplus can't be independently verified.</li>
                 <li><strong class="text-slate-200">Pending days excluded:</strong> only days without SCADA are left out of the chart; days with zero constraints or near-zero surplus stay in.</li>
@@ -94,7 +140,7 @@ const i18n = {
         modalBodyDetailed: `
             <p class="mb-3">This Dashboard is an independent tool for monitoring and analyzing natural gas power plants in the Greek Energy Market, built and maintained by a single analyst, on open data. Figures are estimates and indications, not official statistics.</p>
 
-            <p data-sec="all" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">All Tabs</p>
+            <h3 data-sec="all" class="mt-4 mb-2 text-xs font-bold text-acc-400">All tabs</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Scope:</strong> refers exclusively to natural gas (CCGT) power plants connected to the Transmission System (IPTO/ADMIE) that appear in its published files. Lignite units (e.g. Ptolemaida5) and large hydro (e.g. Agras) are excluded even when they appear in the same source files as the gas units. Co-generation units with locked 24/7 output (e.g. Alouminio) are likewise excluded from constraint tracking, since their output isn't market-responsive.</li>
                 <li><strong class="text-slate-200">Sources:</strong> Data is fetched daily from IPTO's (ADMIE) official reports (ISP & SCADA) and HEnEx (NGAS gas price indices); the CO2 price comes from OilPriceAPI (EU carbon price, €/t), one request a day. ISP is IPTO's scheduling of the 24 hours: ISP1 is the first run (around 18:00 the day before) and ISP2 the second (around midnight of the same day); this page uses ISP2.</li>
@@ -103,14 +149,14 @@ const i18n = {
                 <li><strong class="text-slate-200">History and time:</strong> the data start on 1 June 2026. Times are Greek time; on the days the clock changes (23 or 25 hours) all hours of the day are read.</li>
             </ul>
 
-            <p data-sec="overview" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Daily Overview</p>
+            <h3 data-sec="overview" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily overview</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">ISP vs SCADA:</strong> the ISP shows what was scheduled, SCADA what actually happened. Differences between them are expected and often meaningful — large gaps can indicate last-minute re-dispatch or constraint activity.</li>
                 <li><strong class="text-slate-200">Totals and chart:</strong> the two totals add up the gas units of the selected day (Alouminio included). Each unit has two bars: solid = ISP, striped = SCADA. A day with no SCADA yet shows ISP only.</li>
-                <li><strong class="text-slate-200">Classes:</strong> units are grouped by an assumed efficiency into H-Class (Super-Efficient, 2 units), F-Class (Standard, 8) and Older Generation &amp; Peakers (3), and the chart sorts them by class. The grouping is the analyst's own, compiled from separate public sources on the web, and is given with reservations; it is not an official classification.</li>
+                <li><strong class="text-slate-200">Classes:</strong> units are grouped by an assumed efficiency into H-Class (Super-Efficient, 2 units), F-Class (Standard, 8) and Older generation &amp; peakers (3), and the chart sorts them by class. The grouping is the analyst's own, compiled from separate public sources on the web, and is given with reservations; it is not an official classification.</li>
             </ul>
 
-            <p data-sec="economics" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Daily Economics</p>
+            <h3 data-sec="economics" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily economics</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Economics & Fuel Cost:</strong> Production cost is theoretically calculated using the daily HEnEx TTF (HGSIDA) index, divided by the specific Thermal Efficiency of each unit class, plus the standardized CO2 emission cost. HGSIDA is used uniformly across all units and hours as a simplifying assumption — HEnEx publishes several distinct gas price indices (HGSIDA, HGMBI, HGMSI, HGSIWD), and there is no public data indicating which index, if any, actually applied to a given unit's gas procurement at a given time.</li>
                 <li><strong class="text-slate-200">Dynamic Fuel Cost Model:</strong> Fuel cost is not a single daily number per unit — it is recalculated separately for each hour, based on that hour's actual SCADA output. Each unit has an assumed technical minimum and nameplate maximum (MW), and an assumed efficiency and CO2 intensity at each of those two points. For a given hour, the model locates the unit's actual output linearly between its minimum and maximum, and uses that same position to linearly interpolate both its efficiency and its CO2 emission factor for that hour — a unit running near its technical minimum is assumed less efficient (and more carbon-intensive per MWh) than the same unit running near full load. Hourly fuel cost is then HGSIDA divided by that hour's interpolated efficiency, multiplied by the hour's MWh; CO2 cost follows the same hourly logic. The key simplifying assumption is linearity: real CCGT heat-rate curves are typically non-linear, with efficiency gains concentrated closer to full load — this model treats the relationship as a straight line between the two known points, in the absence of publicly available, unit-specific heat-rate curves. For any unit without published technical specifications, a generic fallback profile is used instead of unit-specific values.</li>
@@ -121,16 +167,16 @@ const i18n = {
                 <li><strong class="text-slate-200">Table:</strong> per unit — output (MWh, from SCADA), effective efficiency, CO2 emissions (t), SRMC (€/MWh) and cost (€, for the whole day, not per MWh).</li>
             </ul>
 
-            <p data-sec="monthly" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Monthly Analytics</p>
+            <h3 data-sec="monthly" class="mt-4 mb-2 text-xs font-bold text-acc-400">Monthly analytics</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">What it shows:</strong> one point per day of the selected month, not monthly averages. Only days with complete economics (SCADA and HGSIDA) appear; the current month fills in day by day.</li>
-                <li><strong class="text-slate-200">The three lines:</strong> HGSIDA price and average fleet SRMC (€/MWh, left axis) and fleet efficiency (%, right axis), as defined in Daily Economics.</li>
-                <li><strong class="text-slate-200">The four cards:</strong> the extreme days of the month, with their date: highest and lowest average fleet SRMC (Peak / Best Grid Cost) and lowest and highest fleet efficiency (Worst / Max Efficiency). They change as days are added to the current month.</li>
-                <li><strong class="text-slate-200">How to read it:</strong> SRMC depends on the gas price, on the efficiency at which the units ran and on the CO2 price. The "Grid Cost" of the cards is the SRMC of the gas fleet, not a cost of the power system or of the market.</li>
+                <li><strong class="text-slate-200">The three lines:</strong> HGSIDA price and average fleet SRMC (€/MWh, left axis) and fleet efficiency (%, right axis), as defined in Daily economics.</li>
+                <li><strong class="text-slate-200">The four cards:</strong> the extreme days of the month, with their date: highest and lowest average fleet SRMC and lowest and highest fleet efficiency. They change as days are added to the current month.</li>
+                <li><strong class="text-slate-200">How to read it:</strong> SRMC depends on the gas price, on the efficiency at which the units ran and on the CO2 price.</li>
                 <li><strong class="text-slate-200">Days without a value:</strong> a day with a zero SRMC or efficiency (no valid calculation) is not counted among the lowest values of the cards.</li>
             </ul>
 
-            <p data-sec="surplus" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Generic Constraints & Surplus</p>
+            <h3 data-sec="surplus" class="mt-4 mb-2 text-xs font-bold text-acc-400">Generic constraints &amp; surplus</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Out-of-Merit Operation:</strong> Due to the "duck curve" and high RES penetration, IPTO frequently keeps units synchronized via Generic Constraints for system stability. The page takes the gas units and the hours of these constraints from the ISP2 schedule (its GenericConstraints sheet) and counts the unit's actual SCADA output inside those hours as constraint-driven generation — not market-driven arbitrage. Prices are not compared: a unit can also run below its cost for other reasons (technical minimum, block orders, balancing), and this view does not count those hours. In practice, this is the only available way to approximate the residual surplus left over from the ISP's scheduling, though it is an imperfect proxy, since the schedule is not a measurement and the true magnitude of that residual surplus cannot be independently verified from public data.</li>
                 <li><strong class="text-slate-200">Which units count:</strong> only gas-fired units are tracked for constraints; lignite and large hydro units appearing in the same ISP file are filtered out, as is the co-generation unit with locked 24/7 output.</li>
@@ -140,7 +186,7 @@ const i18n = {
                 <li><strong class="text-slate-200">Two different quantities:</strong> the surplus is a figure of the schedule, whereas constraint-driven generation is actual output. They are compared as indications, not as a balance.</li>
             </ul>
 
-            <p data-sec="limits" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Limitations</p>
+            <h3 data-sec="limits" class="mt-4 mb-2 text-xs font-bold text-acc-400">Limitations</h3>
             <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400">
                 <li><strong class="text-slate-200">Data:</strong> SCADA data is published as preliminary/uncertified by IPTO and may be revised. The ISP is a schedule, not a measurement of actual delivery.</li>
                 <li><strong class="text-slate-200">Cost model:</strong> relies on a single simplified gas price reference (HGSIDA) rather than unit-specific procurement data, and does not reflect each unit's actual realized revenue or market settlement.</li>
@@ -160,13 +206,59 @@ const i18n = {
         lastUpdateMobile: "Ενημερώθηκε:",
         nextUpdateMobile: "Επόμενη:",
         dateLabel: "Ημέρα:",
-        tabOverview: "Ημερήσια Επισκόπηση",
-        tabEconomics: "Ημερήσια Οικονομικά",
-        tabIspScada: "Μηνιαία Ανάλυση",
-        tabSurplus: "Περιορισμοί Συστήματος & Πλεόνασμα",
+        tabOverview: "Ημερήσια επισκόπηση",
+        tabEconomics: "Ημερήσια οικονομικά",
+        tabIspScada: "Μηνιαία ανάλυση",
+        tabSurplus: "Περιορισμοί συστήματος & πλεόνασμα",
         btnMethodology: "Μεθοδολογία & Παραδοχές",
         btnMethodologyShort: "Μεθοδολογία",
         methodLink: "Μεθοδολογία →",
+        lblTotalIsp: "Συνολικό ISP (MWh)",
+        lblTotalScada: "Συνολικό SCADA (MWh)",
+        ttlOverview: "Ημερήσια παραγωγή: ISP και SCADA",
+        subOverview: "Μονάδες ταξινομημένες κατά κλάση απόδοσης",
+        lgdClasses: "Κλάσεις μονάδων",
+        lgdOlder: "Παλαιότερες και μονάδες αιχμής",
+        lgdDataType: "Τύπος δεδομένων",
+        lgdIspSolid: "ISP (συμπαγής)",
+        lgdScadaStriped: "SCADA (διαγραμμισμένη)",
+        lblHgsida: "Τιμή HGSIDA",
+        lblCo2: "Τιμή CO2 (EUA)",
+        lblFleetEff: "Απόδοση στόλου",
+        lblAvgSrmc: "Μέσο SRMC στόλου",
+        lblGasGen: "Παραγωγή αερίου",
+        lblTotalCost: "Εκτιμώμενο συνολικό κόστος",
+        ttlEcoTable: "Ημερήσιο θεωρητικό κόστος ανά μονάδα",
+        subEcoTable: "SRMC = (HGSIDA / δυναμική απόδοση) + (δυναμικός συντελεστής CO2 × τιμή EUA), με ωριαία παρεμβολή του φορτίου. Κόστος = SRMC × MWh.",
+        thUnit: "Μονάδα",
+        thOutput: "Παραγωγή (MWh)",
+        thEff: "Απόδοση",
+        thCo2: "CO2 (t)",
+        thSrmc: "SRMC",
+        thCost: "Κόστος (€)",
+        accClass: "Κλάση",
+        accEff: "Απόδοση",
+        accCo2: "Εκπομπές CO2",
+        accSrmc: "Μέσο SRMC",
+        lblHighSrmc: "Υψηλότερο SRMC στόλου",
+        lblLowSrmc: "Χαμηλότερο SRMC στόλου",
+        lblLowEff: "Χαμηλότερη απόδοση",
+        lblHighEff: "Υψηλότερη απόδοση",
+        dayWord: "Ημέρα",
+        ttlMonthly: "Μηνιαία πορεία αγοράς και στόλου",
+        subMonthly: "Τιμή αερίου, SRMC και απόδοση στόλου, ένα σημείο ανά ημέρα",
+        legHgsida: "Τιμή αερίου HGSIDA",
+        legSrmc: "Μέσο SRMC στόλου",
+        legEff: "Απόδοση στόλου",
+        axisDay: "Ημέρα του μήνα",
+        axisCost: "Κόστος (€/MWh)",
+        axisEff: "Απόδοση (%)",
+        lblMonthSurplus: "Μηνιαίο υπολειπόμενο πλεόνασμα (ISP)",
+        lblMonthConstraints: "Μηνιαία παραγωγή λόγω περιορισμών (SCADA)",
+        ttlSurplus: "Υπολειπόμενο πλεόνασμα και παραγωγή λόγω περιορισμών",
+        subSurplus: "Ημερήσιες τιμές από το ISP και το ωριαίο SCADA",
+        legSurplus: "Υπολειπόμενο πλεόνασμα (ISP)",
+        legConstraints: "Παραγωγή λόγω περιορισμών (SCADA)",
         locale: "el-GR",
         today: "σήμερα",
         monthLabel: "Μήνας:",
@@ -175,27 +267,27 @@ const i18n = {
         pillPending: "Εκκρεμεί SCADA",
         pillPendingShort: "Εκκρεμεί",
         btnClose: "Κλείσιμο",
-        modalTitle: "Μεθοδολογία & Βασικές Παραδοχές",
+        modalTitle: "Μεθοδολογία, παραδοχές και περιορισμοί",
         btnShort: "Σύντομη",
         btnDetailed: "Αναλυτική",
         modalBodyShort: `
             <p class="mb-3">Ένα ανεξάρτητο εργαλείο παρακολούθησης μονάδων φυσικού αερίου στην Ελληνική Αγορά Ενέργειας, χτισμένο πάνω σε ανοιχτά δεδομένα. Τα νούμερα είναι εκτιμήσεις και ενδείξεις, όχι επίσημη στατιστική.</p>
 
-            <p data-sec="all" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Όλα τα Tabs</p>
+            <h3 data-sec="all" class="mt-4 mb-2 text-xs font-bold text-acc-400">Όλα τα tabs</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Εύρος:</strong> μονάδες φυσικού αερίου (CCGT) στο Σύστημα Μεταφοράς (ΑΔΜΗΕ) που εμφανίζονται στα αρχεία του. Λιγνιτικές μονάδες (π.χ. Πτολεμαΐδα5) και μεγάλα υδροηλεκτρικά (π.χ. Άγρας) εξαιρούνται, ακόμα κι όταν εμφανίζονται στα ίδια αρχεία-πηγές.</li>
                 <li><strong class="text-slate-200">Πηγές:</strong> ΑΔΜΗΕ (ISP = ο προγραμματισμός του ΑΔΜΗΕ για το 24ωρο: το ISP1 είναι ο πρώτος, γύρω στις 18:00 της προηγούμενης ημέρας, και το ISP2 ο δεύτερος, γύρω στα μεσάνυχτα της ίδιας ημέρας, που είναι αυτός που χρησιμοποιείται εδώ· SCADA = πραγματική λειτουργία, δημοσιεύεται το επόμενο πρωί), HEnEx (δείκτες τιμής αερίου) και OilPriceAPI (τιμή CO2 της ΕΕ, €/t). Ενημέρωση δύο φορές την ημέρα (07:06 και 13:00, ώρα Ελλάδος)· οι τελευταίες 10 μέρες επανελέγχονται για καθυστερημένες δημοσιεύσεις.</li>
                 <li><strong class="text-slate-200">Ελλιπή δεδομένα:</strong> μέρα χωρίς SCADA ακόμα σημειώνεται "Pending SCADA" και δείχνεται μόνο με ISP. Μέρα χωρίς HGSIDA ακόμα αναβάλλει τα economics για το επόμενο run, αντί να δείχνει ελλιπή εγγραφή.</li>
             </ul>
 
-            <p data-sec="overview" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Ημερήσια Επισκόπηση</p>
+            <h3 data-sec="overview" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ημερήσια επισκόπηση</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">ISP vs SCADA:</strong> το ISP δείχνει τι προγραμματίστηκε, το SCADA τι πραγματικά συνέβη. Διαφορές ανάμεσά τους είναι αναμενόμενες.</li>
                 <li><strong class="text-slate-200">Σύνολα και γράφημα:</strong> τα δύο σύνολα αθροίζουν τις μονάδες αερίου της επιλεγμένης ημέρας (με το Αλουμίνιο). Συμπαγής μπάρα = ISP, διαγραμμισμένη = SCADA. Μέρα χωρίς SCADA δείχνει μόνο ISP.</li>
-                <li><strong class="text-slate-200">Κλάσεις:</strong> οι μονάδες ομαδοποιούνται με βάση μια υποθετική απόδοση σε H-Class (Super-Efficient, 2 μονάδες), F-Class (Standard, 8) και Older Generation &amp; Peakers (3). Η ομαδοποίηση είναι του αναλυτή, συγκεντρωμένη από δημόσιες πηγές του διαδικτύου, και δίνεται με επιφύλαξη.</li>
+                <li><strong class="text-slate-200">Κλάσεις:</strong> οι μονάδες ομαδοποιούνται με βάση μια υποθετική απόδοση σε H-Class (Super-Efficient, 2 μονάδες), F-Class (Standard, 8) και Παλαιότερες και μονάδες αιχμής (3). Η ομαδοποίηση είναι του αναλυτή, συγκεντρωμένη από δημόσιες πηγές του διαδικτύου, και δίνεται με επιφύλαξη.</li>
             </ul>
 
-            <p data-sec="economics" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Ημερήσια Οικονομικά</p>
+            <h3 data-sec="economics" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ημερήσια οικονομικά</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Μοντέλο κόστους:</strong> θεωρητικό κόστος, όχι πραγματικό έσοδο — ένας ενιαίος δείκτης αναφοράς αερίου (HGSIDA) και τυποποιημένο κόστος CO2 ανά κλάση μονάδας.</li>
                 <li><strong class="text-slate-200">Τιμή CO2:</strong> όταν δεν υπάρχει διαθέσιμη πραγματική τιμή, χρησιμοποιείται η τελευταία γνωστή πραγματική τιμή (Σαββατοκύριακα) ή σταθερή τιμή €85.00 (αν δεν υπάρχει καμία), με ένδειξη "εκτίμηση".</li>
@@ -203,14 +295,14 @@ const i18n = {
                 <li><strong class="text-slate-200">Απόδοση:</strong> δεν είναι ονομαστική τιμή αλλά η ενεργός απόδοση της ημέρας = MWh × HGSIDA ÷ κόστος καυσίμου· εξαρτάται από το πόσο φορτισμένες δούλεψαν οι μονάδες.</li>
             </ul>
 
-            <p data-sec="monthly" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Μηνιαία Ανάλυση</p>
+            <h3 data-sec="monthly" class="mt-4 mb-2 text-xs font-bold text-acc-400">Μηνιαία ανάλυση</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Τι δείχνει:</strong> ένα σημείο ανά ημέρα του επιλεγμένου μήνα, όχι μηνιαίους μέσους όρους. Εμφανίζονται μόνο ημέρες με ολοκληρωμένα οικονομικά (SCADA και HGSIDA)· ο τρέχων μήνας γεμίζει μέρα με τη μέρα.</li>
-                <li><strong class="text-slate-200">Οι τρεις γραμμές:</strong> τιμή HGSIDA και μέσο SRMC στόλου (€/MWh, αριστερός άξονας) και απόδοση στόλου (%, δεξιός άξονας), όπως ορίζονται στα Ημερήσια Οικονομικά.</li>
-                <li><strong class="text-slate-200">Οι τέσσερις κάρτες:</strong> οι ακραίες ημέρες του μήνα, με την ημερομηνία τους: υψηλότερο και χαμηλότερο μέσο SRMC στόλου (Peak / Best Grid Cost), χαμηλότερη και υψηλότερη απόδοση (Worst / Max Efficiency). Αλλάζουν όσο προστίθενται ημέρες.</li>
+                <li><strong class="text-slate-200">Οι τρεις γραμμές:</strong> τιμή HGSIDA και μέσο SRMC στόλου (€/MWh, αριστερός άξονας) και απόδοση στόλου (%, δεξιός άξονας), όπως ορίζονται στα Ημερήσια οικονομικά.</li>
+                <li><strong class="text-slate-200">Οι τέσσερις κάρτες:</strong> οι ακραίες ημέρες του μήνα, με την ημερομηνία τους: υψηλότερο και χαμηλότερο μέσο SRMC στόλου, χαμηλότερη και υψηλότερη απόδοση. Αλλάζουν όσο προστίθενται ημέρες.</li>
             </ul>
 
-            <p data-sec="surplus" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Περιορισμοί Συστήματος & Πλεόνασμα</p>
+            <h3 data-sec="surplus" class="mt-4 mb-2 text-xs font-bold text-acc-400">Περιορισμοί συστήματος &amp; πλεόνασμα</h3>
             <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400">
                 <li><strong class="text-slate-200">Constraint-driven παραγωγή:</strong> η παραγωγή SCADA μονάδας αερίου τις ώρες που το ISP2 του ΑΔΜΗΕ την έχει σε Generic Constraint. Προσεγγίζει το residual surplus του ISP· ατελές proxy — το πραγματικό surplus δεν επαληθεύεται ανεξάρτητα.</li>
                 <li><strong class="text-slate-200">Εξαιρούνται μόνο οι pending μέρες:</strong> μόνο μέρες χωρίς SCADA μένουν εκτός γραφήματος· μέρες με μηδενικά constraints ή σχεδόν μηδενικό surplus εξακολουθούν να απεικονίζονται κανονικά.</li>
@@ -221,7 +313,7 @@ const i18n = {
         modalBodyDetailed: `
             <p class="mb-3">Αυτό το Dashboard είναι ένα ανεξάρτητο εργαλείο παρακολούθησης και ανάλυσης μονάδων φυσικού αερίου στην Ελληνική Αγορά Ενέργειας, το οποίο χτίζεται και συντηρείται από έναν μόνο αναλυτή, πάνω σε ανοιχτά δεδομένα. Τα νούμερα είναι εκτιμήσεις και ενδείξεις, όχι επίσημη στατιστική.</p>
 
-            <p data-sec="all" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Όλα τα Tabs</p>
+            <h3 data-sec="all" class="mt-4 mb-2 text-xs font-bold text-acc-400">Όλα τα tabs</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Εύρος:</strong> αφορά αποκλειστικά μονάδες φυσικού αερίου (CCGT) συνδεδεμένες στο Σύστημα Μεταφοράς (ΑΔΜΗΕ) που εμφανίζονται στα δημοσιευμένα αρχεία του. Λιγνιτικές μονάδες (π.χ. Πτολεμαΐδα5) και μεγάλα υδροηλεκτρικά (π.χ. Άγρας) εξαιρούνται ακόμα κι όταν εμφανίζονται στα ίδια αρχεία-πηγές με τις μονάδες αερίου. Μονάδες συμπαραγωγής με κλειδωμένη παραγωγή 24/7 (π.χ. Αλουμίνιο) εξαιρούνται επίσης από την παρακολούθηση constraints, αφού η παραγωγή τους δεν ανταποκρίνεται στην αγορά.</li>
                 <li><strong class="text-slate-200">Πηγές Δεδομένων:</strong> Αντλούνται καθημερινά από τον ΑΔΜΗΕ (ISP & SCADA) και το HEnEx (Δείκτες NGAS)· η τιμή CO2 προέρχεται από το OilPriceAPI (τιμή CO2 της ΕΕ, €/t), με ένα αίτημα την ημέρα. Το ISP είναι ο προγραμματισμός του ΑΔΜΗΕ για το 24ωρο: το ISP1 είναι ο πρώτος (γύρω στις 18:00 της προηγούμενης ημέρας) και το ISP2 ο δεύτερος (γύρω στα μεσάνυχτα της ίδιας ημέρας)· η σελίδα χρησιμοποιεί το ISP2.</li>
@@ -230,14 +322,14 @@ const i18n = {
                 <li><strong class="text-slate-200">Ιστορικό και ώρα:</strong> τα δεδομένα ξεκινούν την 1η Ιουνίου 2026. Οι ώρες είναι ώρα Ελλάδος· τις ημέρες αλλαγής ώρας (23 ή 25 ώρες) διαβάζονται όλες οι ώρες της ημέρας.</li>
             </ul>
 
-            <p data-sec="overview" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Ημερήσια Επισκόπηση</p>
+            <h3 data-sec="overview" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ημερήσια επισκόπηση</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">ISP vs SCADA:</strong> το ISP δείχνει τι προγραμματίστηκε, το SCADA τι πραγματικά συνέβη. Διαφορές ανάμεσά τους είναι αναμενόμενες και συχνά σημαντικές — μεγάλα χάσματα μπορεί να υποδεικνύουν re-dispatch της τελευταίας στιγμής ή δραστηριότητα constraints.</li>
                 <li><strong class="text-slate-200">Σύνολα και γράφημα:</strong> τα δύο σύνολα αθροίζουν τις μονάδες αερίου της επιλεγμένης ημέρας (με το Αλουμίνιο). Κάθε μονάδα έχει δύο μπάρες: συμπαγής = ISP, διαγραμμισμένη = SCADA. Μέρα χωρίς SCADA δείχνει μόνο ISP.</li>
-                <li><strong class="text-slate-200">Κλάσεις:</strong> οι μονάδες ομαδοποιούνται με βάση μια υποθετική απόδοση σε H-Class (Super-Efficient, 2 μονάδες), F-Class (Standard, 8) και Older Generation &amp; Peakers (3), και το γράφημα τις ταξινομεί κατά κλάση. Η ομαδοποίηση είναι του αναλυτή, συγκεντρωμένη από επιμέρους δημόσιες πηγές του διαδικτύου, και δίνεται με επιφύλαξη· δεν είναι επίσημος χαρακτηρισμός.</li>
+                <li><strong class="text-slate-200">Κλάσεις:</strong> οι μονάδες ομαδοποιούνται με βάση μια υποθετική απόδοση σε H-Class (Super-Efficient, 2 μονάδες), F-Class (Standard, 8) και Παλαιότερες και μονάδες αιχμής (3), και το γράφημα τις ταξινομεί κατά κλάση. Η ομαδοποίηση είναι του αναλυτή, συγκεντρωμένη από επιμέρους δημόσιες πηγές του διαδικτύου, και δίνεται με επιφύλαξη· δεν είναι επίσημος χαρακτηρισμός.</li>
             </ul>
 
-            <p data-sec="economics" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Ημερήσια Οικονομικά</p>
+            <h3 data-sec="economics" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ημερήσια οικονομικά</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Κόστος Παραγωγής:</strong> Υπολογίζεται θεωρητικά βάσει του δείκτη HEnEx (HGSIDA), διαιρούμενου με τον Βαθμό Απόδοσης της εκάστοτε κλάσης, προσθέτοντας το κόστος ρύπων CO2. Η HGSIDA χρησιμοποιείται ενιαία για όλες τις μονάδες και ώρες ως παραδοχή απλοποίησης — το HEnEx δημοσιεύει πολλαπλούς διακριτούς δείκτες τιμής αερίου (HGSIDA, HGMBI, HGMSI, HGSIWD), και δεν υπάρχουν δημόσια στοιχεία που να δείχνουν ποιος δείκτης, αν κάποιος, ίσχυσε πραγματικά για την προμήθεια αερίου συγκεκριμένης μονάδας σε συγκεκριμένη ώρα.</li>
                 <li><strong class="text-slate-200">Δυναμικό Μοντέλο Κόστους Καυσίμου:</strong> Το κόστος καυσίμου δεν είναι ένα ενιαίο ημερήσιο νούμερο ανά μονάδα — υπολογίζεται ξεχωριστά για κάθε ώρα, βάσει της πραγματικής παραγωγής SCADA εκείνης της ώρας. Κάθε μονάδα έχει ένα παραδοχικό τεχνικό ελάχιστο και ονομαστικό μέγιστο (MW), και μια παραδοχική απόδοση και ένταση CO2 σε αυτά τα δύο άκρα. Για μια δεδομένη ώρα, το μοντέλο εντοπίζει την πραγματική παραγωγή γραμμικά ανάμεσα στο ελάχιστο και το μέγιστο, και με την ίδια αυτή θέση παρεμβάλλει γραμμικά τόσο την απόδοση όσο και τον συντελεστή εκπομπών CO2 της ώρας — μονάδα που λειτουργεί κοντά στο τεχνικό της ελάχιστο θεωρείται λιγότερο αποδοτική (και πιο ρυπογόνα ανά MWh) από την ίδια μονάδα σε πλήρες φορτίο. Το ωριαίο κόστος καυσίμου προκύπτει διαιρώντας την HGSIDA με την παρεμβαλλόμενη απόδοση της ώρας, επί τα MWh της ώρας· το κόστος CO2 ακολουθεί την ίδια ωριαία λογική. Η βασική παραδοχή απλοποίησης είναι η γραμμικότητα: οι πραγματικές καμπύλες heat-rate των CCGT δεν είναι συνήθως γραμμικές — το μοντέλο αντιμετωπίζει τη σχέση ως ευθεία γραμμή ανάμεσα στα δύο γνωστά άκρα, ελλείψει δημόσια διαθέσιμων, ανά-μονάδα καμπυλών heat-rate. Για μονάδα χωρίς δημοσιευμένα τεχνικά χαρακτηριστικά, χρησιμοποιείται γενικό προφίλ αντί για εξειδικευμένες τιμές.</li>
@@ -248,16 +340,16 @@ const i18n = {
                 <li><strong class="text-slate-200">Πίνακας:</strong> ανά μονάδα: παραγωγή (MWh από SCADA), ενεργός απόδοση, εκπομπές CO2 (t), SRMC (€/MWh) και κόστος (€, για όλη την ημέρα, όχι ανά MWh).</li>
             </ul>
 
-            <p data-sec="monthly" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Μηνιαία Ανάλυση</p>
+            <h3 data-sec="monthly" class="mt-4 mb-2 text-xs font-bold text-acc-400">Μηνιαία ανάλυση</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Τι δείχνει:</strong> ένα σημείο ανά ημέρα του επιλεγμένου μήνα, όχι μηνιαίους μέσους όρους. Εμφανίζονται μόνο ημέρες με ολοκληρωμένα οικονομικά (SCADA και HGSIDA)· ο τρέχων μήνας γεμίζει μέρα με τη μέρα.</li>
-                <li><strong class="text-slate-200">Οι τρεις γραμμές:</strong> τιμή HGSIDA και μέσο SRMC στόλου (€/MWh, αριστερός άξονας) και απόδοση στόλου (%, δεξιός άξονας), όπως ορίζονται στα Ημερήσια Οικονομικά.</li>
-                <li><strong class="text-slate-200">Οι τέσσερις κάρτες:</strong> οι ακραίες ημέρες του μήνα, με την ημερομηνία τους: υψηλότερο και χαμηλότερο μέσο SRMC στόλου (Peak / Best Grid Cost), χαμηλότερη και υψηλότερη απόδοση (Worst / Max Efficiency). Αλλάζουν όσο προστίθενται ημέρες στον τρέχοντα μήνα.</li>
-                <li><strong class="text-slate-200">Πώς διαβάζεται:</strong> το SRMC εξαρτάται από την τιμή του αερίου, από την απόδοση με την οποία δούλεψαν οι μονάδες και από την τιμή CO2. Το «Grid Cost» των καρτών είναι το SRMC του στόλου αερίου, όχι κόστος του συστήματος ή της αγοράς.</li>
+                <li><strong class="text-slate-200">Οι τρεις γραμμές:</strong> τιμή HGSIDA και μέσο SRMC στόλου (€/MWh, αριστερός άξονας) και απόδοση στόλου (%, δεξιός άξονας), όπως ορίζονται στα Ημερήσια οικονομικά.</li>
+                <li><strong class="text-slate-200">Οι τέσσερις κάρτες:</strong> οι ακραίες ημέρες του μήνα, με την ημερομηνία τους: υψηλότερο και χαμηλότερο μέσο SRMC στόλου, χαμηλότερη και υψηλότερη απόδοση. Αλλάζουν όσο προστίθενται ημέρες στον τρέχοντα μήνα.</li>
+                <li><strong class="text-slate-200">Πώς διαβάζεται:</strong> το SRMC εξαρτάται από την τιμή του αερίου, από την απόδοση με την οποία δούλεψαν οι μονάδες και από την τιμή CO2.</li>
                 <li><strong class="text-slate-200">Ημέρες χωρίς τιμή:</strong> ημέρα με μηδενικό SRMC ή απόδοση (χωρίς έγκυρο υπολογισμό) δεν μετρά στις χαμηλότερες τιμές των καρτών.</li>
             </ul>
 
-            <p data-sec="surplus" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Περιορισμοί Συστήματος & Πλεόνασμα</p>
+            <h3 data-sec="surplus" class="mt-4 mb-2 text-xs font-bold text-acc-400">Περιορισμοί συστήματος &amp; πλεόνασμα</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Λειτουργία Out-of-Merit:</strong> Λόγω υψηλής διείσδυσης ΑΠΕ, ο ΑΔΜΗΕ διατηρεί συχνά μονάδες συγχρονισμένες μέσω Generic Constraints για ευστάθεια συστήματος. Η σελίδα παίρνει τις μονάδες αερίου και τις ώρες αυτών των constraints από τον προγραμματισμό ISP2 (το φύλλο GenericConstraints) και μετρά την πραγματική παραγωγή SCADA της μονάδας μέσα σε αυτές τις ώρες ως constraint-driven παραγωγή — όχι ως market-driven arbitrage. Δεν συγκρίνονται τιμές: μια μονάδα μπορεί να λειτουργεί κάτω από το κόστος της και για άλλους λόγους (τεχνικό ελάχιστο, block orders, εξισορρόπηση), και αυτή η προβολή δεν μετρά εκείνες τις ώρες. Στην πράξη, αυτός είναι ο μόνος διαθέσιμος τρόπος προσέγγισης του residual surplus που απομένει από τον προγραμματισμό (ISP), αν και πρόκειται για ατελές proxy, καθώς ο προγραμματισμός δεν είναι μέτρηση και το πραγματικό μέγεθος αυτού του πλεονάσματος δεν μπορεί να επιβεβαιωθεί ανεξάρτητα από δημόσια δεδομένα.</li>
                 <li><strong class="text-slate-200">Ποιες μονάδες μετράνε:</strong> παρακολουθούνται μόνο μονάδες φυσικού αερίου· λιγνιτικές και μεγάλα υδροηλεκτρικά που εμφανίζονται στο ίδιο αρχείο ISP φιλτράρονται έξω, όπως και η μονάδα συμπαραγωγής με κλειδωμένη 24/7 παραγωγή.</li>
@@ -267,7 +359,7 @@ const i18n = {
                 <li><strong class="text-slate-200">Δύο διαφορετικά μεγέθη:</strong> το πλεόνασμα είναι μέγεθος του προγράμματος, ενώ η constraint-driven παραγωγή είναι πραγματική παραγωγή. Συγκρίνονται ως ενδείξεις, όχι ως ισοζύγιο.</li>
             </ul>
 
-            <p data-sec="limits" class="text-[11px] font-bold text-acc-400 uppercase tracking-wider mb-2 mt-4">Περιορισμοί</p>
+            <h3 data-sec="limits" class="mt-4 mb-2 text-xs font-bold text-acc-400">Περιορισμοί</h3>
             <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400">
                 <li><strong class="text-slate-200">Δεδομένα:</strong> Τα δεδομένα SCADA δημοσιεύονται από τον ΑΔΜΗΕ ως προκαταρκτικά/μη πιστοποιημένα και μπορεί να αναθεωρηθούν. Το ISP είναι πρόγραμμα, όχι μέτρηση πραγματικής παράδοσης.</li>
                 <li><strong class="text-slate-200">Μοντέλο κόστους:</strong> βασίζεται σε έναν ενιαίο, απλοποιημένο δείκτη τιμής αερίου (HGSIDA) αντί για δεδομένα προμήθειας ανά μονάδα, και δεν αντανακλά το πραγματικό πραγματοποιηθέν έσοδο ή τον διακανονισμό αγοράς κάθε μονάδας.</li>
@@ -405,6 +497,8 @@ function setLang(lang) {
     if(document.getElementById('btnMethodologyText')) document.getElementById('btnMethodologyText').innerText = t.btnMethodology;
     const bms = document.getElementById('btnMethodologyTextShort'); if (bms) bms.innerText = t.btnMethodologyShort;
     document.querySelectorAll('.meth-link').forEach(el => { el.textContent = t.methodLink; });
+    // Όλα τα κείμενα των tabs (ετικέτες, τίτλοι, υπότιτλοι, υπομνήματα, κεφαλίδες πίνακα) από το i18n (D25)
+    document.querySelectorAll('[data-i18n]').forEach(el => { const v = t[el.dataset.i18n]; if (v !== undefined) el.textContent = v; });
     renderMethodologyModal();
     if(document.getElementById('btnClose')) document.getElementById('btnClose').innerText = t.btnClose;
 

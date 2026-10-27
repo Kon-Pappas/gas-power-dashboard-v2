@@ -584,19 +584,19 @@ function updateEconomicsTab() {
             <td colspan="3" class="p-4 px-5">
                 <ul class="space-y-3 text-sm">
                     <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
-                        <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Class</span>
+                        <span class="text-slate-400 text-[10px] font-semibold">${i18n[currentLang].accClass}</span>
                         <span class="${classColor} font-semibold text-xs">${meta.class}</span>
                     </li>
                     <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
-                        <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Efficiency</span>
+                        <span class="text-slate-400 text-[10px] font-semibold">${i18n[currentLang].accEff}</span>
                         <span class="font-mono font-bold" style="color:${DATA_COLORS.efficiency}">${Eff}</span>
                     </li>
                     <li class="flex justify-between items-center border-b border-slate-700/30 pb-2">
-                        <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">CO2 Emissions</span>
+                        <span class="text-slate-400 text-[10px] font-semibold">${i18n[currentLang].accCo2}</span>
                         <span class="text-slate-300 font-mono">${CO2}</span>
                     </li>
                     <li class="flex justify-between items-center pb-1">
-                        <span class="text-slate-400 uppercase tracking-wider text-[10px] font-bold">Avg SRMC</span>
+                        <span class="text-slate-400 text-[10px] font-semibold">${i18n[currentLang].accSrmc}</span>
                         <span class="text-amber-400 font-mono font-bold">${SRMC} €/MWh</span>
                     </li>
                 </ul>
@@ -684,16 +684,16 @@ function updateMonthlyTab() {
     });
 
     document.getElementById('kpiPeakCost').innerText = maxCost !== -Infinity ? maxCost.toFixed(2) : '-';
-    document.getElementById('kpiPeakCostDay').innerText = maxCostDay ? `Day ${maxCostDay}` : '';
+    document.getElementById('kpiPeakCostDay').innerText = maxCostDay ? `${i18n[currentLang].dayWord} ${maxCostDay}` : '';
     
     document.getElementById('kpiBestCost').innerText = minCost !== Infinity ? minCost.toFixed(2) : '-';
-    document.getElementById('kpiBestCostDay').innerText = minCostDay ? `Day ${minCostDay}` : '';
+    document.getElementById('kpiBestCostDay').innerText = minCostDay ? `${i18n[currentLang].dayWord} ${minCostDay}` : '';
     
     document.getElementById('kpiWorstEff').innerText = minEff !== Infinity ? minEff.toFixed(1) : '-';
-    document.getElementById('kpiWorstEffDay').innerText = minEffDay ? `Day ${minEffDay}` : '';
+    document.getElementById('kpiWorstEffDay').innerText = minEffDay ? `${i18n[currentLang].dayWord} ${minEffDay}` : '';
     
     document.getElementById('kpiMaxEff').innerText = maxEff !== -Infinity ? maxEff.toFixed(1) : '-';
-    document.getElementById('kpiMaxEffDay').innerText = maxEffDay ? `Day ${maxEffDay}` : '';
+    document.getElementById('kpiMaxEffDay').innerText = maxEffDay ? `${i18n[currentLang].dayWord} ${maxEffDay}` : '';
 
     renderMonthlyChart(labels, hgsidaData, srmcData, effData);
 }
@@ -714,7 +714,7 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
             labels: labels, 
             datasets: [
                 { 
-                    label: 'HGSIDA Gas Price', 
+                    label: i18n[currentLang].legHgsida, 
                     data: hgsidaData, 
                     borderColor: DATA_COLORS.hgsida, 
                     backgroundColor: 'transparent',
@@ -725,7 +725,7 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
                     yAxisID: 'y'
                 },
                 { 
-                    label: 'Avg Fleet SRMC', 
+                    label: i18n[currentLang].legSrmc, 
                     data: srmcData, 
                     borderColor: DATA_COLORS.srmc, 
                     backgroundColor: 'rgba(251, 191, 36, 0.1)',
@@ -737,7 +737,7 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
                     yAxisID: 'y'
                 },
                 {
-                    label: 'Fleet Efficiency',
+                    label: i18n[currentLang].legEff,
                     data: effData,
                     borderColor: DATA_COLORS.efficiency, 
                     backgroundColor: 'transparent',
@@ -773,13 +773,13 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
                 }
             }, 
             scales: { 
-                x: { grid: { color: '#1e293b' }, title: { display: true, text: 'Day of Month', color: '#64748b' } }, 
+                x: { grid: { color: '#1e293b' }, title: { display: true, text: i18n[currentLang].axisDay, color: '#64748b' } }, 
                 y: { 
                     type: 'linear', 
                     display: true, 
                     position: 'left', 
                     grid: { color: '#334155' }, 
-                    title: { display: true, text: 'Cost (€ / MWh)' },
+                    title: { display: true, text: i18n[currentLang].axisCost },
                     min: 0
                 },
                 y2: { 
@@ -789,7 +789,7 @@ function renderMonthlyChart(labels, hgsidaData, srmcData, effData) {
                     min: 40, 
                     max: 60, 
                     grid: { drawOnChartArea: false }, 
-                    title: { display: true, text: 'Efficiency (%)' } 
+                    title: { display: true, text: i18n[currentLang].axisEff } 
                 }
             },
             interaction: { mode: 'nearest', axis: 'x', intersect: false }
@@ -952,13 +952,13 @@ function renderSurplusChart(labels, surplusData, constraintsData) {
             labels: labels, 
             datasets: [
                 { 
-                    label: 'Residual Energy Surplus', 
+                    label: i18n[currentLang].legSurplus, 
                     data: surplusData, 
                     backgroundColor: DATA_COLORS.surplus, 
                     borderRadius: 4
                 }, 
                 { 
-                    label: 'Generic Constraints (Out of Merit)', 
+                    label: i18n[currentLang].legConstraints, 
                     data: constraintsData, 
                     backgroundColor: DATA_COLORS.constraints, 
                     borderRadius: 4
@@ -984,7 +984,7 @@ function renderSurplusChart(labels, surplusData, constraintsData) {
                 }
             },
             scales: {
-                x: { grid: { display: false }, title: { display: true, text: 'Day of Month', color: '#64748b' } },
+                x: { grid: { display: false }, title: { display: true, text: i18n[currentLang].axisDay, color: '#64748b' } },
                 y: { 
                     grid: { color: '#334155' }, 
                     title: { display: true, text: 'MWh' },

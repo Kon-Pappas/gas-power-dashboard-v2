@@ -119,10 +119,10 @@
 
         <!-- TABS NAVIGATION: τέσσερα = 2 + 2 στο κινητό (H06)· τα κουμπιά τα βάφει η paintTabs() -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-0 md:border-b md:border-slate-800 mt-0 md:mt-2">
-            <button id="tabBtnOverview" onclick="switchTab('overview')" role="tab" class="tab-btn">Daily Overview</button>
-            <button id="tabBtnEconomics" onclick="switchTab('economics')" role="tab" class="tab-btn">Daily Economics</button>
-            <button id="tabBtnIspScada" onclick="switchTab('ispScada')" role="tab" class="tab-btn">Monthly Analytics</button>
-            <button id="tabBtnSurplus" onclick="switchTab('surplus')" role="tab" class="tab-btn">Generic Constraints &amp; Surplus</button>
+            <button id="tabBtnOverview" onclick="switchTab('overview')" role="tab" class="tab-btn">Daily overview</button>
+            <button id="tabBtnEconomics" onclick="switchTab('economics')" role="tab" class="tab-btn">Daily economics</button>
+            <button id="tabBtnIspScada" onclick="switchTab('ispScada')" role="tab" class="tab-btn">Monthly analytics</button>
+            <button id="tabBtnSurplus" onclick="switchTab('surplus')" role="tab" class="tab-btn">Generic constraints &amp; surplus</button>
         </div>
 
         <!-- VIEW 1: DAILY OVERVIEW -->
@@ -130,7 +130,7 @@
             <div hidden class="md:!flex justify-end md:mb-3"><button type="button" onclick="openMethodologyModal('overview', 'detailed')" class="meth-link text-xs text-slate-400 hover:text-acc-300 transition-colors">Methodology →</button></div>
             <div class="flex items-center gap-6 px-2 sm:px-6 sm:py-4 mb-2 sm:mb-0 sm:bg-slate-800/40 sm:rounded-xl sm:border sm:border-slate-700">
                 <div>
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Total ISP (MWh)</span>
+                    <span data-i18n="lblTotalIsp" class="text-[10px] sm:text-[11px] text-slate-500 font-semibold block mb-0.5 sm:mb-1">Total ISP (MWh)</span>
                     <div class="flex items-center gap-2.5">
                         <div class="w-1.5 h-8 bg-slate-300 rounded-[2px] shadow-sm"></div>
                         <div class="bg-slate-900/60 border border-slate-700/80 px-3 py-1 rounded-lg shadow-inner">
@@ -140,7 +140,7 @@
                 </div>
                 <div class="w-px h-10 sm:h-12 bg-slate-700/50 sm:bg-slate-700"></div>
                 <div>
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5 sm:mb-1">Total SCADA (MWh)</span>
+                    <span data-i18n="lblTotalScada" class="text-[10px] sm:text-[11px] text-slate-500 font-semibold block mb-0.5 sm:mb-1">Total SCADA (MWh)</span>
                     <div class="flex items-center gap-2.5">
                         <div class="w-1.5 h-8 rounded-[2px] shadow-sm relative overflow-hidden bg-slate-500">
                             <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.7) 2px, rgba(255,255,255,0.7) 4px);"></div>
@@ -155,29 +155,29 @@
             <div class="bg-slate-800/40 p-4 sm:p-6 rounded-xl border border-slate-700">
                 <div class="flex flex-col lg:flex-row justify-between items-start mb-4 sm:mb-6 gap-4">
                     <div>
-                        <h2 class="text-lg font-semibold text-slate-200" id="overviewChartTitle">Daily Generation: ISP vs SCADA</h2>
-                        <p class="text-xs text-slate-400">Units dynamically sorted by Efficiency Class</p>
+                        <h2 class="text-lg font-semibold text-slate-200" id="overviewChartTitle" data-i18n="ttlOverview">Daily generation: ISP vs SCADA</h2>
+                        <p class="text-xs text-slate-400" data-i18n="subOverview">Units sorted by efficiency class</p>
                     </div>
                     
                     <div class="w-full lg:w-auto flex flex-col sm:flex-row gap-3 sm:gap-6 text-[10px] sm:text-xs font-medium bg-slate-900/50 p-2.5 sm:p-3 rounded-lg border border-slate-700">
                         <div class="flex flex-wrap sm:flex-col gap-x-3 gap-y-1.5 sm:gap-2 items-center sm:items-start">
-                            <span class="w-full sm:w-auto text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5 sm:mb-0">Thermal Classes</span>
+                            <span data-i18n="lgdClasses" class="w-full sm:w-auto text-[9px] sm:text-[10px] text-slate-500 font-semibold mb-0.5 sm:mb-0">Thermal classes</span>
                             <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" data-class-swatch="1"></div> H-Class</span>
                             <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" data-class-swatch="2"></div> F-Class</span>
-                            <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" data-class-swatch="3"></div> Peakers</span>
+                            <span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm" data-class-swatch="3"></div> <span data-i18n="lgdOlder">Older generation &amp; peakers</span></span>
                         </div>
                         
                         <div class="w-px bg-slate-700 hidden sm:block"></div>
                         <div class="h-px w-full bg-slate-700/50 sm:hidden"></div>
                         
                         <div class="flex flex-wrap sm:flex-col gap-x-4 gap-y-1.5 sm:gap-2 items-center sm:items-start">
-                            <span class="w-full sm:w-auto text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5 sm:mb-0">Data Type</span>
-                            <span class="flex items-center gap-1.5"><div class="w-3.5 h-2.5 sm:w-4 sm:h-3 bg-slate-300 rounded-sm"></div> ISP (Solid)</span>
+                            <span data-i18n="lgdDataType" class="w-full sm:w-auto text-[9px] sm:text-[10px] text-slate-500 font-semibold mb-0.5 sm:mb-0">Data type</span>
+                            <span class="flex items-center gap-1.5"><div class="w-3.5 h-2.5 sm:w-4 sm:h-3 bg-slate-300 rounded-sm"></div> <span data-i18n="lgdIspSolid">ISP (solid)</span></span>
                             <span class="flex items-center gap-1.5">
                                 <div class="w-3.5 h-2.5 sm:w-4 sm:h-3 rounded-sm relative overflow-hidden bg-slate-500">
                                     <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.7) 2px, rgba(255,255,255,0.7) 4px);"></div>
                                 </div> 
-                                SCADA (Striped)
+                                <span data-i18n="lgdScadaStriped">SCADA (striped)</span>
                             </span>
                         </div>
                     </div>
@@ -193,44 +193,44 @@
         <div id="viewEconomics" class="space-y-4 sm:space-y-6 hidden">
             <div hidden class="md:!flex justify-end md:mb-3"><button type="button" onclick="openMethodologyModal('economics', 'detailed')" class="meth-link text-xs text-slate-400 hover:text-acc-300 transition-colors">Methodology →</button></div>
             <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-4 lg:gap-4 mt-2 mb-2 px-2 sm:px-0">
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">HGSIDA Price</span>
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
+                    <span data-i18n="lblHgsida" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">HGSIDA price</span>
                     <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5">
                         <span id="kpiHgsida" class="text-xl sm:text-2xl font-bold text-slate-200">0.00</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
                     </div>
                 </div>
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">EUA CO2 Price</span>
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
+                    <span data-i18n="lblCo2" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">EUA CO2 price</span>
                     <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5">
                         <span id="kpiCo2" class="text-xl sm:text-2xl font-bold text-slate-300">0.00</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">€/t</span>
-                        <span id="kpiCo2Badge" style="display:none" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded ml-1" title="No real CO2 price is available for this day. An estimated value is used.">estimated</span>
+                        <span id="kpiCo2Badge" style="display:none" class="text-[9px] sm:text-[10px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded ml-1" title="No real CO2 price is available for this day. An estimated value is used.">estimated</span>
                     </div>
                 </div>
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">Fleet Efficiency</span>
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
+                    <span data-i18n="lblFleetEff" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Fleet efficiency</span>
                     <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5">
                         <span id="kpiFleetEff" class="text-xl sm:text-2xl font-bold text-slate-200">0.0</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">%</span>
                     </div>
                 </div>
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">Avg Fleet SRMC</span>
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
+                    <span data-i18n="lblAvgSrmc" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Average fleet SRMC</span>
                     <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5">
                         <span id="kpiAvgGasCost" class="text-xl sm:text-2xl font-bold text-amber-400">0.00</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
                     </div>
                 </div>
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">Gas Generation</span>
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
+                    <span data-i18n="lblGasGen" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Gas generation</span>
                     <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5">
                         <span id="kpiEcoScada" class="text-xl sm:text-2xl font-bold text-orange-400">0.0</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">MWh</span>
                     </div>
                 </div>
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">Total Est. Cost</span>
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
+                    <span data-i18n="lblTotalCost" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Total estimated cost</span>
                     <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5">
                         <span id="kpiTotalEcoCost" class="text-xl sm:text-2xl font-bold text-rose-400">0</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">€</span>
@@ -239,20 +239,20 @@
             </div>
 
             <div class="bg-slate-800/40 p-4 sm:p-6 rounded-xl border border-slate-700">
-                <h3 class="text-lg font-semibold text-slate-200 mb-1" id="ecoTableTitle">Daily Theoretical Cost per Unit</h3>
-                <p class="text-xs text-slate-400 mb-4 sm:mb-6">Calculated via hourly dynamic load interpolation. Cost = (HGSIDA / Dynamic Efficiency) + (Dynamic CO2 Factor * EUA Price).</p>
+                <h3 class="text-lg font-semibold text-slate-200 mb-1" id="ecoTableTitle" data-i18n="ttlEcoTable">Daily theoretical cost per unit</h3>
+                <p class="text-xs text-slate-400 mb-4 sm:mb-6" data-i18n="subEcoTable">SRMC = (HGSIDA / dynamic efficiency) + (dynamic CO2 factor × EUA price), with hourly load interpolation. Cost = SRMC × MWh.</p>
                 
                 <div class="w-full rounded-xl border border-slate-700/50 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
-                            <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-700">
+                            <thead class="bg-slate-900 text-slate-400 text-[10px] font-semibold border-b border-slate-700">
                                 <tr>
-                                    <th class="p-3 sticky left-0 z-20 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] sm:shadow-none">FACTORY</th>
-                                    <th class="p-3 text-right">PRODUCED</th>
-                                    <th class="p-3 text-right hidden sm:table-cell">EFFICIENCY</th>
-                                    <th class="p-3 text-right hidden sm:table-cell">CO2 (t)</th>
-                                    <th class="p-3 text-right hidden sm:table-cell">SRMC</th>
-                                    <th class="p-3 text-right">COST (€)</th>
+                                    <th class="p-3 sticky left-0 z-20 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] sm:shadow-none" data-i18n="thUnit">Unit</th>
+                                    <th class="p-3 text-right" data-i18n="thOutput">Output (MWh)</th>
+                                    <th class="p-3 text-right hidden sm:table-cell" data-i18n="thEff">Efficiency</th>
+                                    <th class="p-3 text-right hidden sm:table-cell" data-i18n="thCo2">CO2 (t)</th>
+                                    <th class="p-3 text-right hidden sm:table-cell" data-i18n="thSrmc">SRMC</th>
+                                    <th class="p-3 text-right" data-i18n="thCost">Cost (€)</th>
                                 </tr>
                             </thead>
                             <tbody id="economicsTableBody" class="divide-y divide-slate-800/50"></tbody>
@@ -266,52 +266,52 @@
         <div id="viewIspScada" class="space-y-4 sm:space-y-6 hidden">
             <div hidden class="md:!flex justify-end md:mb-3"><button type="button" onclick="openMethodologyModal('ispScada', 'detailed')" class="meth-link text-xs text-slate-400 hover:text-acc-300 transition-colors">Methodology →</button></div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-4 mt-2 mb-2 px-2 sm:px-0">
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
                     <div class="hidden sm:block absolute right-0 top-0 w-1 h-full bg-rose-500"></div>
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">🔴 Peak Grid Cost</span>
-                    <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
+                    <span data-i18n="lblHighSrmc" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Highest fleet SRMC</span>
+                    <div><div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
                         <span id="kpiPeakCost" class="text-xl sm:text-2xl font-bold text-rose-400">0.00</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
                     </div>
-                    <span id="kpiPeakCostDay" class="text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span>
+                    <span id="kpiPeakCostDay" class="block text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span></div>
                 </div>
                 
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
                     <div class="hidden sm:block absolute right-0 top-0 w-1 h-full bg-emerald-500"></div>
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">🟢 Best Grid Cost</span>
-                    <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
+                    <span data-i18n="lblLowSrmc" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Lowest fleet SRMC</span>
+                    <div><div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
                         <span id="kpiBestCost" class="text-xl sm:text-2xl font-bold text-emerald-400">0.00</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
                     </div>
-                    <span id="kpiBestCostDay" class="text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span>
+                    <span id="kpiBestCostDay" class="block text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span></div>
                 </div>
 
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
                     <div class="hidden sm:block absolute right-0 top-0 w-1 h-full bg-orange-500"></div>
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">📉 Worst Efficiency</span>
-                    <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
+                    <span data-i18n="lblLowEff" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Lowest efficiency</span>
+                    <div><div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
                         <span id="kpiWorstEff" class="text-xl sm:text-2xl font-bold text-orange-400">0.0</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">%</span>
                     </div>
-                    <span id="kpiWorstEffDay" class="text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span>
+                    <span id="kpiWorstEffDay" class="block text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span></div>
                 </div>
 
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
                     <div class="hidden sm:block absolute right-0 top-0 w-1 h-full bg-emerald-500"></div>
-                    <span class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 truncate">📈 Max Efficiency</span>
-                    <div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
+                    <span data-i18n="lblHighEff" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Highest efficiency</span>
+                    <div><div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
                         <span id="kpiMaxEff" class="text-xl sm:text-2xl font-bold text-emerald-400">0.0</span>
                         <span class="text-xs sm:text-sm text-slate-500 font-medium">%</span>
                     </div>
-                    <span id="kpiMaxEffDay" class="text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span>
+                    <span id="kpiMaxEffDay" class="block text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span></div>
                 </div>
             </div>
 
             <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-lg font-semibold text-slate-200">Monthly Market & Fleet Performance</h2>
-                        <p class="text-xs text-slate-400">Cost drivers and resulting average fleet metrics</p>
+                        <h2 class="text-lg font-semibold text-slate-200" data-i18n="ttlMonthly">Monthly market and fleet performance</h2>
+                        <p class="text-xs text-slate-400" data-i18n="subMonthly">Gas price, fleet SRMC and fleet efficiency, one point per day</p>
                     </div>
                 </div>
                 <div class="relative h-[450px]">
@@ -324,15 +324,15 @@
         <div id="viewSurplus" class="space-y-4 sm:space-y-6 hidden">
             <div hidden class="md:!flex justify-end md:mb-3"><button type="button" onclick="openMethodologyModal('surplus', 'detailed')" class="meth-link text-xs text-slate-400 hover:text-acc-300 transition-colors">Methodology →</button></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-2 mb-2 px-2 sm:px-0">
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-5 sm:rounded-xl sm:border sm:border-slate-700">
-                    <span class="text-[10px] sm:text-sm text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 sm:mb-1">Total Monthly Surplus (Isp)</span>
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-5 sm:rounded-xl sm:border sm:border-slate-700">
+                    <span data-i18n="lblMonthSurplus" class="text-[10px] sm:text-sm text-slate-500 sm:text-slate-400 font-semibold mb-0.5 sm:mb-1">Monthly residual surplus (ISP)</span>
                     <div class="flex items-baseline gap-2 mt-1">
                         <span id="kpiMonthSurplus" class="text-3xl sm:text-3xl font-bold text-slate-200">0</span>
                         <span class="text-sm text-slate-500 font-medium">MWh</span>
                     </div>
                 </div>
-                <div class="flex flex-col justify-center sm:bg-slate-800/60 sm:p-5 sm:rounded-xl sm:border sm:border-slate-700">
-                    <span class="text-[10px] sm:text-sm text-slate-500 sm:text-slate-400 font-bold uppercase tracking-wider mb-0.5 sm:mb-1">Total Generic Constraints (Scada)</span>
+                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-5 sm:rounded-xl sm:border sm:border-slate-700">
+                    <span data-i18n="lblMonthConstraints" class="text-[10px] sm:text-sm text-slate-500 sm:text-slate-400 font-semibold mb-0.5 sm:mb-1">Monthly constraint-driven generation (SCADA)</span>
                     <div class="flex items-baseline gap-2 mt-1">
                         <span id="kpiMonthConstraints" class="text-3xl sm:text-3xl font-bold text-rose-400">0</span>
                         <span class="text-sm text-slate-500 font-medium">MWh</span>
@@ -343,8 +343,8 @@
             <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-lg font-semibold text-slate-200">Residual Surplus vs Generic Constraints</h2>
-                        <p class="text-xs text-slate-400">Daily dynamic calculation from ISP & Hourly SCADA actuals</p>
+                        <h2 class="text-lg font-semibold text-slate-200" data-i18n="ttlSurplus">Residual surplus vs constraint-driven generation</h2>
+                        <p class="text-xs text-slate-400" data-i18n="subSurplus">Daily values from the ISP and the hourly SCADA</p>
                     </div>
                 </div>
                 <div class="relative h-[450px]">

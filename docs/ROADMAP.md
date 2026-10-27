@@ -22,7 +22,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 4: texts
 
-- No all-caps labels, capital rule for Greek and English, accents (C01, C02, K07); the Greek page fully Greek, with the five English legends (K08); emoji: keep or replace by coloured dots (decision pending); rename the cards *Peak / Best Grid Cost* (K24)
+- **Batch 10 (27 Oct 2026) — done:** the Greek page in Greek, capital only on the first word, no all-caps labels, no emoji, the cards renamed, the window title of the hub (D25). **Phase 4 is complete**; the tooltips of the charts belong to Phase 5 (K26)
 
 ## Phase 5: charts
 
@@ -50,9 +50,9 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Open decisions (owner)
 
-1. Emoji in labels: keep, or coloured dots (K07)
-2. Where the constraints are calculated: browser or Python (K10)
-3. Cost table on phones: cards or accordion (K09)
-4. A full list of pinned dependencies (K19)
+1. Where the constraints are calculated: browser or Python (K10)
+2. Cost table on phones: cards or accordion (K09)
+3. A full list of pinned dependencies (K19)
 
+Decided on 27 Oct 2026: no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25).
 Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22); the texts of the Methodology and the links in the tabs (D24).
