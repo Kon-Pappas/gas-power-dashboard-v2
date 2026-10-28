@@ -10429,6 +10429,76 @@
       "Ημερομηνία": "2026-10-27",
       "Μονάδα Φ.Α.": "TOTAL GAS UNITS",
       "Παραγωγή (MWh)": 57296.446
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "ALIVERI5",
+      "Παραγωγή (MWh)": 8383.026
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "LAVRIO4",
+      "Παραγωγή (MWh)": 5663.227
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "LAVRIO5",
+      "Παραγωγή (MWh)": 0.0
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "KOMOTINI",
+      "Παραγωγή (MWh)": 3885.453
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "MEGALOPOLI_V",
+      "Παραγωγή (MWh)": 0.0
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "HERON_CC",
+      "Παραγωγή (MWh)": 7636.871
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "THESSALONIKI_CC",
+      "Παραγωγή (MWh)": 0.0
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "THISVI_CC",
+      "Παραγωγή (MWh)": 5999.959
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "ALOUMINIO",
+      "Παραγωγή (MWh)": 3069.6
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "PROTERGIA_CC",
+      "Παραγωγή (MWh)": 0.0
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "KORINTHOS_POWER",
+      "Παραγωγή (MWh)": 7128.499
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "AG_NIKOLAOS2",
+      "Παραγωγή (MWh)": 13811.064
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "KOMOTINI_POWER",
+      "Παραγωγή (MWh)": 17020.0
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "Μονάδα Φ.Α.": "TOTAL GAS UNITS",
+      "Παραγωγή (MWh)": 72597.699
     }
   ],
   "scada_generation": [
@@ -78305,6 +78375,10 @@
     {
       "Date": "2026-10-27",
       "Total Daily Surplus (MWh)": 2255.028
+    },
+    {
+      "Date": "2026-10-28",
+      "Total Daily Surplus (MWh)": 6.2
     }
   ],
   "daily_gas_constraints": [
@@ -82271,6 +82345,11 @@
     {
       "Ημερομηνία": "2026-10-27",
       "CO2_Price (€/t)": 88.19,
+      "Estimated": false
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "CO2_Price (€/t)": 88.05,
       "Estimated": false
     }
   ],
@@ -98512,5 +98591,2192 @@
         }
       ]
     }
-  ]
+  ],
+  "daily_constrained_mwh": [
+    {
+      "Date": "2026-06-01",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1623.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-01",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 600.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-01",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 952.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-01",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 902.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-02",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 722.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-02",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 758.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-02",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 439.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-03",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1290.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-03",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 690.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-03",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 795.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-04",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 2725.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-04",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1263.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-04",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1711.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-05",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1829.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-05",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 896.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-05",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 597.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-06",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 694.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-06",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 416.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-06",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 711.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-07",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 2392.0,
+      "Hours": 9
+    },
+    {
+      "Date": "2026-06-07",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 1600.0,
+      "Hours": 9
+    },
+    {
+      "Date": "2026-06-07",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1682.0,
+      "Hours": 9
+    },
+    {
+      "Date": "2026-06-08",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1596.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-08",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 893.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-08",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 550.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-09",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1242.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-09",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 457.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-09",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 737.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-10",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 731.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-10",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1133.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-06-10",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 447.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-11",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1242.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-11",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 759.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-11",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 748.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-12",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 829.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-12",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 680.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-12",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 897.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-12",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 958.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-13",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 3684.0,
+      "Hours": 12
+    },
+    {
+      "Date": "2026-06-13",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 2027.0,
+      "Hours": 12
+    },
+    {
+      "Date": "2026-06-13",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1360.0,
+      "Hours": 12
+    },
+    {
+      "Date": "2026-06-13",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 2343.0,
+      "Hours": 12
+    },
+    {
+      "Date": "2026-06-14",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 3173.0,
+      "Hours": 10
+    },
+    {
+      "Date": "2026-06-14",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1628.0,
+      "Hours": 10
+    },
+    {
+      "Date": "2026-06-14",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1798.0,
+      "Hours": 10
+    },
+    {
+      "Date": "2026-06-14",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1777.0,
+      "Hours": 10
+    },
+    {
+      "Date": "2026-06-15",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 682.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-15",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 462.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-15",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 753.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-15",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 800.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-16",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 322.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-16",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 690.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-16",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 442.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-16",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 719.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-17",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1260.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-17",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 648.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-17",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 433.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-17",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 739.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-18",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 1184.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-18",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1136.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-18",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 1084.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-18",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1317.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-19",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 2527.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-19",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 1316.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-19",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1298.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-19",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 727.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-06-19",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 919.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-20",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1902.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-06-20",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 979.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-06-20",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1118.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-06-20",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1165.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-06-21",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 1065.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-06-21",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1184.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-06-21",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 1085.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-06-21",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 1138.0,
+      "Hours": 8
+    },
+    {
+      "Date": "2026-06-22",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 909.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-22",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 779.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-22",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1053.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-22",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1035.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-23",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1214.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-23",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 691.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-23",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 394.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-23",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 798.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-25",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 675.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-25",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 493.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-25",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 850.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-26",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1249.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-26",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 663.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-26",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 113.0,
+      "Hours": 1
+    },
+    {
+      "Date": "2026-06-26",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 747.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-27",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 728.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-27",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 516.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-27",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 814.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-27",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 738.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-06-28",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 2309.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-28",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 1376.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-28",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1246.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-28",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 950.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-06-29",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 2280.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-29",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1080.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-29",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1527.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-29",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1246.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-06-30",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 563.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-06-30",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 420.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-06-30",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 347.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-07-03",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 915.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-07-04",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 713.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-04",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 475.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-04",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 793.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-04",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 735.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-05",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 3715.0,
+      "Hours": 10
+    },
+    {
+      "Date": "2026-07-05",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1343.0,
+      "Hours": 10
+    },
+    {
+      "Date": "2026-07-05",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1857.0,
+      "Hours": 10
+    },
+    {
+      "Date": "2026-07-05",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 2056.0,
+      "Hours": 10
+    },
+    {
+      "Date": "2026-07-06",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1253.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-06",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 701.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-06",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 470.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-06",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 741.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-07",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 454.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-07",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 795.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-11",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1207.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-11",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 717.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-11",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 705.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-12",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1209.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-12",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 693.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-12",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 421.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-18",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 814.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-18",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 950.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-18",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 884.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-19",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1580.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-19",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 875.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-19",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 941.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-23",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 489.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-07-23",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 501.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-07-25",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 2136.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-07-25",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1139.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-07-25",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1150.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-07-25",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1301.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-07-26",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1575.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-26",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 815.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-26",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 948.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-26",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 912.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-27",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1318.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-27",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 655.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-27",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 429.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-27",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 806.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-28",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 519.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-07-28",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 581.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-07-28",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 507.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-07-29",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1269.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-29",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 449.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-29",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 840.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-29",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 822.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-30",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 969.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-30",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 788.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-30",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1113.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-30",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1137.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-07-31",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1319.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-31",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 698.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-31",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 740.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-07-31",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 818.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-01",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1319.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-01",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 769.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-01",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 929.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-01",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 805.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-02",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1258.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-02",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 694.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-02",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 720.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-02",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 742.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-03",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1242.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-03",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 662.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-03",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 820.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-05",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 889.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-05",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 605.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-05",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 988.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-06",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1977.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-06",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 882.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-06",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1015.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-08",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 698.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-08",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 576.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-08",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 779.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-09",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1230.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-09",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 718.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-09",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 740.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-10",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 812.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-10",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 555.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-10",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 922.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-11",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1339.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-11",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 711.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-11",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 742.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-12",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 864.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-12",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 561.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-12",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1021.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-13",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1376.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-13",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 728.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-13",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 738.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-13",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 773.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-14",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1621.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-14",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 678.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-14",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1001.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-14",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 912.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-08-15",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 1082.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-08-15",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1146.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-08-15",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 993.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-08-15",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1104.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-08-16",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 666.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-16",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 681.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-16",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 412.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-16",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 712.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-22",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 756.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-22",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 516.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-22",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 741.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-23",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 780.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-23",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 670.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-23",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 755.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-29",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 800.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-29",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 828.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-29",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 799.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-30",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 762.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-30",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 740.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-08-30",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 439.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-04",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 701.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-04",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 956.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-04",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 1161.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-05",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 767.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-05",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 670.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-05",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 778.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-06",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 854.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-06",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 522.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-06",
+      "Unit": "ΜΕΓΑΛΟΠΟΛΗ 5",
+      "MWh": 941.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-07",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 947.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-07",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 912.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-07",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1143.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-08",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 822.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-08",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 546.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-08",
+      "Unit": "ΚΟΜΟΤΗΝΗ",
+      "MWh": 694.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-09",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 750.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-09",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 686.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-09",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 762.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-10",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 722.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-10",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 685.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-11",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 139.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-11",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 475.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-11",
+      "Unit": "ΚΟΜΟΤΗΝΗ",
+      "MWh": 641.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-12",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 759.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-12",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 653.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-12",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 732.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-13",
+      "Unit": "ELPEDISON_THESS",
+      "MWh": 875.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-13",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 863.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-13",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 531.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-14",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 783.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-14",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 749.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-14",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 777.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-15",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 781.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-15",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 676.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-15",
+      "Unit": "ΚΟΜΟΤΗΝΗ",
+      "MWh": 723.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-16",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 784.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-16",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 421.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-16",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 786.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-17",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 897.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-17",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 519.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-17",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 936.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-18",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 683.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-18",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 799.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-18",
+      "Unit": "ΚΟΜΟΤΗΝΗ",
+      "MWh": 555.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-19",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1056.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-19",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 1118.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-19",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 608.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-19",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1025.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-20",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 699.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-20",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 694.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-20",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 441.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-20",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 771.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-21",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 654.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-21",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 872.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-21",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 518.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-21",
+      "Unit": "ΚΟΜΟΤΗΝΗ",
+      "MWh": 557.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-23",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 667.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-23",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 813.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-23",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 497.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-23",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 773.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-24",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 696.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-24",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 763.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-24",
+      "Unit": "ΚΟΜΟΤΗΝΗ",
+      "MWh": 588.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-24",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 458.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-25",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 508.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-09-26",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 498.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-09-26",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 666.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-09-26",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 430.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-09-27",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 890.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-27",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 762.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-27",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 914.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-28",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 612.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-09-28",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 514.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-09-28",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 532.0,
+      "Hours": 3
+    },
+    {
+      "Date": "2026-09-29",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1173.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-29",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1356.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-29",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1135.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-30",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 985.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-30",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 1016.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-09-30",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 779.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-10-01",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1198.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-10-01",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 1025.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-10-01",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1157.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-10-02",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1044.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-10-02",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 1120.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-10-02",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1027.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-10-02",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1237.0,
+      "Hours": 6
+    },
+    {
+      "Date": "2026-10-03",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1154.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-10-03",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 1220.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-10-03",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1087.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-10-03",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1341.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-10-04",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 1154.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-10-04",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 1159.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-10-04",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1086.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-10-04",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1311.0,
+      "Hours": 7
+    },
+    {
+      "Date": "2026-10-05",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 674.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-05",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 869.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-05",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 652.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-05",
+      "Unit": "ΚΟΜΟΤΗΝΗ",
+      "MWh": 737.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-06",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 797.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-06",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 762.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-06",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 760.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-07",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 933.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-07",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1262.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-07",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1042.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-08",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 781.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-08",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 901.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-08",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 482.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-09",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 734.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-09",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 841.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-09",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 857.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-10",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 665.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-10",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 628.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-10",
+      "Unit": "ΚΟΜΟΤΗΝΗ",
+      "MWh": 543.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-11",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 1186.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-11",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 747.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-11",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 1150.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-14",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 740.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-14",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 887.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-14",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 959.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-15",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 2001.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-10-15",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 897.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-10-15",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 1013.0,
+      "Hours": 5
+    },
+    {
+      "Date": "2026-10-16",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 855.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-16",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 789.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-16",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 861.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-17",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1248.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-17",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 648.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-17",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 641.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-18",
+      "Unit": "KORINTHOS_POWER",
+      "MWh": 767.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-18",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 636.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-18",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 765.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-19",
+      "Unit": "AG_NIKOLAOS2",
+      "MWh": 1343.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-19",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 689.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-19",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 494.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-20",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 659.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-20",
+      "Unit": "ΘΗΣ ΗΡΩΝ",
+      "MWh": 757.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-20",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 499.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-22",
+      "Unit": "ELPEDISON_THISVI",
+      "MWh": 821.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-22",
+      "Unit": "PROTERGIA_CC",
+      "MWh": 749.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-22",
+      "Unit": "ΑΛΙΒΕΡΙ 5",
+      "MWh": 824.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-23",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 495.0,
+      "Hours": 4
+    },
+    {
+      "Date": "2026-10-24",
+      "Unit": "ΛΑΥΡΙΟ 4",
+      "MWh": 1520.0,
+      "Hours": 9
+    }
+  ],
+  "scada_quality": []
 }
