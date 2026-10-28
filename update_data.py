@@ -11,6 +11,7 @@ import re
 import time
 import sys
 import copy
+import warnings
 import traceback
 from collections import defaultdict
 
@@ -24,6 +25,8 @@ HOURLY_FILE = 'data/scada_hourly.json'
 KEEP_HOURLY_DAYS = 14
 ADMIE_API_URL = "https://www.admie.gr/getOperationMarketFile"
 TZ = pytz.timezone('Europe/Athens')
+# Τα αρχεία xlsx του ΑΔΜΗΕ δεν έχουν προεπιλεγμένο στυλ και το openpyxl το γράφει σε κάθε αρχείο· αβλαβές, κρύβεται ΜΟΝΟ αυτό το μήνυμα.
+warnings.filterwarnings("ignore", message="Workbook contains no default style", category=UserWarning)
 
 # Ώρες των εξωτερικών εκτελέσεων (cron-job.org, ώρα Ελλάδος): πρωί μετά τη δημοσίευση του SCADA (~06:05)
 # και μεσημέρι μετά τη δημοσίευση του HGSIDA. Είναι η ΜΟΝΗ πηγή για το «Επόμενη ενημέρωση» της σελίδας.
@@ -65,7 +68,7 @@ if os.path.exists(DATA_FILE):
 else:
     db = {}
 
-keys = ["isp_generation", "scada_generation", "scada_generation_hourly", 
+keys = ["isp_generation", "scada_generation", 
         "henex_indices", "thermal_efficiency", 
         "daily_surplus", "daily_gas_constraints", "co2_prices", "daily_economics",
         "daily_constrained_mwh", "scada_quality"]
@@ -74,7 +77,8 @@ for k in keys:
         db[k] = []
 
 def load_hourly():
-    """Ωριαίο SCADA για το Python. Αν το αρχείο δεν υπάρχει (πρώτη φορά) αντιγράφεται από το historical.json."""
+    """Ωριαίο SCADA για το Python (τελευταίες KEEP_HOURLY_DAYS ημέρες). Αν το αρχείο δεν υπάρχει, χτίζεται από το ωριαίο SCADA
+    που ίσως ακόμα έχει το historical.json (μετάβαση του D29· μετά το D30 το κλειδί αυτό διαγράφεται)."""
     if os.path.exists(HOURLY_FILE):
         try:
             with open(HOURLY_FILE, 'r', encoding='utf-8') as f:
@@ -84,7 +88,7 @@ def load_hourly():
         except json.JSONDecodeError:
             pass
         print(f"⚠ Το {HOURLY_FILE} δεν διαβάστηκε· ξαναχτίζεται από το {DATA_FILE}.")
-    return [copy.deepcopy(r) for r in db["scada_generation_hourly"]]
+    return [copy.deepcopy(r) for r in db.get("scada_generation_hourly", [])]
 
 hourly = load_hourly()
 
@@ -161,7 +165,6 @@ def process_scada(date_str):
         
         # 1. ΚΑΘΑΡΙΣΜΟΣ ΠΑΛΙΩΝ ΔΕΔΟΜΕΝΩΝ (Απόλυτο Wipe για τη συγκεκριμένη μέρα για 100% καθαρό backfill)
         db["scada_generation"] = [d for d in db["scada_generation"] if d.get("Ημερομηνία") != date_str]
-        db["scada_generation_hourly"] = [d for d in db["scada_generation_hourly"] if d.get("Ημερομηνία") != date_str]
         hourly[:] = [d for d in hourly if d.get("Ημερομηνία") != date_str]
         db["scada_quality"] = [d for d in db["scada_quality"] if d.get("Ημερομηνία") != date_str]
         
@@ -212,7 +215,7 @@ def process_scada(date_str):
         if start_mask.any():
             start_idx = df[start_mask].index[0]
             end_mask = df[1].astype(str).str.contains("TOTAL GAS|ΥΔΡΟΗΛΕΚΤΡΙΚΕΣ|ΣΥΜΠΑΡΑΓΩΓΗ", case=False, na=False)
-            end_idx_matches = df.iloc[start_idx+1:][end_mask].index
+            end_idx_matches = df.iloc[start_idx+1:][end_mask.iloc[start_idx+1:]].index
             end_idx = end_idx_matches[0] if len(end_idx_matches) > 0 else len(df)
             
             for _, row in df.iloc[start_idx+1:end_idx].iterrows():
@@ -271,7 +274,6 @@ def process_scada(date_str):
             for h in range(1, n_hours + 1):
                 hourly_record[f"{h:02d}:00"] = hourly_vals[h-1]
             hourly_record["Ημερήσιο Σύνολο"] = daily_sum
-            db["scada_generation_hourly"].append(hourly_record)
             hourly.append(hourly_record)
         for unit_name, hrs in sorted(blanks.items()):
             db["scada_quality"].append({"Ημερομηνία": date_str, "Μονάδα Φ.Α.": unit_name, "Ώρες": sorted(hrs)})
@@ -407,7 +409,7 @@ def process_isp(date_str):
                 thermal_indices = df[thermal_mask].index.tolist()
                 start_idx = thermal_indices[-1]
                 end_mask = df[0].astype(str).str.contains("Total |Hydro |RES |Energy |Pumping", case=False, na=False)
-                end_idx_matches = df.iloc[start_idx+1:][end_mask].index
+                end_idx_matches = df.iloc[start_idx+1:][end_mask.iloc[start_idx+1:]].index
                 end_idx = end_idx_matches[0] if len(end_idx_matches) > 0 else len(df)
                 gas_df = df.iloc[start_idx+1:end_idx].copy().dropna(subset=[0])
                 q_cols, t_col = find_isp_quarter_columns(df, start_idx, date_str)
@@ -723,8 +725,7 @@ def resolve_constraint_unit(isp_name):
     return None
 
 def hourly_for(date_str):
-    recs = [r for r in hourly if r.get("Ημερομηνία") == date_str]
-    return recs or [r for r in db["scada_generation_hourly"] if r.get("Ημερομηνία") == date_str]
+    return [r for r in hourly if r.get("Ημερομηνία") == date_str]
 
 def recompute_constrained():
     """MWh που παρήγαγε κάθε μονάδα Φ.Α. στις ώρες που το ISP2 την έχει σε Generic Constraint, ανά μέρα.
@@ -749,6 +750,7 @@ def recompute_constrained():
     for q in db["scada_quality"]:
         blank_hours[q.get("Ημερομηνία")][q.get("Μονάδα Φ.Α.")].update(q.get("Ώρες", []))
     rows, no_scada_unit = [], set()
+    dates_with_hourly = {r.get("Ημερομηνία") for r in hourly}
     for d in sorted(hours_by):
         recs = {str(r.get("Μονάδα Φ.Α.")).strip(): r for r in hourly_for(d)}
         if not recs:
@@ -765,19 +767,23 @@ def recompute_constrained():
             if missing:
                 row["MissingHours"] = missing
             rows.append(row)
-    db["daily_constrained_mwh"] = rows
+    # Οι γραμμές των ημερών που ΔΕΝ έχουν πια ωριαίο SCADA (παλαιότερες από KEEP_HOURLY_DAYS) μένουν όπως είναι (D30)·
+    # ξαναϋπολογίζονται μόνο οι ημέρες που έχουν.
+    kept = [r for r in db["daily_constrained_mwh"] if r.get("Date") not in dates_with_hourly]
+    db["daily_constrained_mwh"] = sorted(kept + rows, key=lambda r: (r["Date"], r["Unit"]))
+    rows = db["daily_constrained_mwh"]
     if unmatched:
         print(f"::warning title=Constraints::μονάδες του ISP2 χωρίς αντιστοίχιση στον πίνακα CONSTRAINT_UNIT_MAP (δεν προσμετρούνται): {sorted(unmatched)}")
     if no_scada_unit:
         print(f"  ⚠ Constraints: {len(no_scada_unit)} ζεύγη ημέρας-μονάδας χωρίς γραμμή SCADA, π.χ. {sorted(no_scada_unit)[:3]}")
-    print(f"  Constrained MWh: {len(rows)} γραμμές, {len({r['Date'] for r in rows})} ημέρες, σύνολο {sum(r['MWh'] for r in rows):,.1f} MWh")
+    print(f"  Constrained MWh: {len(rows)} γραμμές, {len({r['Date'] for r in rows})} ημέρες, σύνολο {sum(r['MWh'] for r in rows):,.1f} MWh (ξαναϋπολογίστηκαν οι {len(dates_with_hourly)} ημέρες με ωριαίο SCADA)")
 
 # ==========================================
 # «ΤΕΛΕΥΤΑΙΑ ΣΩΣΤΑ ΔΕΔΟΜΕΝΑ» ΑΝΑ ΗΜΕΡΑ (D29): η wipe_date σβήνει την ημέρα πριν την επεξεργασία, άρα ένα σφάλμα ή μια προσωρινή
 # αποτυχία λήψης θα την έχανε. Πριν το σβήσιμο κρατάμε αντίγραφο και το επαναφέρουμε όπου η νέα επεξεργασία δεν έδωσε τίποτα.
 # ==========================================
 DAY_KEYS = {
-    "scada": ("scada_generation", "scada_generation_hourly", "scada_quality"),
+    "scada": ("scada_generation", "_hourly", "scada_quality"),
     "isp": ("isp_generation", "daily_surplus", "daily_gas_constraints"),
     "economics": ("daily_economics",),
 }
@@ -785,16 +791,20 @@ DAY_KEYS = {
 def row_date(r):
     return r.get("Ημερομηνία") or r.get("Date")
 
+def rows_of(k):
+    """Οι γραμμές ενός κλειδιού· το «_hourly» είναι το ωριαίο SCADA των τελευταίων ημερών (data/scada_hourly.json)."""
+    return hourly if k == "_hourly" else db[k]
+
 def snapshot_day(date_str):
-    snap = {k: [copy.deepcopy(r) for r in db[k] if row_date(r) == date_str] for keys in DAY_KEYS.values() for k in keys}
-    snap["_hourly"] = [copy.deepcopy(r) for r in hourly if row_date(r) == date_str]
-    return snap
+    return {k: [copy.deepcopy(r) for r in rows_of(k) if row_date(r) == date_str] for keys in DAY_KEYS.values() for k in keys}
 
 def restore_keys(date_str, snap, keys):
     for k in keys:
-        db[k] = [r for r in db[k] if row_date(r) != date_str] + [copy.deepcopy(r) for r in snap[k]]
-        if k == "scada_generation_hourly":
-            hourly[:] = [r for r in hourly if row_date(r) != date_str] + [copy.deepcopy(r) for r in snap["_hourly"]]
+        rest = [r for r in rows_of(k) if row_date(r) != date_str] + [copy.deepcopy(r) for r in snap[k]]
+        if k == "_hourly":
+            hourly[:] = rest
+        else:
+            db[k] = rest
 
 def write_hourly_store(today):
     """Κρατά τις τελευταίες KEEP_HOURLY_DAYS ημέρες· το μέγεθος του αρχείου μένει σταθερό."""
@@ -806,11 +816,9 @@ def wipe_date(target_date_str):
     """Διαγράφει οριστικά ΟΛΑ τα δεδομένα μιας συγκεκριμένης ημερομηνίας πριν το backfill."""
     db["isp_generation"] = [d for d in db["isp_generation"] if d.get("Ημερομηνία") != target_date_str]
     db["scada_generation"] = [d for d in db["scada_generation"] if d.get("Ημερομηνία") != target_date_str]
-    db["scada_generation_hourly"] = [d for d in db["scada_generation_hourly"] if d.get("Ημερομηνία") != target_date_str]
     db["daily_economics"] = [d for d in db["daily_economics"] if d.get("Ημερομηνία") != target_date_str]
     db["daily_surplus"] = [d for d in db["daily_surplus"] if d.get("Date") != target_date_str]
     db["daily_gas_constraints"] = [d for d in db["daily_gas_constraints"] if d.get("Date") != target_date_str]
-    db["daily_constrained_mwh"] = [d for d in db["daily_constrained_mwh"] if d.get("Date") != target_date_str]
     db["scada_quality"] = [d for d in db["scada_quality"] if d.get("Ημερομηνία") != target_date_str]
     hourly[:] = [d for d in hourly if d.get("Ημερομηνία") != target_date_str]
     # ΔΕΝ διαγράφουμε henex και co2, γιατί αυτά είναι σωστά και γλιτώνουμε API calls!
@@ -823,6 +831,12 @@ if __name__ == "__main__":
     if "dam_mcp_hourly" in db:
         _n = len(db.pop("dam_mcp_hourly"))
         print(f"Cleanup: αφαιρέθηκε το dam_mcp_hourly ({_n} ημέρες) -- δεν χρησιμοποιείται πια (D16).")
+
+    # D30: το ωριαίο SCADA ζει μόνο στο data/scada_hourly.json (14 ημέρες)· στο historical.json δεν χρειάζεται πια (η σελίδα δεν το διαβάζει,
+    # τα MWh των περιορισμών υπάρχουν ήδη στο daily_constrained_mwh). Το load_hourly() έτρεξε ήδη, άρα το αρχείο έχει τις ημέρες που χρειάζονται.
+    if "scada_generation_hourly" in db:
+        _days = len({r.get("Ημερομηνία") for r in db.pop("scada_generation_hourly")})
+        print(f"Cleanup: αφαιρέθηκε το scada_generation_hourly ({_days} ημέρες) -- μένουν οι τελευταίες {KEEP_HOURLY_DAYS} στο {HOURLY_FILE} και τα MWh περιορισμών στο daily_constrained_mwh (D30).")
 
     # Εκκαθάριση: ό,τι δεν είναι μονάδα Φ.Α. (π.χ. η γραμμή AGRAS = υδροηλεκτρικό) φεύγει από τα constraints.
     _before = len(db["daily_gas_constraints"])
@@ -869,9 +883,9 @@ if __name__ == "__main__":
                 note_failure(date_str, name, e)
             if group:
                 for k in DAY_KEYS[group]:
-                    if snap[k] and (failed or not any(row_date(r) == date_str for r in db[k])):
+                    if snap[k] and (failed or not any(row_date(r) == date_str for r in rows_of(k))):
                         restore_keys(date_str, snap, DAY_KEYS[group] if failed else (k,))
-                        print(f"  [{date_str}] ↺ το «{k}» {'απέτυχε' if failed else 'δεν ήρθε σήμερα'}· κρατήθηκαν τα προηγούμενα δεδομένα ({len(snap[k])} γραμμές)")
+                        print(f"  [{date_str}] ↺ το «{'ωριαίο SCADA' if k == '_hourly' else k}» {'απέτυχε' if failed else 'δεν ήρθε σήμερα'}· κρατήθηκαν τα προηγούμενα δεδομένα ({len(snap[k])} γραμμές)")
                         if failed:
                             break
 

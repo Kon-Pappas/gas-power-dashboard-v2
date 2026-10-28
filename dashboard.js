@@ -874,81 +874,7 @@ function getScadaReadyDays() {
     return ready;
 }
 
-// Εφεδρεία (D29): ο παλιός υπολογισμός στον browser, για αρχεία δεδομένων που δεν έχουν ακόμα το daily_constrained_mwh.
-// Φεύγει στο επόμενο batch, όταν το Python σταματήσει να γράφει το ωριαίο SCADA στο historical.json.
-function legacyConstrainedMwh(selectedMonth) {
-    let constraintsByDay = {};
-    
-    rawData.daily_gas_constraints.forEach(c => {
-        let vals = Object.values(c);
-        let d = parseDate(vals[0]); 
-        if (!d.startsWith(selectedMonth)) return;
-        
-        let unit = getCanonicalUnitName(vals[1]); 
-        
-        let hFromParts = String(vals[2] || "").trim().split(':');
-        let hToParts = String(vals[3] || "").trim().split(':');
-        
-        let hFromInt = parseInt(hFromParts[0], 10) || 0;
-        let hToInt = parseInt(hToParts[0], 10) || 0;
-        
-        let hStart = hFromInt + 1; 
-        let hEnd = hToInt;         
-        
-        if (hStart <= hEnd) {
-            if (!constraintsByDay[d]) constraintsByDay[d] = {};
-            if (!constraintsByDay[d][unit]) {
-                constraintsByDay[d][unit] = { hStart: hStart, hEnd: hEnd };
-            } else {
-                constraintsByDay[d][unit].hStart = Math.min(constraintsByDay[d][unit].hStart, hStart);
-                constraintsByDay[d][unit].hEnd = Math.max(constraintsByDay[d][unit].hEnd, hEnd);
-            }
-        }
-    });
-
-    const scadaCanonNames = new Set(rawData.scadaHourly.map(r => getCanonicalUnitName(String(Object.values(r)[1]).trim())));
-    const warnedUnits = new Set();
-    Object.values(constraintsByDay).forEach(units => {
-        Object.keys(units).forEach(u => {
-            if (!scadaCanonNames.has(u) && !warnedUnits.has(u)) {
-                warnedUnits.add(u);
-                console.warn(`[Constraints] Η μονάδα "${u}" δεν ταιριάζει με καμία μονάδα SCADA — τα MWh της δεν προσμετρώνται.`);
-            }
-        });
-    });
-
-    let dailyConstrainedMwh = {};
-    
-    rawData.scadaHourly.forEach(row => {
-        let vals = Object.values(row);
-        let d = parseDate(vals[0]); 
-        if (!d.startsWith(selectedMonth)) return;
-        if (!constraintsByDay[d]) return; 
-        
-        let rawUnit = String(vals[1] || "").trim(); 
-        if (rawUnit === "TOTAL GAS UNITS" || rawUnit.includes("Σύνολο") || rawUnit === "NAN") return;
-        
-        let cUnit = getCanonicalUnitName(rawUnit);
-        
-        if (constraintsByDay[d][cUnit]) {
-            if (!dailyConstrainedMwh[d]) dailyConstrainedMwh[d] = 0;
-            
-            let window = constraintsByDay[d][cUnit];
-            
-            for (let h = window.hStart; h <= window.hEnd; h++) {
-                if (h >= 1 && h <= 24) {
-                    // Η ώρα διαβάζεται με το ΟΝΟΜΑ της ("05:00"), όχι με τη θέση της στη γραμμή: σε μέρα 23 ωρών η θέση
-                    // της ώρας 24 θα ήταν το «Ημερήσιο Σύνολο» και θα προσμετρούνταν ως ώρα (D17). Ώρα που δεν υπάρχει = 0.
-                    let val = parseNum(row[String(h).padStart(2, '0') + ':00']);
-                    dailyConstrainedMwh[d] += val;
-                }
-            }
-        }
-    });
-    return dailyConstrainedMwh;
-}
-
-// D29: τα MWh των περιορισμών τα υπολογίζει το update_data.py (ρητός πίνακας ονομάτων, πραγματικές ώρες)· εδώ μόνο αθροίζονται ανά ημέρα.
+// D29/D30: τα MWh των περιορισμών τα υπολογίζει το update_data.py (ρητός πίνακας ονομάτων, πραγματικές ώρες)· εδώ μόνο αθροίζονται ανά ημέρα.
 function constrainedFromPython(selectedMonth) {
     const byDay = {};
     rawData.constrained.forEach(r => {
@@ -961,15 +887,12 @@ function constrainedFromPython(selectedMonth) {
 
 function updateSurplusTab() {
     const monthSelect = document.getElementById('monthSelect');
-    if (!monthSelect || !rawData || !rawData.daily_surplus || !rawData.daily_gas_constraints) return;
-    if (!Array.isArray(rawData.constrained) && !rawData.scadaHourly) return;
+    if (!monthSelect || !rawData || !rawData.daily_surplus || !Array.isArray(rawData.constrained)) return;
     
     const selectedMonth = monthSelect.value;
     if (!selectedMonth) return;
 
-    const dailyConstrainedMwh = Array.isArray(rawData.constrained)
-        ? constrainedFromPython(selectedMonth)
-        : legacyConstrainedMwh(selectedMonth);
+    const dailyConstrainedMwh = constrainedFromPython(selectedMonth);
 
     let dailySurplusMap = {};
     rawData.daily_surplus.forEach(row => {

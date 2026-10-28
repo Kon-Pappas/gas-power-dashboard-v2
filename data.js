@@ -8,12 +8,10 @@ const API_URL = "data/historical.json";
 let rawData = { 
     isp: [], 
     scada: [], 
-    scadaHourly: [],
     constrained: null,   // D29: τα MWh των περιορισμών, υπολογισμένα από το Python (null = το αρχείο δεν τα έχει ακόμα) 
     henex: [], 
     efficiency: [],
     daily_surplus: [],          
-    daily_gas_constraints: [],
     daily_economics: []    
 };
 
@@ -573,12 +571,10 @@ function applyMeta(meta) {
 function applyData(json) {
     rawData.isp = json.isp_generation || [];
     rawData.scada = json.scada_generation || [];
-    rawData.scadaHourly = json.scada_generation_hourly || [];
     rawData.constrained = Array.isArray(json.daily_constrained_mwh) ? json.daily_constrained_mwh : null;
     rawData.henex = json.henex_indices || [];
     rawData.efficiency = json.thermal_efficiency || [];
     rawData.daily_surplus = json.daily_surplus || [];
-    rawData.daily_gas_constraints = json.daily_gas_constraints || [];
     rawData.daily_economics = json.daily_economics || [];
 }
 
