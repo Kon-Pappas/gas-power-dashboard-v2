@@ -8,7 +8,8 @@ const API_URL = "data/historical.json";
 let rawData = { 
     isp: [], 
     scada: [], 
-    scadaHourly: [], 
+    scadaHourly: [],
+    constrained: null,   // D29: τα MWh των περιορισμών, υπολογισμένα από το Python (null = το αρχείο δεν τα έχει ακόμα) 
     henex: [], 
     efficiency: [],
     daily_surplus: [],          
@@ -183,7 +184,7 @@ const i18n = {
 
             <h3 data-sec="surplus" class="mt-4 mb-2 text-xs font-bold text-acc-400">Generic constraints &amp; surplus</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
-                <li><strong class="text-slate-200">Out-of-Merit Operation:</strong> Due to the "duck curve" and high RES penetration, IPTO frequently keeps units synchronized via Generic Constraints for system stability. The page takes the gas units and the hours of these constraints from the ISP2 schedule (its GenericConstraints sheet) and counts the unit's actual SCADA output inside those hours as constraint-driven generation — not market-driven arbitrage. Prices are not compared: a unit can also run below its cost for other reasons (technical minimum, block orders, balancing), and this view does not count those hours. In practice, this is the only available way to approximate the residual surplus left over from the ISP's scheduling, though it is an imperfect proxy, since the schedule is not a measurement and the true magnitude of that residual surplus cannot be independently verified from public data.</li>
+                <li><strong class="text-slate-200">Out-of-Merit Operation:</strong> Due to the "duck curve" and high RES penetration, IPTO frequently keeps units synchronized via Generic Constraints for system stability. The dashboard takes the gas units and the hours of these constraints from the ISP2 schedule (its GenericConstraints sheet) and counts the unit's actual SCADA output inside those hours as constraint-driven generation (windows are counted in whole hours: a start or an end at a half hour is rounded down to the hour) — not market-driven arbitrage. Prices are not compared: a unit can also run below its cost for other reasons (technical minimum, block orders, balancing), and this view does not count those hours. In practice, this is the only available way to approximate the residual surplus left over from the ISP's scheduling, though it is an imperfect proxy, since the schedule is not a measurement and the true magnitude of that residual surplus cannot be independently verified from public data.</li>
                 <li><strong class="text-slate-200">Which units count:</strong> only gas-fired units are tracked for constraints; lignite and large hydro units appearing in the same ISP file are filtered out, as is the co-generation unit with locked 24/7 output.</li>
                 <li><strong class="text-slate-200">Pending days vs. zero days:</strong> a day is excluded from the chart only when SCADA isn't available yet for it. A day with SCADA but zero recorded constraints, or with very low residual surplus, remains in the chart and is shown as zero — it is not treated the same as a pending day.</li>
                 <li><strong class="text-slate-200">Residual surplus (ISP):</strong> the daily value of the "Energy Surplus" row in IPTO's ISP2 file, in MWh. The page does not calculate it: IPTO writes it as a negative number and the page shows it as positive.</li>
@@ -361,7 +362,7 @@ const i18n = {
 
             <h3 data-sec="surplus" class="mt-4 mb-2 text-xs font-bold text-acc-400">Περιορισμοί συστήματος &amp; πλεόνασμα</h3>
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
-                <li><strong class="text-slate-200">Λειτουργία Out-of-Merit:</strong> Λόγω υψηλής διείσδυσης ΑΠΕ, ο ΑΔΜΗΕ διατηρεί συχνά μονάδες συγχρονισμένες μέσω Generic Constraints για ευστάθεια συστήματος. Η σελίδα παίρνει τις μονάδες αερίου και τις ώρες αυτών των constraints από τον προγραμματισμό ISP2 (το φύλλο GenericConstraints) και μετρά την πραγματική παραγωγή SCADA της μονάδας μέσα σε αυτές τις ώρες ως constraint-driven παραγωγή — όχι ως market-driven arbitrage. Δεν συγκρίνονται τιμές: μια μονάδα μπορεί να λειτουργεί κάτω από το κόστος της και για άλλους λόγους (τεχνικό ελάχιστο, block orders, εξισορρόπηση), και αυτή η προβολή δεν μετρά εκείνες τις ώρες. Στην πράξη, αυτός είναι ο μόνος διαθέσιμος τρόπος προσέγγισης του residual surplus που απομένει από τον προγραμματισμό (ISP), αν και πρόκειται για ατελές proxy, καθώς ο προγραμματισμός δεν είναι μέτρηση και το πραγματικό μέγεθος αυτού του πλεονάσματος δεν μπορεί να επιβεβαιωθεί ανεξάρτητα από δημόσια δεδομένα.</li>
+                <li><strong class="text-slate-200">Λειτουργία Out-of-Merit:</strong> Λόγω υψηλής διείσδυσης ΑΠΕ, ο ΑΔΜΗΕ διατηρεί συχνά μονάδες συγχρονισμένες μέσω Generic Constraints για ευστάθεια συστήματος. Το dashboard παίρνει τις μονάδες αερίου και τις ώρες αυτών των constraints από τον προγραμματισμό ISP2 (το φύλλο GenericConstraints) και μετρά την πραγματική παραγωγή SCADA της μονάδας μέσα σε αυτές τις ώρες ως constraint-driven παραγωγή (τα παράθυρα μετρούν σε ολόκληρες ώρες: αρχή ή τέλος σε μισή ώρα στρογγυλοποιείται προς τα κάτω στην ώρα) — όχι ως market-driven arbitrage. Δεν συγκρίνονται τιμές: μια μονάδα μπορεί να λειτουργεί κάτω από το κόστος της και για άλλους λόγους (τεχνικό ελάχιστο, block orders, εξισορρόπηση), και αυτή η προβολή δεν μετρά εκείνες τις ώρες. Στην πράξη, αυτός είναι ο μόνος διαθέσιμος τρόπος προσέγγισης του residual surplus που απομένει από τον προγραμματισμό (ISP), αν και πρόκειται για ατελές proxy, καθώς ο προγραμματισμός δεν είναι μέτρηση και το πραγματικό μέγεθος αυτού του πλεονάσματος δεν μπορεί να επιβεβαιωθεί ανεξάρτητα από δημόσια δεδομένα.</li>
                 <li><strong class="text-slate-200">Ποιες μονάδες μετράνε:</strong> παρακολουθούνται μόνο μονάδες φυσικού αερίου· λιγνιτικές και μεγάλα υδροηλεκτρικά που εμφανίζονται στο ίδιο αρχείο ISP φιλτράρονται έξω, όπως και η μονάδα συμπαραγωγής με κλειδωμένη 24/7 παραγωγή.</li>
                 <li><strong class="text-slate-200">Pending μέρες vs μηδενικές μέρες:</strong> μια μέρα εξαιρείται από το γράφημα μόνο όταν δεν υπάρχει ακόμα SCADA γι' αυτήν. Μέρα με SCADA αλλά μηδενικά καταγεγραμμένα constraints, ή με πολύ χαμηλό residual surplus, παραμένει στο γράφημα και δείχνεται ως μηδέν — δεν αντιμετωπίζεται όπως μια pending μέρα.</li>
                 <li><strong class="text-slate-200">Residual surplus (ISP):</strong> η ημερήσια τιμή της γραμμής «Energy Surplus» του αρχείου ISP2 του ΑΔΜΗΕ, σε MWh. Δεν την υπολογίζει η σελίδα· ο ΑΔΜΗΕ τη γράφει αρνητική και η σελίδα τη δείχνει θετική.</li>
@@ -573,6 +574,7 @@ function applyData(json) {
     rawData.isp = json.isp_generation || [];
     rawData.scada = json.scada_generation || [];
     rawData.scadaHourly = json.scada_generation_hourly || [];
+    rawData.constrained = Array.isArray(json.daily_constrained_mwh) ? json.daily_constrained_mwh : null;
     rawData.henex = json.henex_indices || [];
     rawData.efficiency = json.thermal_efficiency || [];
     rawData.daily_surplus = json.daily_surplus || [];

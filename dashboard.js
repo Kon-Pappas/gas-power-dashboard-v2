@@ -874,13 +874,9 @@ function getScadaReadyDays() {
     return ready;
 }
 
-function updateSurplusTab() {
-    const monthSelect = document.getElementById('monthSelect');
-    if (!monthSelect || !rawData || !rawData.daily_surplus || !rawData.daily_gas_constraints || !rawData.scadaHourly) return;
-    
-    const selectedMonth = monthSelect.value;
-    if (!selectedMonth) return;
-
+// Εφεδρεία (D29): ο παλιός υπολογισμός στον browser, για αρχεία δεδομένων που δεν έχουν ακόμα το daily_constrained_mwh.
+// Φεύγει στο επόμενο batch, όταν το Python σταματήσει να γράφει το ωριαίο SCADA στο historical.json.
+function legacyConstrainedMwh(selectedMonth) {
     let constraintsByDay = {};
     
     rawData.daily_gas_constraints.forEach(c => {
@@ -949,6 +945,31 @@ function updateSurplusTab() {
             }
         }
     });
+    return dailyConstrainedMwh;
+}
+
+// D29: τα MWh των περιορισμών τα υπολογίζει το update_data.py (ρητός πίνακας ονομάτων, πραγματικές ώρες)· εδώ μόνο αθροίζονται ανά ημέρα.
+function constrainedFromPython(selectedMonth) {
+    const byDay = {};
+    rawData.constrained.forEach(r => {
+        const d = parseDate(r.Date);
+        if (!d.startsWith(selectedMonth)) return;
+        byDay[d] = (byDay[d] || 0) + (Number(r.MWh) || 0);
+    });
+    return byDay;
+}
+
+function updateSurplusTab() {
+    const monthSelect = document.getElementById('monthSelect');
+    if (!monthSelect || !rawData || !rawData.daily_surplus || !rawData.daily_gas_constraints) return;
+    if (!Array.isArray(rawData.constrained) && !rawData.scadaHourly) return;
+    
+    const selectedMonth = monthSelect.value;
+    if (!selectedMonth) return;
+
+    const dailyConstrainedMwh = Array.isArray(rawData.constrained)
+        ? constrainedFromPython(selectedMonth)
+        : legacyConstrainedMwh(selectedMonth);
 
     let dailySurplusMap = {};
     rawData.daily_surplus.forEach(row => {

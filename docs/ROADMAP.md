@@ -34,24 +34,25 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 7: data
 
-- **K10 analysed 27 Oct 2026** (evidence and plan in K10): a Python copy of the calculation equals the page on all 148 days; the hourly SCADA must stay available to Python (a file of 14 days the page does not download); the data file would go from 212 to 103 KB gzip. Awaiting the owner's decision, then two batches (expand, then contract)
+- **K10, step 1 of 2 — done 27 Oct 2026 (D29):** the constrained MWh are calculated in Python, the hourly SCADA of the last 14 days is in `data/scada_hourly.json`, a failing day keeps its previous data. **Step 2 (the next batch):** after the first real run, the hourly SCADA leaves `historical.json`, the page loses the fallback; the data file goes from 212 to about 103 KB gzip
 - Then monthly files with a manifest **only if** the measured size justifies it (K11); refresh with ETag instead of `?v=<time>`
 
 ## Correctness (alongside the phases)
 
-- Missing values and bare `except` (K13, K14). Clock-change days are done for the SCADA (D17) and the ISP (D18); K20 remains
+- Missing values and bare `except` (K13, K14) are done (D29). Clock-change days are done for the SCADA (D17) and the ISP (D18); K20 remains. K28 (windows with a half hour) after step 2
 
 ## Dated checks
 
 - **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Done 26 Oct 2026:** the fix of D17 went online and the 10-day re-check repaired the 25 Oct record (73,419 MWh, 25 hourly keys). **Before 28 Mar 2027 (23 hours):** K20
 - **26 Oct 2026 — done:** the ISP history (K21 → D18): five manual runs and a sixth for 21–26 Oct, 148 days; the ISP / SCADA ratio went from 1.242 to 1.006 on average
 - **After every batch:** compare the repository with the zip, byte by byte; check that the Pages build is green; run the page in Chromium at 360 and 320 px
+- **After the first real run of D29:** open its log (the new key, `scada_hourly.json`, no `::warning` or `::error`) and run `python scripts/check_constraints.py` on the new `historical.json`
 - **Every two weeks:** measure the size of the data (K11)
 
 ## Open decisions (owner)
 
-1. Where the constraints are calculated: browser or Python (K10)
-2. A full list of pinned dependencies (K19)
+1. A full list of pinned dependencies (K19)
+2. Constraint windows with a half hour: weight the edge hours, or leave it (K28), after step 2
 
-Decided on 27 Oct 2026: three cards per row from 1024 to 1279 px and the shorter date label on phones (D28); no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25); the cost table as cards on phones (D27).
+Decided on 27 Oct 2026: the constraints are calculated in Python in two batches, with a rolling window of 14 days for the hourly SCADA, blank cells counted and not stored as null, and failures isolated per day (D29); three cards per row from 1024 to 1279 px and the shorter date label on phones (D28); no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25); the cost table as cards on phones (D27).
 Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22); the texts of the Methodology and the links in the tabs (D24).
