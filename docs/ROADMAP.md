@@ -34,6 +34,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Phase 7: data
 
+- **D31 — part-load efficiency of the F-class, 28 Oct 2026:** batch 16 changes the table `PLANT_SPECS` (eight units), the Methodology and the docs; the history is recalculated by the backfill above. Still open: K29 (old Komotini), K30 (maximum loads, check of the level with the gas of the power sector)
 - **K10 — done 28 Oct 2026 (D29 and D30):** the constrained MWh are calculated in Python, the hourly SCADA of the last 14 days is in `data/scada_hourly.json` and has left `historical.json`, a failing day keeps its previous data; the data file went from 215 to 106 KB gzip
 - Then monthly files with a manifest **only if** the measured size justifies it (K11); refresh with ETag instead of `?v=<time>`
 
@@ -46,7 +47,8 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 - **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Done 26 Oct 2026:** the fix of D17 went online and the 10-day re-check repaired the 25 Oct record (73,419 MWh, 25 hourly keys). **Before 28 Mar 2027 (23 hours):** K20
 - **26 Oct 2026 — done:** the ISP history (K21 → D18): five manual runs and a sixth for 21–26 Oct, 148 days; the ISP / SCADA ratio went from 1.242 to 1.006 on average
 - **After every batch:** compare the repository with the zip, byte by byte; check that the Pages build is green; run the page in Chromium at 360 and 320 px
-- **After the first real run of D30:** open its log (a `Cleanup` line says the hourly SCADA was removed from `historical.json`; no `::warning` or `::error`, no `UserWarning`), check that `historical.json` is about 106 KB gzip, and run `python scripts/check_constraints.py`
+- **After uploading D31 (the part-load efficiency): run the backfill in five runs**, *Actions → Daily Energy Data Update → Run workflow*, with Start Date and End Date: 2026-06-01 to 2026-06-30; 2026-07-01 to 2026-07-31; 2026-08-01 to 2026-08-31; 2026-09-01 to 2026-09-30; 2026-10-01 to 2026-10-26. Then check on 25 Oct: *Total estimated cost* **13,432,491 EUR**, fleet SRMC **182.96**, ElpedThisv 6,373 MWh, 50.8 %, SRMC **203.59**, cost 1,297,507 EUR; then run `python scripts/check_constraints.py` and look at the size of `historical.json`
+- **After the first real run of D30 (done 28 Oct):** open its log (a `Cleanup` line says the hourly SCADA was removed from `historical.json`; no `::warning` or `::error`, no `UserWarning`), check that `historical.json` is about 106 KB gzip, and run `python scripts/check_constraints.py`
 - **After the first real run of D29 (done 28 Oct):** open its log (the new key, `scada_hourly.json`, no `::warning` or `::error`) and run `python scripts/check_constraints.py` on the new `historical.json`
 - **Every two weeks:** measure the size of the data (K11)
 
@@ -54,6 +56,8 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 1. A full list of pinned dependencies (K19)
 2. Constraint windows with a half hour: weight the edge hours (from now on, or with a backfill of the old days), or leave it (K28)
+3. The old Komotini unit: the same consistency and its minimum load (K29), after the backfill of D31
 
+Decided on 28 Oct 2026: the part-load efficiency of the eight F-class units with k = 0.30 and four minimum loads from the data, with a backfill of the whole history; the old Komotini later and apart (D31).
 Decided on 27 Oct 2026: the constraints are calculated in Python in two batches, with a rolling window of 14 days for the hourly SCADA, blank cells counted and not stored as null, and failures isolated per day (D29); three cards per row from 1024 to 1279 px and the shorter date label on phones (D28); no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25); the cost table as cards on phones (D27).
 Decided on 26 Oct 2026: the phone layout stops at 768 px and the header times on phones are shown without the year (D22); the texts of the Methodology and the links in the tabs (D24).
