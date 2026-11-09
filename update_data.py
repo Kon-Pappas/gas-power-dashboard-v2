@@ -76,7 +76,7 @@ else:
 keys = ["isp_generation", "scada_generation", 
         "henex_indices", "thermal_efficiency", 
         "daily_surplus", "daily_gas_constraints", "co2_prices", "daily_economics",
-        "daily_constrained_mwh", "scada_quality", "ttf_prices"]
+        "daily_constrained_mwh", "scada_quality"]
 for k in keys:
     if k not in db:
         db[k] = []
@@ -144,6 +144,22 @@ def hours_in_day(date_str):
     start = TZ.localize(datetime(d.year, d.month, d.day))
     end = TZ.localize(datetime(nxt.year, nxt.month, nxt.day))
     return int(round((end - start).total_seconds() / 3600))
+
+def _hour_labels(date_str):
+    """Η ώρα ρολογιού (τοπική) στην αρχή κάθε ΠΡΑΓΜΑΤΙΚΗΣ ώρας της ημέρας: 24 ώρες -> 0…23, 25 ώρες -> 0,1,2,3,3,4…23, 23 ώρες -> 0,1,2,4…23."""
+    m0 = TZ.localize(datetime.strptime(date_str, "%Y-%m-%d")).astimezone(pytz.utc)
+    return [(m0 + timedelta(hours=i)).astimezone(TZ).hour for i in range(hours_in_day(date_str))]
+
+def constraint_hour_indices(date_str, start, end, day_end_reached=False):
+    """K20 (D34): παράθυρο [start, end) -> (πρώτος, τελευταίος) δείκτης στήλης ωριαίου SCADA, 1…N, και οι δύο μέσα (κενό παράθυρο: (1, 0)).
+    Ο ΑΔΜΗΕ γράφει τους χρόνους ως απλές τοπικές ώρες ρολογιού, χωρίς θερινή/χειμερινή. Ο κανόνας είναι ο ίδιος με πριν (K28): μετριούνται
+    ΟΛΟΚΛΗΡΕΣ ώρες ρολογιού, η αρχή και το τέλος κόβονται προς τα κάτω στην ώρα. Σε μέρα 24 ωρών δίνει ακριβώς (ώρα αρχής + 1, ώρα τέλους).
+    Σε μέρα 25 ωρών η ώρα ρολογιού 03:00-04:00 υπάρχει δύο φορές και μετράει δύο φορές· σε μέρα 23 ωρών δεν υπάρχει και δεν μετράει καθόλου.
+    Δεν χρειάζεται καμία παραδοχή για το ποια εμφάνιση μιας διφορούμενης ώρας εννοεί το αρχείο."""
+    s_h = start.hour
+    e_h = 24 if day_end_reached else end.hour
+    idx = [i + 1 for i, label in enumerate(_hour_labels(date_str)) if s_h <= label <= e_h - 1]
+    return (idx[0], idx[-1]) if idx else (1, 0)
 
 def find_hour_columns(df):
     """Βρίσκει από την επικεφαλίδα του sheet (γραμμή με τους αριθμούς 1…N και μετά τη λέξη SUM) ποιες στήλες είναι ώρες.
@@ -351,7 +367,10 @@ def extract_constraints(xl, date_str):
         if key in seen:
             continue
         seen.add(key)
-        db["daily_gas_constraints"].append({"Date": date_str, "Gas Factory": unit, "Hour From": h_from, "Hour To": h_to})
+        row = {"Date": date_str, "Gas Factory": unit, "Hour From": h_from, "Hour To": h_to}
+        if hours_in_day(date_str) != 24:   # K20 (D34): σε μέρα αλλαγής ώρας κρατάμε και τους δείκτες των ωρών (στήλες του ωριαίου SCADA)
+            row["Hour Index From"], row["Hour Index To"] = constraint_hour_indices(date_str, start.to_pydatetime(), end.to_pydatetime(), day_end_reached=bool(end >= day_end))
+        db["daily_gas_constraints"].append(row)
     if unknown_skipped:
         print(f"  [{date_str}] Constraints: μονάδες εκτός λίστας Φ.Α. (έλεγξε αν χρειάζεται να προστεθούν): {sorted(unknown_skipped)}")
     print(f"  [{date_str}] Constraints: {len(seen)} γραμμές Φ.Α.")
@@ -552,57 +571,6 @@ def fetch_latest_co2_price(today_str):
 
 
 # ==========================================
-# ΤΙΜΗ TTF (D32): ΜΟΝΟ συλλογή από σήμερα και μετά· η σελίδα δεν τη διαβάζει ακόμα
-# ==========================================
-TTF_CODE = "DUTCH_TTF_EUR"
-
-def fetch_latest_ttf_price(today_str):
-    """Καλείται ΜΙΑ φορά ανά εκτέλεση, ΜΟΝΟ από το καθημερινό cron (ποτέ σε manual backfill), ΧΩΡΙΣ να αγγίζει τη διαδρομή του CO2.
-    Το /v1/prices/latest δεν δέχεται ημερομηνία: η τιμή ανατίθεται στη ΣΗΜΕΡΙΝΗ μέρα. Σε αντίθεση με το CO2, κάθε εκτέλεση της ημέρας
-    ΑΝΤΙΚΑΘΙΣΤΑ την εγγραφή (τελευταίο snapshot της ημέρας, μέχρι 2 κλήσεις/ημέρα) και αποθηκεύεται η ΩΡΑ της τιμής (Quote_Time, από την πηγή),
-    ώστε να ξέρουμε ακριβώς τι μετράμε. Αποτυχία (HTTP, JSON, τιμή, νόμισμα) = η προηγούμενη εγγραφή μένει ως έχει· ποτέ exception, ποτέ None.
-    Σαββατοκύριακο: η αγορά είναι κλειστή· κρατιέται η τελευταία ΠΡΑΓΜΑΤΙΚΗ τιμή ως Estimated=True, χωρίς κλήση."""
-    rows = db["ttf_prices"]
-    today_row = next((r for r in rows if r.get("Ημερομηνία") == today_str), None)
-    if datetime.strptime(today_str, "%Y-%m-%d").weekday() >= 5:
-        if today_row is None:
-            last_real = sorted([r for r in rows if r.get("Ημερομηνία") < today_str and r.get("TTF_Price (€/MWh)") is not None
-                                and r.get("Estimated") is False], key=lambda r: r["Ημερομηνία"])
-            if last_real:
-                src = last_real[-1]
-                rows.append({"Ημερομηνία": today_str, "TTF_Price (€/MWh)": src["TTF_Price (€/MWh)"], "Quote_Time": src.get("Quote_Time"), "Estimated": True})
-                print(f"  [{today_str}] TTF: Σαββατοκύριακο -- κρατάμε την τιμή της {src['Ημερομηνία']} ({src['TTF_Price (€/MWh)']}) ως estimated. Καμία κλήση API.")
-        return
-    api_key = os.environ.get('OILPRICE_API_KEY')
-    if not api_key:
-        return
-    try:
-        resp = requests.get("https://api.oilpriceapi.com/v1/prices/latest",
-                            headers={"Authorization": f"Token {api_key}", "Content-Type": "application/json"},
-                            params={"by_code": TTF_CODE}, timeout=10)
-        if resp.status_code != 200:
-            print(f"  [{today_str}] ⚠ TTF API: HTTP {resp.status_code} -- η προηγούμενη εγγραφή (αν υπάρχει) μένει.")
-            return
-        js = resp.json()
-        d = js.get("data") if isinstance(js, dict) and js.get("status") == "success" else None
-        if isinstance(d, list):
-            d = next((x for x in d if isinstance(x, dict) and x.get("code") == TTF_CODE), None)
-        price = d.get("price") if isinstance(d, dict) else None
-        if price is None or float(price) <= 0:
-            print(f"  [{today_str}] ⚠ TTF API: δεν ήρθε έγκυρη τιμή ({price!r}) -- η προηγούμενη εγγραφή (αν υπάρχει) μένει.")
-            return
-        if d.get("currency") not in (None, "EUR"):
-            print(f"  [{today_str}] ⚠ TTF API: νόμισμα {d.get('currency')!r} αντί EUR -- η τιμή αγνοείται.")
-            return
-        row = {"Ημερομηνία": today_str, "TTF_Price (€/MWh)": round(float(price), 2), "Change": d.get("change"),
-               "Change_Percent": d.get("change_percent"), "Quote_Time": d.get("created_at"),
-               "Snapshots": (today_row.get("Snapshots", 1) + 1) if today_row and today_row.get("Estimated") is False else 1, "Estimated": False}
-        db["ttf_prices"] = [r for r in rows if r.get("Ημερομηνία") != today_str] + [row]
-        print(f"  [{today_str}] Fetched latest TTF price from API: {row['TTF_Price (€/MWh)']} €/MWh (ώρα τιμής {row['Quote_Time']}, snapshot #{row['Snapshots']})")
-    except Exception as e:
-        print(f"  [{today_str}] ⚠ TTF API: {type(e).__name__}: {e} -- η προηγούμενη εγγραφή (αν υπάρχει) μένει.")
-
-# ==========================================
 # PROCESSOR (ADVANCED ECONOMICS ENGINE)
 # ==========================================
 def process_economics(date_str):
@@ -798,9 +766,12 @@ def recompute_constrained():
             unmatched.add(str(c.get("Gas Factory")))
             continue
         try:
-            h_from = int(str(c["Hour From"]).split(":")[0]) + 1
-            h_to = int(str(c["Hour To"]).split(":")[0])
-        except (KeyError, ValueError):
+            if "Hour Index From" in c:   # K20: μέρα αλλαγής ώρας
+                h_from, h_to = int(c["Hour Index From"]), int(c["Hour Index To"])
+            else:
+                h_from = int(str(c["Hour From"]).split(":")[0]) + 1
+                h_to = int(str(c["Hour To"]).split(":")[0])
+        except (KeyError, ValueError, TypeError):
             continue
         hours_by[c["Date"]][unit].update(range(h_from, h_to + 1))
     blank_hours = defaultdict(lambda: defaultdict(set))
@@ -817,7 +788,7 @@ def recompute_constrained():
             if rec is None:
                 no_scada_unit.add((d, unit))
                 continue
-            used = sorted(h for h in hrs if 1 <= h <= 24)
+            used = sorted(h for h in hrs if 1 <= h <= hours_in_day(d))
             mwh = sum(float(rec.get(f"{h:02d}:00") or 0.0) for h in used)
             row = {"Date": d, "Unit": unit, "MWh": round(mwh, 3), "Hours": len(used)}
             missing = len([h for h in used if h in blank_hours[d][unit]])
@@ -895,6 +866,11 @@ if __name__ == "__main__":
         _days = len({r.get("Ημερομηνία") for r in db.pop("scada_generation_hourly")})
         print(f"Cleanup: αφαιρέθηκε το scada_generation_hourly ({_days} ημέρες) -- μένουν οι τελευταίες {KEEP_HOURLY_DAYS} στο {HOURLY_FILE} και τα MWh περιορισμών στο daily_constrained_mwh (D30).")
 
+    # D35: η τιμή TTF δεν συλλέγεται πια (δεν υπάρχει δικαίωμα δημόσιας εμφάνισης, K33)· οι εγγραφές που υπήρχαν φεύγουν από το δημόσιο αρχείο.
+    if "ttf_prices" in db:
+        _n = len(db.pop("ttf_prices"))
+        print(f"Cleanup: αφαιρέθηκε το ttf_prices ({_n} εγγραφές) -- η τιμή TTF δεν συλλέγεται πια (D35).")
+
     # Εκκαθάριση: ό,τι δεν είναι μονάδα Φ.Α. (π.χ. η γραμμή AGRAS = υδροηλεκτρικό) φεύγει από τα constraints.
     _before = len(db["daily_gas_constraints"])
     db["daily_gas_constraints"] = [d for d in db["daily_gas_constraints"] if is_gas_constraint_unit(d.get("Gas Factory"))]
@@ -918,7 +894,6 @@ if __name__ == "__main__":
         for i in range(10, -1, -1):
             date_list.append(today - timedelta(days=i))
         fetch_latest_co2_price(today.strftime("%Y-%m-%d"))  # 1 κλήση/run, ΜΟΝΟ στο cron, ποτέ σε backfill
-        fetch_latest_ttf_price(today.strftime("%Y-%m-%d"))  # D32: ξεχωριστή κλήση, δεν αγγίζει το CO2
             
     for target_date in date_list:
         date_str = target_date.strftime("%Y-%m-%d")

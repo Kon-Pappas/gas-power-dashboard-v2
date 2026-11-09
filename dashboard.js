@@ -592,9 +592,7 @@ function updateEconomicsTab() {
         tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">${i18n[currentLang].ecoEmpty}</td></tr>`;
         if (cards) cards.innerHTML = `<div class="p-4 text-center text-slate-500 text-sm">${i18n[currentLang].ecoEmpty}</div>`;
         document.getElementById('kpiHgsida').innerText = DASH;
-        document.getElementById('kpiCo2').innerText = DASH;
-        const co2BadgeEmpty = document.getElementById('kpiCo2Badge');
-        if (co2BadgeEmpty) co2BadgeEmpty.style.display = 'none';
+        document.getElementById('kpiCo2Tons').innerText = DASH;
         document.getElementById('kpiFleetEff').innerText = DASH;
         document.getElementById('kpiAvgGasCost').innerText = DASH;
         document.getElementById('kpiEcoScada').innerText = DASH;
@@ -604,20 +602,11 @@ function updateEconomicsTab() {
 
     const totals = dayEco["Fleet Totals"];
     const hgsidaVal = dayEco["HGSIDA (€/MWh)"] || 0;
-    const co2PriceVal = dayEco["CO2 Price (€/t)"] || 0;
 
     document.getElementById('kpiHgsida').innerText = fmtN(hgsidaVal, 2);
-    const kpiCo2El = document.getElementById('kpiCo2');
-    kpiCo2El.innerText = co2PriceVal > 0 ? fmtN(co2PriceVal, 2) : DASH;
-    const co2Badge = document.getElementById('kpiCo2Badge');
-    if (co2Badge) {
-        const langCo2 = (typeof currentLang !== 'undefined') ? currentLang : 'en';
-        co2Badge.innerText = langCo2 === 'el' ? 'εκτίμηση' : 'estimated';
-        co2Badge.title = langCo2 === 'el'
-            ? 'Δεν υπάρχει διαθέσιμη πραγματική τιμή CO2 για αυτή τη μέρα. Χρησιμοποιείται εκτίμηση.'
-            : 'No real CO2 price is available for this day. An estimated value is used.';
-        co2Badge.style.display = dayEco["CO2 Price Estimated"] ? 'inline' : 'none';
-    }
+    // D35: η ΤΙΜΗ CO2 δεν εμφανίζεται (K33)· η κάρτα δείχνει τις εκπομπές του στόλου, που τις υπολογίζουμε εμείς
+    const co2Tons = totals["Συνολικοί Τόνοι CO2 (t)"];
+    document.getElementById('kpiCo2Tons').innerText = (typeof co2Tons === 'number' && co2Tons > 0) ? fmtN(co2Tons, 0) : DASH;
     document.getElementById('kpiEcoScada').innerText = fmtN(totals["Συνολική Παραγωγή (MWh)"], 0);
     document.getElementById('kpiAvgGasCost').innerText = fmtN(totals["Μέσο SRMC Στόλου (€/MWh)"], 2);
     document.getElementById('kpiTotalEcoCost').innerText = fmtN(totals["Συνολικό Κόστος Στόλου (€)"], 0);   // το € είναι ήδη στο HTML δίπλα στο νούμερο

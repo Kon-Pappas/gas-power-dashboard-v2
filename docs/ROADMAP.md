@@ -38,10 +38,11 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 - **K10 — done 28 Oct 2026 (D29 and D30):** the constrained MWh are calculated in Python, the hourly SCADA of the last 14 days is in `data/scada_hourly.json` and has left `historical.json`, a failing day keeps its previous data; the data file went from 215 to 106 KB gzip
 - Then monthly files with a manifest **only if** the measured size justifies it (K11); refresh with ETag instead of `?v=<time>`
 
-## Phase 8: analysis (agreed 9 Nov 2026, D32 and D33)
+## Phase 8: analysis (agreed 9 and 10 Nov 2026, D33 and D35)
 
-- **Batch 17 — TTF collection (D32):** `ttf_prices`, a separate call, the quote time stored, no change in the page. After the upload: check the log of the first cron run (the line *Fetched latest TTF price*), then the data after a day or two
-- **K20** (the hours of the constraints on a clock-change day): before the unit data, which use the same hour mapping
+- **K33 (the right to publish third-party prices) — decided 10 Nov 2026 (D35):** the TTF is removed, the CO2 price is an input only and is not shown, the email goes to support@oilpriceapi.com; **dated check 24 Nov 2026**. No TTF in any tab, and no second TTF series
+- **The gas price panel (analysis of 10 Nov, 161 days):** the HGSIWD is almost the HGSIDA (mean difference -0.23 EUR/MWh, median 0; 17 days with a difference of 3 EUR/MWh or more); the **HGMBI and HGMSI are not independent information**: they are the HGSIDA times 1.093 and 0.895 (standard deviations 0.031 and 0.026), the band between them is **19.9 % ± 0.6 %** of the price and the correlation with the HGSIDA is 0.993; none of the differences has a relation with the daily change of the fleet gas burn (correlations between -0.09 and +0.11). So the panel can show the four indices, but the HGMBI-HGMSI band is a proportional risk band and not a new signal. HEnEx itself states a 96 % correlation of the HGSIDA with the TTF EGSI (a published fact that can be cited with its source, without collecting the TTF)
+- **K20 (D34) — done:** the constraint hours on days of 23 or 25 hours; before the unit data, which use the same hour mapping
 - **Python key for the daily review** (decomposition, outages and returns, constraint detail), with a backfill of the whole history; its own file, loaded when the tab opens
 - **The tab *Daily review* (last) and the new boxes in *Monthly analytics* and *Constraints & surplus* (D33):** a sample with real numbers before the code, as always
 - **Hourly day-ahead price** (the `dam_mcp_hourly` of D16 comes back, about 8 to 10 KB gzip) and the **cost of the constraints** (the unit's SRMC against the price, per hour of constraint)
@@ -49,11 +50,12 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Correctness (alongside the phases)
 
-- Missing values and bare `except` (K13, K14) are done (D29). Clock-change days are done for the SCADA (D17) and the ISP (D18); K20 remains. K28 (windows with a half hour) after step 2
+- Missing values and bare `except` (K13, K14) are done (D29). Clock-change days are done for the SCADA (D17), the ISP (D18) and the constraints (D34). K28 (windows with a half hour) after step 2
 
 ## Dated checks
 
-- **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Done 26 Oct 2026:** the fix of D17 went online and the 10-day re-check repaired the 25 Oct record (73,419 MWh, 25 hourly keys). **Before 28 Mar 2027 (23 hours):** K20
+- **24 Nov 2026 — K33:** 14 days after the email to OilPriceAPI: if there is no answer, decide on the CO2 series in the public file (D35)
+- **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Done 26 Oct 2026:** the fix of D17 went online and the 10-day re-check repaired the 25 Oct record (73,419 MWh, 25 hourly keys). **28 Mar 2027 (23 hours) and 31 Oct 2027 (25 hours): the first real constraint with a window on such a day** (D34): compare the MWh of the program with the sum of the hourly SCADA at the columns stored in *Hour Index From/To*, and run `python scripts/check_constraints.py`
 - **26 Oct 2026 — done:** the ISP history (K21 → D18): five manual runs and a sixth for 21–26 Oct, 148 days; the ISP / SCADA ratio went from 1.242 to 1.006 on average
 - **After every batch:** compare the repository with the zip, byte by byte; check that the Pages build is green; run the page in Chromium at 360 and 320 px
 - **D31 backfill — done 28 Oct 2026:** five runs (1 Jun to 28 Oct), the repository checked afterwards: 148 of 148 days identical to the new table, the targets of 25 Oct reached (fleet cost 13,432,491 EUR, fleet SRMC 182.96, ElpedThisv 203.59), the size 106 KB gzip
@@ -66,9 +68,13 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 1. A full list of pinned dependencies (K19)
 2. Constraint windows with a half hour: weight the edge hours (from now on, or with a backfill of the old days), or leave it (K28)
 3. The old Komotini unit: the same consistency and its minimum load (K29), after the backfill of D31
-4. The one-off probe of `past_month` for the TTF (and the CO2) on the free plan, and a test week 1 to 7 Apr before the backfill of April and May (K32)
-5. A run in the evening for the price calls only (K31), after a few weeks of TTF data
+4. **K33, what is left after D35:** the CO2 series in the public file (keep and accept the risk, keep only what the calculation needs, or another source), after the answer of the provider or on 24 Nov; the terms of use of the HEnEx and ADMIE data for public display have not been checked
+5. A test week 1 to 7 Apr before the backfill of April and May (K32); no probe of `past_month` is needed
+6. The quote time of the CO2 (K31), optional and after K33
 
+Decided on 10 Nov 2026 (D35): the TTF is removed; the CO2 price stays in the calculations and is no longer displayed (the card becomes CO2 emissions in tonnes), the source is named in the Methodology and in the README; the email to the provider.
+Raised on 9 Nov 2026: K33. The account page confirms that the free plan has no history (K32).
+Decided on 9 Nov 2026: K20 together with the corrections of the docs.
 Decided on 9 Nov 2026: the TTF is collected with a separate call and its quote time, no paid plan and no history for now; one new tab, the last one, with the boxes of month scale moved (not copied) to *Monthly analytics* and *Constraints & surplus*; units sorted by their effect on the cost; a return is 3 days without production; the hourly day-ahead price comes back; *N+ days* for a stretch that begins before 1 Jun (D32, D33).
 Decided on 28 Oct 2026: the part-load efficiency of the eight F-class units with k = 0.30 and four minimum loads from the data, with a backfill of the whole history; the old Komotini later and apart (D31).
 Decided on 27 Oct 2026: the constraints are calculated in Python in two batches, with a rolling window of 14 days for the hourly SCADA, blank cells counted and not stored as null, and failures isolated per day (D29); three cards per row from 1024 to 1279 px and the shorter date label on phones (D28); no emoji, labels in sentence case, the Greek terms and the names of the cards, the units keep their Latin names on the Greek page (D25); the cost table as cards on phones (D27).
