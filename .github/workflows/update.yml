@@ -61,6 +61,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add data/historical.json data/meta.json
           if [ -f data/scada_hourly.json ]; then git add data/scada_hourly.json; fi
+          if [ -f data/review.json ]; then git add data/review.json; fi
 
           if git diff --staged --quiet; then
             echo "Δεν βρέθηκαν νέα δεδομένα (ή δεν υπάρχει αλλαγή). Παράβλεψη commit."
