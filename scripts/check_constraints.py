@@ -88,6 +88,23 @@ def main():
         for b in bad[:20]: print("  ", b)
         return 1
     print("✔ Όλες οι ημέρες ταυτίζονται.")
+    return check_review(db)
+
+REVIEW = 'data/review.json'
+
+def check_review(db):
+    """D36: τα MWh σε περιορισμό που γράφει η Ανασκόπηση (data/review.json) ΠΡΕΠΕΙ να είναι τα ίδια με το daily_constrained_mwh, μονάδα προς μονάδα."""
+    if not os.path.exists(REVIEW):
+        print(f"(δεν υπάρχει ακόμα το {REVIEW}· δεν ελέγχεται)"); return 0
+    rv = load(REVIEW)
+    cm = {(r['Date'], r['Unit']): r['MWh'] for r in db['daily_constrained_mwh']}
+    rows = {(d, c['u']): c['mwh'] for d, v in rv.get('days', {}).items() for c in v.get('cons', [])}
+    diff_keys = sorted(set(cm) ^ set(rows))
+    diff_val = sorted(k for k in set(cm) & set(rows) if abs(cm[k] - rows[k]) > TOLERANCE)
+    print(f"Review: {len(rows)} ζεύγη ημέρας-μονάδας με επίδραση περιορισμών | daily_constrained_mwh: {len(cm)} | διαφορετικά ζεύγη: {len(diff_keys)} | διαφορετικά MWh: {len(diff_val)}")
+    if diff_keys or diff_val:
+        print("✗ Το review.json δεν ταυτίζεται με το daily_constrained_mwh:", (diff_keys + diff_val)[:10]); return 1
+    print("✔ Το review.json ταυτίζεται με το daily_constrained_mwh.")
     return 0
 
 if __name__ == '__main__':

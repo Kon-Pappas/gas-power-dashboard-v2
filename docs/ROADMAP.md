@@ -45,7 +45,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 - **The owner's idea of 10 Nov: the other columns of the daily HEnEx file** (traded volume, number of orders and trades, price range, closing price against the VWAP, the indicative prices of D+2 and D+3) instead of the HGMBI, HGMSI and HGSIWD. It has independent information, unlike those three; on 8 Nov the platform volume (WD + DA, 20,160 MWh) was 16.3 % of the gas burn of the fleet, and D+2 and D+3 had no trades. **On hold until K34**; a first look needs a backfill of the extra columns
 - **The gas price panel (analysis of 10 Nov, 161 days):** the HGSIWD is almost the HGSIDA (mean difference -0.23 EUR/MWh, median 0; 17 days with a difference of 3 EUR/MWh or more); the **HGMBI and HGMSI are not independent information**: they are the HGSIDA times 1.093 and 0.895 (standard deviations 0.031 and 0.026), the band between them is **19.9 % ± 0.6 %** of the price and the correlation with the HGSIDA is 0.993; none of the differences has a relation with the daily change of the fleet gas burn (correlations between -0.09 and +0.11). So the panel can show the four indices, but the HGMBI-HGMSI band is a proportional risk band and not a new signal. HEnEx itself states a 96 % correlation of the HGSIDA with the TTF EGSI (a published fact that can be cited with its source, without collecting the TTF)
 - **K20 (D34) — done:** the constraint hours on days of 23 or 25 hours; before the unit data, which use the same hour mapping
-- **Python key for the daily review** (decomposition, outages and returns, constraint detail), with a backfill of the whole history; its own file, loaded when the tab opens
+- **Python key for the daily review — done 10 Nov 2026 (D36, batch 21):** `data/review.json` (decomposition, outages and returns, constraint effect, by day and by month), built with the program code from the whole hourly history, so no backfill runs. **Next:** the tab *Daily review* and the new boxes in the two other tabs (D33), a sample with real numbers before the code
 - **The tab *Daily review* (last) and the new boxes in *Monthly analytics* and *Constraints & surplus* (D33):** a sample with real numbers before the code, as always
 - **Hourly day-ahead price** (the `dam_mcp_hourly` of D16 comes back, about 8 to 10 KB gzip) and the **cost of the constraints** (the unit's SRMC against the price, per hour of constraint)
 - **K11 (monthly files) and a longer history (K32):** a backfill 1 Apr to 31 May after a test week; from 1 Jan only after K11
@@ -56,6 +56,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Dated checks
 
+- **After the first run with D36:** open its log (the line *Review: 161 days, 20 returns, 6 months, 116 days with the effect of the constraints*; no `::error`), check that `data/review.json` is in the commit, that its old days are identical to the shipped file (only new days appear) and run `python scripts/check_constraints.py` (it must also say that the review equals the constrained MWh)
 - **K34, after the email to HEnEx:** the answer, or a reminder after 14 days; until then nothing more from the HEnEx file is added to the public data
 - **24 Nov 2026 — K33:** 14 days after the email to OilPriceAPI: if there is no answer, decide on the CO2 series in the public file (D35)
 - **26 Oct 2026 — done:** the files of 25 Oct (25 hours) were checked with the real SCADA and DAM files (D16, D17). **Done 26 Oct 2026:** the fix of D17 went online and the 10-day re-check repaired the 25 Oct record (73,419 MWh, 25 hourly keys). **28 Mar 2027 (23 hours) and 31 Oct 2027 (25 hours): the first real constraint with a window on such a day** (D34): compare the MWh of the program with the sum of the hourly SCADA at the columns stored in *Hour Index From/To*, and run `python scripts/check_constraints.py`
@@ -71,11 +72,13 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 1. A full list of pinned dependencies (K19)
 2. Constraint windows with a half hour: weight the edge hours (from now on, or with a backfill of the old days), or leave it (K28)
 3. The old Komotini unit: the same consistency and its minimum load (K29), after the backfill of D31
-4. **K34: the written consent of HEnEx** for the public display of its indices (email to info@enexgroup.gr); and **K35: which day the HGSIDA belongs to** (keep and state it, or the delivery day with a backfill)
+4. **K34: the written consent of HEnEx** for the public display of its indices (the email was sent on 9 Nov, waiting for the answer)
+   **K35: the delivery day of the HGSIDA** — decided to keep it for now; to be revisited (needs a backfill of all days)
 5. **K33, what is left after D35:** the CO2 series in the public file (keep and accept the risk, keep only what the calculation needs, or another source), after the answer of the provider or on 24 Nov; the terms of use of the HEnEx and ADMIE data for public display have not been checked
 6. A test week 1 to 7 Apr before the backfill of April and May (K32); no probe of `past_month` is needed
 7. The quote time of the CO2 (K31), optional and after K33
 
+Decided on 10 Nov 2026 (D36): the HGSIDA keeps its day and the Methodology states it (K35); the key of the Daily review is built first (`data/review.json`).
 Decided on 10 Nov 2026: the terms of use of the HEnEx and ADMIE data are checked first, before the other work (K34); the email to OilPriceAPI was sent.
 Decided on 10 Nov 2026 (D35): the TTF is removed; the CO2 price stays in the calculations and is no longer displayed (the card becomes CO2 emissions in tonnes), the source is named in the Methodology and in the README; the email to the provider.
 Raised on 9 Nov 2026: K33. The account page confirms that the free plan has no history (K32).

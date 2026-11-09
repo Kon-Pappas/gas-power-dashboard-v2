@@ -22,6 +22,8 @@ DATA_FILE = 'data/historical.json'
 META_FILE = 'data/meta.json'
 # D29: το ωριαίο SCADA των τελευταίων ημερών, ΜΟΝΟ για το Python (τα οικονομικά, οι περιορισμοί). Η σελίδα δεν το κατεβάζει.
 HOURLY_FILE = 'data/scada_hourly.json'
+# D36: δικά μας παράγωγα για την Ανασκόπηση ημέρας (διάσπαση κόστους, διακοπές/επιστροφές, επίδραση περιορισμών)· ΚΑΜΙΑ τιμή τρίτου (K33, K34).
+REVIEW_FILE = 'data/review.json'
 KEEP_HOURLY_DAYS = 14
 ADMIE_API_URL = "https://www.admie.gr/getOperationMarketFile"
 TZ = pytz.timezone('Europe/Athens')
@@ -752,13 +754,11 @@ def resolve_constraint_unit(isp_name):
 def hourly_for(date_str):
     return [r for r in hourly if r.get("Ημερομηνία") == date_str]
 
-def recompute_constrained():
-    """MWh που παρήγαγε κάθε μονάδα Φ.Α. στις ώρες που το ISP2 την έχει σε Generic Constraint, ανά μέρα.
-    Ώρες: ο ίδιος κανόνας με τον παλιό υπολογισμό του browser -- η ώρα «από» αυξάνεται κατά 1 και η ώρα «έως» κόβεται στην ακέραια ώρα
-    (παράθυρο 11:00-15:30 = ώρες 12…15). Διαφορά: ΕΝΩΝΟΝΤΑΙ οι πραγματικές ώρες όλων των γραμμών της μονάδας, όχι το διάστημα από την
-    πρώτη ως την τελευταία (ίδιο αποτέλεσμα σήμερα· δεν θα μετρήσει ώρες χωρίς constraint αν εμφανιστεί κενό).
-    Μέρα χωρίς ωριαίο SCADA δεν παίρνει γραμμές (περιμένει). Άγνωστο όνομα ISP2 -> προειδοποίηση, δεν προσμετράται σιωπηλά."""
+def constraint_hours_by_day_unit():
+    """Οι ώρες (στήλες του ωριαίου SCADA) και το παράθυρο ανά (ημέρα, μονάδα) από τα constraints του ISP2. Κοινή λογική του recompute_constrained
+    και της Ανασκόπησης ημέρας (D36), ώστε τα MWh και η επίδραση στην απόδοση να βγαίνουν από ΤΙΣ ΙΔΙΕΣ ώρες."""
     hours_by = defaultdict(lambda: defaultdict(set))
+    windows = {}
     unmatched = set()
     for c in db["daily_gas_constraints"]:
         unit = resolve_constraint_unit(c.get("Gas Factory"))
@@ -774,6 +774,17 @@ def recompute_constrained():
         except (KeyError, ValueError, TypeError):
             continue
         hours_by[c["Date"]][unit].update(range(h_from, h_to + 1))
+        w = windows.setdefault((c["Date"], unit), [str(c.get("Hour From")), str(c.get("Hour To"))])
+        w[0], w[1] = min(w[0], str(c.get("Hour From"))), max(w[1], str(c.get("Hour To")))
+    return hours_by, windows, unmatched
+
+def recompute_constrained():
+    """MWh που παρήγαγε κάθε μονάδα Φ.Α. στις ώρες που το ISP2 την έχει σε Generic Constraint, ανά μέρα.
+    Ώρες: ο ίδιος κανόνας με τον παλιό υπολογισμό του browser -- η ώρα «από» αυξάνεται κατά 1 και η ώρα «έως» κόβεται στην ακέραια ώρα
+    (παράθυρο 11:00-15:30 = ώρες 12…15). Διαφορά: ΕΝΩΝΟΝΤΑΙ οι πραγματικές ώρες όλων των γραμμών της μονάδας, όχι το διάστημα από την
+    πρώτη ως την τελευταία (ίδιο αποτέλεσμα σήμερα· δεν θα μετρήσει ώρες χωρίς constraint αν εμφανιστεί κενό).
+    Μέρα χωρίς ωριαίο SCADA δεν παίρνει γραμμές (περιμένει). Άγνωστο όνομα ISP2 -> προειδοποίηση, δεν προσμετράται σιωπηλά."""
+    hours_by, _windows, unmatched = constraint_hours_by_day_unit()
     blank_hours = defaultdict(lambda: defaultdict(set))
     for q in db["scada_quality"]:
         blank_hours[q.get("Ημερομηνία")][q.get("Μονάδα Φ.Α.")].update(q.get("Ώρες", []))
@@ -805,6 +816,222 @@ def recompute_constrained():
     if no_scada_unit:
         print(f"  ⚠ Constraints: {len(no_scada_unit)} ζεύγη ημέρας-μονάδας χωρίς γραμμή SCADA, π.χ. {sorted(no_scada_unit)[:3]}")
     print(f"  Constrained MWh: {len(rows)} γραμμές, {len({r['Date'] for r in rows})} ημέρες, σύνολο {sum(r['MWh'] for r in rows):,.1f} MWh (ξαναϋπολογίστηκαν οι {len(dates_with_hourly)} ημέρες με ωριαίο SCADA)")
+
+# ==========================================
+# ΑΝΑΣΚΟΠΗΣΗ ΗΜΕΡΑΣ (D36): δικά μας παράγωγα -- ΚΑΜΙΑ τιμή τρίτου (ούτε HGSIDA ούτε CO2) δεν μπαίνει στο data/review.json (K33, K34).
+# Υπολογίζονται σε ΚΑΘΕ run από τα ήδη αποθηκευμένα δεδομένα· το ωριαίο SCADA χρειάζεται μόνο για την επίδραση των περιορισμών (οι ημέρες που
+# δεν το έχουν πια κρατούν ό,τι είχε υπολογιστεί όταν το είχαν, όπως στο D30).
+# ==========================================
+OFF_THRESHOLD_MWH = 1.0      # «χωρίς παραγωγή»: έως 1 MWh ημερησίως
+RETURN_MIN_OFF_DAYS = 3      # «επιστροφή»: τουλάχιστον 3 ημέρες χωρίς παραγωγή και μετά παραγωγή άνω του 1 MWh (απόφαση 9/11)
+BASELINE_DAYS = 7
+BASELINE_MIN_DAYS = 3
+_FALLBACK_SPEC = {"p_min": 150, "p_max": 500, "eff_min": 0.43, "eff_max": 0.57}   # ίδιο με το process_economics για άγνωστη μονάδα
+
+def unit_efficiency(unit_name, p):
+    """Η ίδια καμπύλη απόδοσης-φορτίου με το process_economics (D31): γραμμική παρεμβολή μεταξύ eff_min στο p_min και eff_max στο p_max."""
+    sp = PLANT_SPECS.get(unit_name, _FALLBACK_SPEC)
+    p_eff = max(sp["p_min"], min(sp["p_max"], p))
+    f = (p_eff - sp["p_min"]) / (sp["p_max"] - sp["p_min"]) if sp["p_max"] > sp["p_min"] else 0.0
+    return sp["eff_min"] + f * (sp["eff_max"] - sp["eff_min"])
+
+def _day_agg(e):
+    """Από μια ημέρα οικονομικών: παραγωγή q, κόστος καυσίμου G, κόστος CO2 C, τόνοι t και θερμική ενέργεια καυσίμου th = G / τιμή αερίου."""
+    t = e.get("Fleet Totals") or {}
+    h = e.get("HGSIDA (€/MWh)") or 0.0
+    G = t.get("Συνολικό Κόστος Καυσίμου (€)") or 0.0
+    return {"q": t.get("Συνολική Παραγωγή (MWh)") or 0.0, "G": G, "C": t.get("Συνολικό Κόστος CO2 (€)") or 0.0,
+            "t": t.get("Συνολικοί Τόνοι CO2 (t)") or 0.0, "th": (G / h) if h > 0 else 0.0}
+
+def _mean_agg(items):
+    return {k: sum(x[k] for x in items) / len(items) for k in ("q", "G", "C", "t", "th")}
+
+def cost_decomposition(a, b):
+    """Ακριβής διάσπαση (LMDI, χωρίς υπόλοιπο) της μεταβολής του κόστους στόλου από την κατάσταση a στην b σε: όγκο παραγωγής, τιμή αερίου,
+    τιμή CO2 και απόδοση/μείγμα μονάδων. Κόστος = G + C, G = q·(G/th)·(th/q), C = q·(C/t)·(t/q). Επιστρέφει ακέραια € ή None αν δεν ορίζεται.
+    Τα στρογγυλεμένα στοιχεία αθροίζουν ΑΚΡΙΒΩΣ στο σύνολο (το υπόλοιπο της στρογγύλευσης, το πολύ 2 €, πάει στο μεγαλύτερο)."""
+    for x in (a, b):
+        if not (x["q"] > 0 and x["th"] > 0 and x["G"] > 0 and x["t"] > 0 and x["C"] > 0):
+            return None
+    def L(x, y):
+        return (y - x) / math.log(y / x) if abs(y - x) > 1e-9 * max(abs(x), abs(y)) else x
+    lg, lc = L(a["G"], b["G"]), L(a["C"], b["C"])
+    lr = lambda x, y: math.log(y / x)
+    parts = {
+        "vol": (lg + lc) * lr(a["q"], b["q"]),
+        "gas": lg * lr(a["G"] / a["th"], b["G"] / b["th"]),
+        "co2": lc * lr(a["C"] / a["t"], b["C"] / b["t"]),
+        "mix": lg * lr(a["th"] / a["q"], b["th"] / b["q"]) + lc * lr(a["t"] / a["q"], b["t"] / b["q"]),
+    }
+    total = (b["G"] + b["C"]) - (a["G"] + a["C"])
+    if abs(sum(parts.values()) - total) > 1e-6 * max(1.0, abs(total)):
+        return None
+    out = {k: int(round(v)) for k, v in parts.items()}
+    out["total"] = int(round(total))
+    residual = out["total"] - (out["vol"] + out["gas"] + out["co2"] + out["mix"])
+    if residual:
+        out[max(parts, key=lambda k: abs(parts[k]))] += residual
+    return out
+
+def _prev_day(d, k=1):
+    return (datetime.strptime(d, "%Y-%m-%d") - timedelta(days=k)).strftime("%Y-%m-%d")
+
+def _unit_status(scada_rows):
+    """Μονάδες χωρίς παραγωγή ανά ημέρα [μονάδα, ημέρες στη σειρά, 1 αν η σειρά αρχίζει στην πρώτη ημέρα του ιστορικού μας («N+»)] και επιστροφές
+    (≥ RETURN_MIN_OFF_DAYS ημέρες χωρίς παραγωγή και μετά παραγωγή άνω του OFF_THRESHOLD_MWH). Κενό στις ημερομηνίες σπάει τη σειρά (άγνωστο)."""
+    mwh = defaultdict(dict)
+    for r in scada_rows:
+        u = r.get("Μονάδα Φ.Α.")
+        if u and u != "TOTAL GAS UNITS":
+            mwh[u][r["Ημερομηνία"]] = float(r.get("Παραγωγή SCADA (MWh)") or 0.0)
+    all_dates = sorted({r["Ημερομηνία"] for r in scada_rows})
+    if not all_dates:
+        return {}, []
+    first = all_dates[0]
+    out, events = defaultdict(list), []
+    for u in sorted(mwh):
+        run, run_start, prev_d = 0, None, None
+        for d in all_dates:
+            v = mwh[u].get(d)
+            gap = prev_d is not None and _prev_day(d, 1) != prev_d     # λείπει ημερομηνία ανάμεσα: η σειρά δεν είναι γνωστή
+            if v is None or gap:
+                run, run_start = 0, None
+            prev_d = d
+            if v is None:
+                continue
+            if v <= OFF_THRESHOLD_MWH:
+                run += 1
+                run_start = run_start or d
+                out[d].append([u, run, 1 if run_start == first else 0])
+            else:
+                if run >= RETURN_MIN_OFF_DAYS:
+                    events.append({"d": d, "u": u, "off": run, "plus": 1 if run_start == first else 0, "from": run_start, "mwh": int(round(v))})
+                run, run_start = 0, None
+    return out, sorted(events, key=lambda e: (e["d"], e["u"]))
+
+def _constraint_detail(date_str, hgsida):
+    """Επίδραση των περιορισμών ανά μονάδα για μια ημέρα που ΕΧΕΙ ωριαίο SCADA: MWh και ώρες μέσα στον περιορισμό, ακατέργαστα αθροίσματα φορτίου
+    και θερμικής ενέργειας (μοντελοποιημένη απόδοση) μέσα έναντι έξω από τις ώρες του (μόνο ώρες με παραγωγή), και το επιπλέον αέριο που
+    κοστίζει η χαμηλότερη απόδοση μέσα. Από τα αθροίσματα βγαίνει ακριβής ο μήνας."""
+    hours_by, windows, _ = constraint_hours_by_day_unit()
+    recs = {str(r.get("Μονάδα Φ.Α.")).strip(): r for r in hourly_for(date_str)}
+    if not recs or date_str not in hours_by:
+        return None
+    n_hours = hours_in_day(date_str)
+    rows = []
+    for unit, hrs in sorted(hours_by[date_str].items()):
+        rec = recs.get(unit)
+        if rec is None:
+            continue
+        used = {h for h in hrs if 1 <= h <= n_hours}
+        key = lambda h: f"{h:02d}:00"
+        mwh_in = sum(float(rec.get(key(h)) or 0.0) for h in used)     # ΙΔΙΟ άθροισμα με το recompute_constrained
+        tot = sum(float(rec.get(key(h)) or 0.0) for h in range(1, n_hours + 1))
+        pin = thin = pout = thout = 0.0
+        nin = nout = 0
+        for h in range(1, n_hours + 1):
+            p = float(rec.get(key(h)) or 0.0)
+            if p <= 0:
+                continue
+            th = p / unit_efficiency(unit, p)
+            if h in used:
+                pin, thin, nin = pin + p, thin + th, nin + 1
+            else:
+                pout, thout, nout = pout + p, thout + th, nout + 1
+        # Μένουν μόνο τα ακατέργαστα αθροίσματα· φορτίο μέσα/έξω = pin/nin, pout/nout και απόδοση = pin/thin, pout/thout (μία διαίρεση, και στον μήνα έχουν υπολογιστεί)
+        row = {"u": unit, "w": windows.get((date_str, unit), ["", ""]), "h": len(used), "mwh": round(mwh_in, 3), "tot": round(tot, 1),
+               "pin": round(pin, 1), "thin": round(thin, 1), "nin": nin, "pout": round(pout, 1), "thout": round(thout, 1), "nout": nout}
+        if pin > 0 and thout > 0 and pout > 0:
+            extra = thin - pin / (pout / thout)
+            row["xth"] = round(extra, 1)
+            row["xeur"] = round(extra * hgsida) if hgsida else None
+        else:
+            row["xth"] = row["xeur"] = None
+        rows.append(row)
+    return rows
+
+def _month_constraints(day_rows):
+    """Μηνιαίος πίνακας επίδρασης περιορισμών ανά μονάδα, ακριβής από τα ακατέργαστα αθροίσματα των ημερών."""
+    acc = defaultdict(lambda: defaultdict(float))
+    for rows in day_rows:
+        for r in rows:
+            a = acc[r["u"]]
+            a["days"] += 1
+            for k in ("h", "mwh", "tot", "pin", "thin", "nin", "pout", "thout", "nout"):
+                a[k] += r.get(k) or 0.0
+            if r.get("xth") is not None:
+                a["xth"] += r["xth"]
+                a["xeur"] += r.get("xeur") or 0.0
+    res = []
+    for u, a in sorted(acc.items(), key=lambda kv: -kv[1]["mwh"]):
+        res.append({"u": u, "days": int(a["days"]), "h": int(a["h"]), "mwh": round(a["mwh"], 3), "share": round(a["mwh"] / a["tot"] * 100, 1) if a["tot"] else None,
+                    "li": round(a["pin"] / a["nin"], 1) if a["nin"] else None, "lo": round(a["pout"] / a["nout"], 1) if a["nout"] else None,
+                    "ei": round(a["pin"] / a["thin"] * 100, 2) if a["thin"] else None, "eo": round(a["pout"] / a["thout"] * 100, 2) if a["thout"] else None,
+                    "xth": round(a["xth"], 1), "xeur": int(round(a["xeur"]))})
+    return res
+
+def load_review():
+    try:
+        with open(REVIEW_FILE, 'r', encoding='utf-8') as f:
+            r = json.load(f)
+        if isinstance(r, dict) and isinstance(r.get("days"), dict):
+            return r
+    except (OSError, json.JSONDecodeError):
+        pass
+    return {"days": {}}
+
+def build_review(prev=None):
+    """Χτίζει όλο το περιεχόμενο του data/review.json από τα δεδομένα που υπάρχουν τώρα. prev = το προηγούμενο αρχείο (για τις ημέρες χωρίς ωριαίο SCADA)."""
+    prev = prev or {"days": {}}
+    E = {e["Ημερομηνία"]: e for e in db["daily_economics"] if e.get("Fleet Totals")}
+    agg = {d: _day_agg(e) for d, e in E.items()}
+    out_by_day, events = _unit_status(db["scada_generation"])
+    scada_days = sorted({r["Ημερομηνία"] for r in db["scada_generation"]})
+    dates_with_hourly = {r.get("Ημερομηνία") for r in hourly}
+    days = {}
+    for d in sorted(set(scada_days) | set(E)):
+        entry = {}
+        if d in E:
+            pd_ = _prev_day(d)
+            if pd_ in E:
+                entry["vs_prev"] = cost_decomposition(agg[pd_], agg[d])
+            base = [agg[x] for x in (_prev_day(d, k) for k in range(1, BASELINE_DAYS + 1)) if x in agg]
+            if len(base) >= BASELINE_MIN_DAYS:
+                entry["vs_7d"] = cost_decomposition(_mean_agg(base), agg[d])
+                entry["n7"] = len(base)
+        if out_by_day.get(d):
+            entry["out"] = out_by_day[d]
+        if d in dates_with_hourly:                                   # η ημέρα έχει ωριαίο SCADA: υπολογίζεται εκ νέου (και αν δεν έχει περιορισμούς)
+            rows = _constraint_detail(d, E[d]["HGSIDA (€/MWh)"] if d in E else None)
+            if rows:
+                entry["cons"] = rows
+        elif prev["days"].get(d, {}).get("cons"):                    # αλλιώς κρατιέται ό,τι υπολογίστηκε όταν το είχε (D30)
+            entry["cons"] = prev["days"][d]["cons"]
+        if entry:
+            days[d] = entry
+    months = {}
+    for m in sorted({d[:7] for d in E}):
+        dm = [d for d in sorted(E) if d[:7] == m]
+        mean = _mean_agg([agg[d] for d in dm])
+        mo = {"n": len(dm), "mwh_d": round(mean["q"]), "th_d": round(mean["th"]), "cost_d": round(mean["G"] + mean["C"]), "tons_d": round(mean["t"], 1),
+              "eff": round(sum(agg[d]["q"] for d in dm) / sum(agg[d]["th"] for d in dm) * 100, 2) if sum(agg[d]["th"] for d in dm) else None}
+        y, mm = int(m[:4]), int(m[5:])
+        pm = f"{y - 1}-12" if mm == 1 else f"{y}-{mm - 1:02d}"
+        dp = [d for d in sorted(E) if d[:7] == pm]
+        if dp:
+            mo["vs_prev"] = cost_decomposition(_mean_agg([agg[d] for d in dp]), mean)
+        crows = [days[d]["cons"] for d in sorted(days) if d[:7] == m and days[d].get("cons")]
+        if crows:
+            mo["cons"] = _month_constraints(crows)
+        months[m] = mo
+    return {"version": 1, "first_day": scada_days[0] if scada_days else None, "days": days, "events": events, "months": months}
+
+def write_review():
+    review = build_review(load_review())
+    atomic_write_json(REVIEW_FILE, review, separators=(",", ":"), sort_keys=True)
+    ncons = sum(1 for v in review["days"].values() if v.get("cons"))
+    print(f"  Review: {len(review['days'])} ημέρες, {len(review['events'])} επιστροφές, {len(review['months'])} μήνες, {ncons} ημέρες με επίδραση περιορισμών ({REVIEW_FILE})")
+    return review
 
 # ==========================================
 # «ΤΕΛΕΥΤΑΙΑ ΣΩΣΤΑ ΔΕΔΟΜΕΝΑ» ΑΝΑ ΗΜΕΡΑ (D29): η wipe_date σβήνει την ημέρα πριν την επεξεργασία, άρα ένα σφάλμα ή μια προσωρινή
@@ -925,6 +1152,10 @@ if __name__ == "__main__":
         time.sleep(1)
 
     recompute_constrained()
+    try:
+        write_review()          # D36: πριν κοπεί το ωριαίο SCADA στις τελευταίες ημέρες· αποτυχία = το προηγούμενο αρχείο μένει
+    except Exception as e:
+        note_failure("-", "review", e)
     write_hourly_store(today)
     atomic_write_json(DATA_FILE, db, indent=2)
     meta = write_meta(datetime.now(TZ))

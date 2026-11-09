@@ -39,6 +39,7 @@ dashboard.js          tabs, charts and what is shown on the page
 update_data.py        data collection and all calculations (the economics and the constrained MWh)
 data/historical.json  all data the page reads (written by update_data.py)
 data/scada_hourly.json  hourly SCADA of the last 14 days, for update_data.py only (the page does not download it)
+data/review.json  own derived figures for the daily review (cost decomposition, units out and returns, effect of the constraints); no third-party price in it (written by update_data.py)
 data/meta.json        last and next update (written by update_data.py)
 scripts/              check_constraints.py (independent check of the constrained MWh of the last 14 days)
 docs/                 DECISIONS.md, KNOWN_ISSUES.md, ROADMAP.md
