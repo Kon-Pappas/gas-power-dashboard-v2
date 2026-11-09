@@ -48447,16 +48447,5 @@
       "Hours": 4
     }
   ],
-  "scada_quality": [],
-  "ttf_prices": [
-    {
-      "Ημερομηνία": "2026-11-09",
-      "TTF_Price (€/MWh)": 86.54,
-      "Change": null,
-      "Change_Percent": null,
-      "Quote_Time": "2026-11-09T10:50:45.918Z",
-      "Snapshots": 2,
-      "Estimated": false
-    }
-  ]
+  "scada_quality": []
 }
