@@ -76,7 +76,7 @@ else:
 keys = ["isp_generation", "scada_generation", 
         "henex_indices", "thermal_efficiency", 
         "daily_surplus", "daily_gas_constraints", "co2_prices", "daily_economics",
-        "daily_constrained_mwh", "scada_quality"]
+        "daily_constrained_mwh", "scada_quality", "ttf_prices"]
 for k in keys:
     if k not in db:
         db[k] = []
@@ -550,6 +550,58 @@ def fetch_latest_co2_price(today_str):
         db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": None})
         print(f"  [{today_str}] CO2 API error: {e}")
 
+
+# ==========================================
+# ΤΙΜΗ TTF (D32): ΜΟΝΟ συλλογή από σήμερα και μετά· η σελίδα δεν τη διαβάζει ακόμα
+# ==========================================
+TTF_CODE = "DUTCH_TTF_EUR"
+
+def fetch_latest_ttf_price(today_str):
+    """Καλείται ΜΙΑ φορά ανά εκτέλεση, ΜΟΝΟ από το καθημερινό cron (ποτέ σε manual backfill), ΧΩΡΙΣ να αγγίζει τη διαδρομή του CO2.
+    Το /v1/prices/latest δεν δέχεται ημερομηνία: η τιμή ανατίθεται στη ΣΗΜΕΡΙΝΗ μέρα. Σε αντίθεση με το CO2, κάθε εκτέλεση της ημέρας
+    ΑΝΤΙΚΑΘΙΣΤΑ την εγγραφή (τελευταίο snapshot της ημέρας, μέχρι 2 κλήσεις/ημέρα) και αποθηκεύεται η ΩΡΑ της τιμής (Quote_Time, από την πηγή),
+    ώστε να ξέρουμε ακριβώς τι μετράμε. Αποτυχία (HTTP, JSON, τιμή, νόμισμα) = η προηγούμενη εγγραφή μένει ως έχει· ποτέ exception, ποτέ None.
+    Σαββατοκύριακο: η αγορά είναι κλειστή· κρατιέται η τελευταία ΠΡΑΓΜΑΤΙΚΗ τιμή ως Estimated=True, χωρίς κλήση."""
+    rows = db["ttf_prices"]
+    today_row = next((r for r in rows if r.get("Ημερομηνία") == today_str), None)
+    if datetime.strptime(today_str, "%Y-%m-%d").weekday() >= 5:
+        if today_row is None:
+            last_real = sorted([r for r in rows if r.get("Ημερομηνία") < today_str and r.get("TTF_Price (€/MWh)") is not None
+                                and r.get("Estimated") is False], key=lambda r: r["Ημερομηνία"])
+            if last_real:
+                src = last_real[-1]
+                rows.append({"Ημερομηνία": today_str, "TTF_Price (€/MWh)": src["TTF_Price (€/MWh)"], "Quote_Time": src.get("Quote_Time"), "Estimated": True})
+                print(f"  [{today_str}] TTF: Σαββατοκύριακο -- κρατάμε την τιμή της {src['Ημερομηνία']} ({src['TTF_Price (€/MWh)']}) ως estimated. Καμία κλήση API.")
+        return
+    api_key = os.environ.get('OILPRICE_API_KEY')
+    if not api_key:
+        return
+    try:
+        resp = requests.get("https://api.oilpriceapi.com/v1/prices/latest",
+                            headers={"Authorization": f"Token {api_key}", "Content-Type": "application/json"},
+                            params={"by_code": TTF_CODE}, timeout=10)
+        if resp.status_code != 200:
+            print(f"  [{today_str}] ⚠ TTF API: HTTP {resp.status_code} -- η προηγούμενη εγγραφή (αν υπάρχει) μένει.")
+            return
+        js = resp.json()
+        d = js.get("data") if isinstance(js, dict) and js.get("status") == "success" else None
+        if isinstance(d, list):
+            d = next((x for x in d if isinstance(x, dict) and x.get("code") == TTF_CODE), None)
+        price = d.get("price") if isinstance(d, dict) else None
+        if price is None or float(price) <= 0:
+            print(f"  [{today_str}] ⚠ TTF API: δεν ήρθε έγκυρη τιμή ({price!r}) -- η προηγούμενη εγγραφή (αν υπάρχει) μένει.")
+            return
+        if d.get("currency") not in (None, "EUR"):
+            print(f"  [{today_str}] ⚠ TTF API: νόμισμα {d.get('currency')!r} αντί EUR -- η τιμή αγνοείται.")
+            return
+        row = {"Ημερομηνία": today_str, "TTF_Price (€/MWh)": round(float(price), 2), "Change": d.get("change"),
+               "Change_Percent": d.get("change_percent"), "Quote_Time": d.get("created_at"),
+               "Snapshots": (today_row.get("Snapshots", 1) + 1) if today_row and today_row.get("Estimated") is False else 1, "Estimated": False}
+        db["ttf_prices"] = [r for r in rows if r.get("Ημερομηνία") != today_str] + [row]
+        print(f"  [{today_str}] Fetched latest TTF price from API: {row['TTF_Price (€/MWh)']} €/MWh (ώρα τιμής {row['Quote_Time']}, snapshot #{row['Snapshots']})")
+    except Exception as e:
+        print(f"  [{today_str}] ⚠ TTF API: {type(e).__name__}: {e} -- η προηγούμενη εγγραφή (αν υπάρχει) μένει.")
+
 # ==========================================
 # PROCESSOR (ADVANCED ECONOMICS ENGINE)
 # ==========================================
@@ -866,6 +918,7 @@ if __name__ == "__main__":
         for i in range(10, -1, -1):
             date_list.append(today - timedelta(days=i))
         fetch_latest_co2_price(today.strftime("%Y-%m-%d"))  # 1 κλήση/run, ΜΟΝΟ στο cron, ποτέ σε backfill
+        fetch_latest_ttf_price(today.strftime("%Y-%m-%d"))  # D32: ξεχωριστή κλήση, δεν αγγίζει το CO2
             
     for target_date in date_list:
         date_str = target_date.strftime("%Y-%m-%d")
