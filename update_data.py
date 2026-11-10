@@ -899,8 +899,9 @@ def _prev_day(d, k=1):
     return (datetime.strptime(d, "%Y-%m-%d") - timedelta(days=k)).strftime("%Y-%m-%d")
 
 def _unit_status(scada_rows):
-    """Μονάδες χωρίς παραγωγή ανά ημέρα [μονάδα, ημέρες στη σειρά, 1 αν η σειρά αρχίζει στην πρώτη ημέρα του ιστορικού μας («N+»)] και επιστροφές
-    (≥ RETURN_MIN_OFF_DAYS ημέρες χωρίς παραγωγή και μετά παραγωγή άνω του OFF_THRESHOLD_MWH). Κενό στις ημερομηνίες σπάει τη σειρά (άγνωστο)."""
+    """Μονάδες χωρίς παραγωγή ανά ημέρα [μονάδα, ημέρες στη σειρά, 1 αν η σειρά αρχίζει στην αρχή ΣΥΝΕΧΟΥΣ ΤΜΗΜΑΤΟΣ του ιστορικού μας («N+»)] και
+    επιστροφές (≥ RETURN_MIN_OFF_DAYS ημέρες χωρίς παραγωγή και μετά παραγωγή άνω του OFF_THRESHOLD_MWH). Κενό στις ημερομηνίες σπάει τη σειρά (άγνωστο):
+    η σειρά που ξεκινά μετά από κενό είναι κι αυτή κάτω όριο («N+»), γιατί δεν ξέρουμε τι έγινε πριν (D41)."""
     mwh = defaultdict(dict)
     for r in scada_rows:
         u = r.get("Μονάδα Φ.Α.")
@@ -909,13 +910,14 @@ def _unit_status(scada_rows):
     all_dates = sorted({r["Ημερομηνία"] for r in scada_rows})
     if not all_dates:
         return {}, []
-    first = all_dates[0]
     out, events = defaultdict(list), []
     for u in sorted(mwh):
-        run, run_start, prev_d = 0, None, None
+        run, run_start, prev_d, block_start = 0, None, None, None
         for d in all_dates:
             v = mwh[u].get(d)
             gap = prev_d is not None and _prev_day(d, 1) != prev_d     # λείπει ημερομηνία ανάμεσα: η σειρά δεν είναι γνωστή
+            if prev_d is None or gap:
+                block_start = d                                        # αρχή συνεχούς τμήματος του ιστορικού (η πρώτη ημέρα ή η πρώτη μετά από κενό)
             if v is None or gap:
                 run, run_start = 0, None
             prev_d = d
@@ -924,10 +926,10 @@ def _unit_status(scada_rows):
             if v <= OFF_THRESHOLD_MWH:
                 run += 1
                 run_start = run_start or d
-                out[d].append([u, run, 1 if run_start == first else 0])
+                out[d].append([u, run, 1 if run_start == block_start else 0])
             else:
                 if run >= RETURN_MIN_OFF_DAYS:
-                    events.append({"d": d, "u": u, "off": run, "plus": 1 if run_start == first else 0, "from": run_start, "mwh": int(round(v))})
+                    events.append({"d": d, "u": u, "off": run, "plus": 1 if run_start == block_start else 0, "from": run_start, "mwh": int(round(v))})
                 run, run_start = 0, None
     return out, sorted(events, key=lambda e: (e["d"], e["u"]))
 

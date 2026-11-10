@@ -55,6 +55,10 @@
                     <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-300" data-load-label></span><svg class="w-3.5 h-3.5 text-emerald-400 opacity-0 transition-opacity duration-300" data-load-ck fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></div>
                     <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"><div class="bg-acc-500 h-full rounded-full w-0 ease-out" style="transition-property: width, background-color; transition-duration: 300ms;" data-load-bar></div></div>
                 </div>
+                <div class="load-row opacity-50 transition-opacity duration-300" data-step="6">
+                    <div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-300" data-load-label></span><svg class="w-3.5 h-3.5 text-emerald-400 opacity-0 transition-opacity duration-300" data-load-ck fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"><div class="bg-acc-500 h-full rounded-full w-0 ease-out" style="transition-property: width, background-color; transition-duration: 300ms;" data-load-bar></div></div>
+                </div>
             </div>
             <div class="opacity-0 transition-all duration-500 transform translate-y-2 flex items-center justify-center p-3 mt-1 rounded-xl border border-emerald-500/30 bg-emerald-500/10 gap-2" id="loadRowFinal">
                 <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -117,8 +121,8 @@
             </div>
         </header>
 
-        <!-- TABS NAVIGATION: πέντε = 2 + 2 + 1 στο κινητό (το πέμπτο πιάνει όλο το πλάτος) και 5 στήλες από 768 px (D37)· τα κουμπιά τα βάφει η paintTabs() -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-0 md:border-b md:border-slate-800 mt-0 md:mt-2">
+        <!-- TABS NAVIGATION: πέντε = 3 + 2 στο κινητό (πλέγμα 6 στηλών: τρία με col-span-2, δύο με col-span-3, όπως ο τυφλοσούρτης) και 5 στήλες από 768 px (D41)· τα κουμπιά τα βάφει η paintTabs() -->
+        <div class="grid grid-cols-6 md:grid-cols-5 gap-3 md:gap-0 md:border-b md:border-slate-800 mt-0 md:mt-2">
             <button id="tabBtnOverview" onclick="switchTab('overview')" role="tab" class="tab-btn">Daily overview</button>
             <button id="tabBtnEconomics" onclick="switchTab('economics')" role="tab" class="tab-btn">Daily economics</button>
             <button id="tabBtnIspScada" onclick="switchTab('ispScada')" role="tab" class="tab-btn">Monthly analytics</button>
@@ -267,61 +271,7 @@
         <!-- VIEW 3: MONTHLY ANALYTICS -->
         <div id="viewIspScada" class="space-y-4 sm:space-y-6 hidden">
             <div hidden class="md:!flex justify-end md:mb-3"><button type="button" onclick="openMethodologyModal('ispScada', 'detailed')" class="meth-link text-xs text-slate-400 hover:text-acc-300 transition-colors">Methodology →</button></div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-4 mt-2 mb-2 px-2 sm:px-0">
-                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
-                    <div class="hidden sm:block absolute right-0 top-0 w-1 h-full bg-rose-500"></div>
-                    <span data-i18n="lblHighSrmc" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Highest fleet SRMC</span>
-                    <div><div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
-                        <span id="kpiPeakCost" class="text-xl sm:text-2xl font-bold text-rose-400">0.00</span>
-                        <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
-                    </div>
-                    <span id="kpiPeakCostDay" class="block text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span></div>
-                </div>
-                
-                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
-                    <div class="hidden sm:block absolute right-0 top-0 w-1 h-full bg-emerald-500"></div>
-                    <span data-i18n="lblLowSrmc" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Lowest fleet SRMC</span>
-                    <div><div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
-                        <span id="kpiBestCost" class="text-xl sm:text-2xl font-bold text-emerald-400">0.00</span>
-                        <span class="text-xs sm:text-sm text-slate-500 font-medium">€/MWh</span>
-                    </div>
-                    <span id="kpiBestCostDay" class="block text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span></div>
-                </div>
-
-                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
-                    <div class="hidden sm:block absolute right-0 top-0 w-1 h-full bg-orange-500"></div>
-                    <span data-i18n="lblLowEff" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Lowest efficiency</span>
-                    <div><div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
-                        <span id="kpiWorstEff" class="text-xl sm:text-2xl font-bold text-orange-400">0.0</span>
-                        <span class="text-xs sm:text-sm text-slate-500 font-medium">%</span>
-                    </div>
-                    <span id="kpiWorstEffDay" class="block text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span></div>
-                </div>
-
-                <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700 relative overflow-hidden">
-                    <div class="hidden sm:block absolute right-0 top-0 w-1 h-full bg-emerald-500"></div>
-                    <span data-i18n="lblHighEff" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">Highest efficiency</span>
-                    <div><div class="flex items-baseline gap-1.5 sm:gap-1 mt-0.5 sm:mt-1">
-                        <span id="kpiMaxEff" class="text-xl sm:text-2xl font-bold text-emerald-400">0.0</span>
-                        <span class="text-xs sm:text-sm text-slate-500 font-medium">%</span>
-                    </div>
-                    <span id="kpiMaxEffDay" class="block text-[10px] sm:text-[10px] text-slate-500 mt-0.5 sm:mt-1">Day -</span></div>
-                </div>
-            </div>
-
-            <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-lg font-semibold text-slate-200" data-i18n="ttlMonthly">Monthly market and fleet performance</h2>
-                        <p class="text-xs text-slate-400" data-i18n="subMonthly">Gas price, fleet SRMC and fleet efficiency, one point per day</p>
-                    </div>
-                </div>
-                <div class="relative h-[450px]">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-            </div>
-
-            <!-- D40: boxes μηνιαίας κλίμακας από το data/review.json (το ίδιο αρχείο με την Ανασκόπηση ημέρας, φορτώνεται μία φορά και μόνο όταν χρειάζεται) -->
+            <!-- D40: boxes μηνιαίας κλίμακας από το data/review.json (το ίδιο αρχείο με την Ανασκόπηση ημέρας, φορτώνεται μία φορά στην εκκίνηση, D41) -->
             <div id="mbMsg" role="status" class="hidden bg-slate-800/40 p-6 rounded-xl border border-slate-700 text-center text-sm text-slate-400"></div>
             <div id="mbBody" class="space-y-4 sm:space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -346,11 +296,37 @@
                     </div>
                 </section>
             </div>
+
+                        <div class="bg-slate-800/40 p-6 rounded-xl border border-slate-700">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-200" data-i18n="ttlMonthly">Monthly market and fleet performance</h2>
+                        <p class="text-xs text-slate-400" data-i18n="subMonthly">Gas price, fleet SRMC and fleet efficiency, one point per day</p>
+                        <p id="monthlyExtremes" class="text-xs text-slate-400 mt-1.5 leading-relaxed"></p>
+                    </div>
+                </div>
+                <div class="relative h-[450px]">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+
         </div>
 
         <!-- VIEW 4: SYSTEM NEEDS & CONSTRAINTS -->
         <div id="viewSurplus" class="space-y-4 sm:space-y-6 hidden">
             <div hidden class="md:!flex justify-end md:mb-3"><button type="button" onclick="openMethodologyModal('surplus', 'detailed')" class="meth-link text-xs text-slate-400 hover:text-acc-300 transition-colors">Methodology →</button></div>
+            <!-- D40: επίδραση των περιορισμών ανά μονάδα (από το data/review.json) -->
+            <div id="cbMsg" role="status" class="hidden bg-slate-800/40 p-6 rounded-xl border border-slate-700 text-center text-sm text-slate-400"></div>
+            <div id="cbBody">
+                <section class="bg-slate-800/40 p-4 sm:p-6 rounded-xl border border-slate-700" aria-labelledby="cbTitle">
+                    <h2 id="cbTitle" class="text-lg font-semibold text-slate-200" data-i18n="cbTitle">Effect of the constraints per unit</h2>
+                    <p id="cbSub" class="text-xs text-slate-400 mb-4"></p>
+                    <div id="cbKpis" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4"></div>
+                    <div id="cbTable"></div>
+                    <p id="cbNote" class="text-xs text-slate-400 mt-3"></p>
+                </section>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-2 mb-2 px-2 sm:px-0">
                 <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-5 sm:rounded-xl sm:border sm:border-slate-700">
                     <span data-i18n="lblMonthSurplus" class="text-[10px] sm:text-sm text-slate-500 sm:text-slate-400 font-semibold mb-0.5 sm:mb-1">Monthly residual surplus (ISP)</span>
@@ -380,17 +356,6 @@
                 </div>
             </div>
 
-            <!-- D40: επίδραση των περιορισμών ανά μονάδα (από το data/review.json) -->
-            <div id="cbMsg" role="status" class="hidden bg-slate-800/40 p-6 rounded-xl border border-slate-700 text-center text-sm text-slate-400"></div>
-            <div id="cbBody">
-                <section class="bg-slate-800/40 p-4 sm:p-6 rounded-xl border border-slate-700" aria-labelledby="cbTitle">
-                    <h2 id="cbTitle" class="text-lg font-semibold text-slate-200" data-i18n="cbTitle">Effect of the constraints per unit</h2>
-                    <p id="cbSub" class="text-xs text-slate-400 mb-4"></p>
-                    <div id="cbKpis" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4"></div>
-                    <div id="cbTable"></div>
-                    <p id="cbNote" class="text-xs text-slate-400 mt-3"></p>
-                </section>
-            </div>
         </div>
 
         <!-- VIEW 5: DAILY REVIEW (D37): τα δεδομένα του από το data/review.json, που φορτώνεται μόνο όταν ανοίξει το tab -->

@@ -91,7 +91,7 @@ const i18n = {
         mbNoEvents: "No returns or long outages.",
         mbRet: "returned after {n} days",
         mbOutEnd: "out at the end of the month: {n} days",
-        mbPlusNote: "“N+”: out since the start of our history (1 Jun 2026).",
+        mbPlusNote: "“N+”: out since the start of our history ({first}).",
         mbLegOut: "out",
         mbLegOn: "producing (colour = class)",
         mbLegRet: "return after 3+ days out",
@@ -230,7 +230,7 @@ const i18n = {
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">What it shows:</strong> one point per day of the selected month, not monthly averages. Only days with complete economics (SCADA and HGSIDA) appear; the current month fills in day by day.</li>
                 <li><strong class="text-slate-200">The three lines:</strong> HGSIDA price and average fleet SRMC (€/MWh, left axis) and fleet efficiency (%, right axis), as defined in Daily economics.</li>
-                <li><strong class="text-slate-200">The four cards:</strong> the extreme days of the month, with their date: highest and lowest average fleet SRMC and lowest and highest fleet efficiency. They change as days are added.</li>
+                <li><strong class="text-slate-200">The line under the chart title:</strong> the extreme days of the month, with their date: highest and lowest average fleet SRMC and lowest and highest fleet efficiency. They change as days are added.</li>
             <li><strong class="text-slate-200">Boxes below the chart:</strong> the month against the previous one (per day, on average), what moved the cost in the month (the same exact split as in Daily review, on the per-day averages) and the availability of the units (units × days, with the returns of the month).</li></ul>
 
             <h3 data-sec="surplus" class="mt-4 mb-2 text-xs font-bold text-acc-400">Generic constraints &amp; surplus</h3>
@@ -240,7 +240,7 @@ const i18n = {
                 <li><strong class="text-slate-200">Residual surplus (ISP):</strong> the daily value of the "Energy Surplus" row in IPTO's ISP2 file, in MWh. The page does not calculate it: IPTO writes it as a negative number and the page shows it as positive.</li>
                 <li><strong class="text-slate-200">Monthly totals:</strong> the sum of the days shown in the chart.</li>
             <li><strong class="text-slate-200">Effect per unit:</strong> for each unit in a generic constraint this month: the MWh and the hours in the constraint, the load and the modelled efficiency inside against outside the constraint hours, and the extra gas that the lower efficiency costs.</li></ul>
-            <h3 data-sec="review" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily review</h3><ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400"><li><strong class="text-slate-200">What it shows:</strong> what changed in the gas fleet on the selected day against the previous day or against the mean of the previous days.</li><li><strong class="text-slate-200">What moved the cost:</strong> the change of the fleet cost, split exactly into the volume of generation, the gas price, the CO2 price and the efficiency / mix of the units. The four add up to the total, with no remainder. The CO2 price is only an input: the page shows its effect in euros, not the price.</li><li><strong class="text-slate-200">Units:</strong> sorted by their effect on the cost; a unit with no output that day appears with 0 MWh.</li><li><strong class="text-slate-200">Out and returns:</strong> a unit is out when it produces up to 1 MWh a day; it returns when it produces more than 1 MWh after at least 3 days out. &quot;N+&quot; means out since the start of our history (1 Jun 2026).</li></ul>
+            <h3 data-sec="review" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily review</h3><ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400"><li><strong class="text-slate-200">What it shows:</strong> what changed in the gas fleet on the selected day against the previous day or against the mean of the previous days.</li><li><strong class="text-slate-200">What moved the cost:</strong> the change of the fleet cost, split exactly into the volume of generation, the gas price, the CO2 price and the efficiency / mix of the units. The four add up to the total, with no remainder. The CO2 price is only an input: the page shows its effect in euros, not the price.</li><li><strong class="text-slate-200">Units:</strong> sorted by their effect on the cost; a unit with no output that day appears with 0 MWh.</li><li><strong class="text-slate-200">Out and returns:</strong> a unit is out when it produces up to 1 MWh a day; it returns when it produces more than 1 MWh after at least 3 days out. &quot;N+&quot; means out since the start of our history (<span data-first-day>1 Jun 2026</span>).</li></ul>
         `,
         modalBodyDetailed: `
             <p class="mb-3">This Dashboard is an independent tool for monitoring and analyzing natural gas power plants in the Greek Energy Market, built and maintained by a single analyst, on open data. Figures are estimates and indications, not official statistics.</p>
@@ -276,7 +276,7 @@ const i18n = {
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">What it shows:</strong> one point per day of the selected month, not monthly averages. Only days with complete economics (SCADA and HGSIDA) appear; the current month fills in day by day.</li>
                 <li><strong class="text-slate-200">The three lines:</strong> HGSIDA price and average fleet SRMC (€/MWh, left axis) and fleet efficiency (%, right axis), as defined in Daily economics.</li>
-                <li><strong class="text-slate-200">The four cards:</strong> the extreme days of the month, with their date: highest and lowest average fleet SRMC and lowest and highest fleet efficiency. They change as days are added to the current month.</li>
+                <li><strong class="text-slate-200">The line under the chart title:</strong> the extreme days of the month, with their date: highest and lowest average fleet SRMC and lowest and highest fleet efficiency. They change as days are added to the current month.</li>
                 <li><strong class="text-slate-200">How to read it:</strong> SRMC depends on the gas price, on the efficiency at which the units ran and on the CO2 price.</li>
                 <li><strong class="text-slate-200">Days without a value:</strong> a day with a zero SRMC or efficiency (no valid calculation) is not counted among the lowest values of the cards.</li>
             <li><strong class="text-slate-200">Boxes below the chart:</strong> the month against the previous one uses the averages <em>per day</em> of the days that have economics (fleet efficiency is the total MWh over the total gas energy; the HGSIDA is the simple mean of those days; the CO2 is shown as emissions, never as a price). What moved the cost uses the same logarithmic-mean method as Daily review, on the per-day averages of the two months. In the availability map each cell is the daily output of a unit: dark = out (up to 1 MWh), brighter = higher output relative to the unit's own maximum of the month; a frame marks a return after at least 3 days out; &quot;N+&quot; means out since the start of our history.</li></ul>
@@ -290,7 +290,7 @@ const i18n = {
                 <li><strong class="text-slate-200">Monthly totals:</strong> the sum of the days shown in the chart (days with SCADA).</li>
                 <li><strong class="text-slate-200">Two different quantities:</strong> the surplus is a figure of the schedule, whereas constraint-driven generation is actual output. They are compared as indications, not as a balance.</li>
             <li><strong class="text-slate-200">Effect per unit:</strong> only hours with output are used. &quot;Inside&quot; are the hours of the constraint and &quot;outside&quot; the other hours of the same days. The extra gas is the gas used inside the constraint minus what the same MWh would need at the efficiency that the unit has outside it; its value uses the HGSIDA of each day and does not include the CO2. The efficiency is modelled (as in Daily economics), so the size of the effect depends on the part-load assumption (k = 0.30, see Limitations); a negative change in points means that the constraint lowered the efficiency.</li></ul>
-            <h3 data-sec="review" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily review</h3><ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400"><li><strong class="text-slate-200">What it shows:</strong> what changed in the gas fleet on the selected day. It follows the date picker and is calculated from the economics of the day and from our own derived figures (<code>data/review.json</code>), which the page loads only when this tab opens.</li><li><strong class="text-slate-200">Comparison:</strong> &quot;Previous day&quot; is the calendar day before and needs its economics; &quot;7-day mean&quot; is the mean, day by day, of up to 7 previous days that have economics (at least 3).</li><li><strong class="text-slate-200">What moved the cost:</strong> the change of the fleet cost is split with the logarithmic-mean (LMDI) method, which is exact and does not depend on the order of the factors. Volume is the effect of the change of total MWh; gas price and CO2 price are the effects of the change of the price paid per unit of gas and per tonne; efficiency / mix is the effect of the change of the gas and CO2 used per MWh produced, i.e. which units ran and how loaded. The four add up to the total with no remainder (rounded to whole euros). The CO2 price is an input of the calculation and is not shown: only its effect in euros is.</li><li><strong class="text-slate-200">Units:</strong> every unit that ran that day or in the comparison, sorted by the change of its cost (the changes add up to the change of the fleet cost). The efficiency is modelled, as in Daily economics, and is compared with the median of the unit's previous 30 days with production (at least 5).</li><li><strong class="text-slate-200">Out and returns:</strong> a unit is out when it produces up to 1 MWh a day and returns when it produces more than 1 MWh after at least 3 days out; &quot;N+&quot; means that the stretch starts at the beginning of our history (1 Jun 2026), so the real length is longer. A gap in the dates breaks a stretch.</li><li><strong class="text-slate-200">Generic constraints:</strong> the unit, the window of its constraint in the IPTO ISP2 file (clock hours) and the MWh produced in those hours (hourly SCADA).</li><li><strong class="text-slate-200">Limits:</strong> the cost is theoretical, as in Daily economics; the effects are indications, not accounting.</li></ul>
+            <h3 data-sec="review" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily review</h3><ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400"><li><strong class="text-slate-200">What it shows:</strong> what changed in the gas fleet on the selected day. It follows the date picker and is calculated from the economics of the day and from our own derived figures (<code>data/review.json</code>), which the page loads only when this tab opens.</li><li><strong class="text-slate-200">Comparison:</strong> &quot;Previous day&quot; is the calendar day before and needs its economics; &quot;7-day mean&quot; is the mean, day by day, of up to 7 previous days that have economics (at least 3).</li><li><strong class="text-slate-200">What moved the cost:</strong> the change of the fleet cost is split with the logarithmic-mean (LMDI) method, which is exact and does not depend on the order of the factors. Volume is the effect of the change of total MWh; gas price and CO2 price are the effects of the change of the price paid per unit of gas and per tonne; efficiency / mix is the effect of the change of the gas and CO2 used per MWh produced, i.e. which units ran and how loaded. The four add up to the total with no remainder (rounded to whole euros). The CO2 price is an input of the calculation and is not shown: only its effect in euros is.</li><li><strong class="text-slate-200">Units:</strong> every unit that ran that day or in the comparison, sorted by the change of its cost (the changes add up to the change of the fleet cost). The efficiency is modelled, as in Daily economics, and is compared with the median of the unit's previous 30 days with production (at least 5).</li><li><strong class="text-slate-200">Out and returns:</strong> a unit is out when it produces up to 1 MWh a day and returns when it produces more than 1 MWh after at least 3 days out; &quot;N+&quot; means that the stretch starts at the beginning of our history (<span data-first-day>1 Jun 2026</span>), so the real length is longer. A gap in the dates breaks a stretch.</li><li><strong class="text-slate-200">Generic constraints:</strong> the unit, the window of its constraint in the IPTO ISP2 file (clock hours) and the MWh produced in those hours (hourly SCADA).</li><li><strong class="text-slate-200">Limits:</strong> the cost is theoretical, as in Daily economics; the effects are indications, not accounting.</li></ul>
 
             <h3 data-sec="limits" class="mt-4 mb-2 text-xs font-bold text-acc-400">Limitations</h3>
             <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400">
@@ -316,7 +316,7 @@ const i18n = {
         tabOverview: "Ημερήσια επισκόπηση",
         tabEconomics: "Ημερήσια οικονομικά",
         tabIspScada: "Μηνιαία ανάλυση",
-        tabSurplus: "Περιορισμοί συστήματος & πλεόνασμα",
+        tabSurplus: "Περιορισμοί & πλεόνασμα",
         tabReview: "Ανασκόπηση ημέρας",
         revCompare: "Σύγκριση με",
         revPrev: "Προηγούμενη ημέρα",
@@ -372,7 +372,7 @@ const i18n = {
         mbNoEvents: "Καμία επιστροφή ή μακρά διακοπή.",
         mbRet: "επέστρεψε μετά από {n} ημέρες",
         mbOutEnd: "εκτός στο τέλος του μήνα: {n} ημέρες",
-        mbPlusNote: "«N+»: εκτός από την αρχή του ιστορικού μας (1 Ιουν 2026).",
+        mbPlusNote: "«N+»: εκτός από την αρχή του ιστορικού μας ({first}).",
         mbLegOut: "εκτός",
         mbLegOn: "παράγει (χρώμα = κλάση)",
         mbLegRet: "επιστροφή μετά από 3+ ημέρες εκτός",
@@ -511,7 +511,7 @@ const i18n = {
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Τι δείχνει:</strong> ένα σημείο ανά ημέρα του επιλεγμένου μήνα, όχι μηνιαίους μέσους όρους. Εμφανίζονται μόνο ημέρες με ολοκληρωμένα οικονομικά (SCADA και HGSIDA)· ο τρέχων μήνας γεμίζει μέρα με τη μέρα.</li>
                 <li><strong class="text-slate-200">Οι τρεις γραμμές:</strong> τιμή HGSIDA και μέσο SRMC στόλου (€/MWh, αριστερός άξονας) και απόδοση στόλου (%, δεξιός άξονας), όπως ορίζονται στα Ημερήσια οικονομικά.</li>
-                <li><strong class="text-slate-200">Οι τέσσερις κάρτες:</strong> οι ακραίες ημέρες του μήνα, με την ημερομηνία τους: υψηλότερο και χαμηλότερο μέσο SRMC στόλου, χαμηλότερη και υψηλότερη απόδοση. Αλλάζουν όσο προστίθενται ημέρες.</li>
+                <li><strong class="text-slate-200">Η γραμμή κάτω από τον τίτλο του γραφήματος:</strong> οι ακραίες ημέρες του μήνα, με την ημερομηνία τους: υψηλότερο και χαμηλότερο μέσο SRMC στόλου, χαμηλότερη και υψηλότερη απόδοση. Αλλάζουν όσο προστίθενται ημέρες.</li>
             <li><strong class="text-slate-200">Boxes κάτω από το γράφημα:</strong> ο μήνας έναντι του προηγούμενου (ανά ημέρα, κατά μέσο όρο), τι κίνησε το κόστος τον μήνα (η ίδια ακριβής διάσπαση με την Ανασκόπηση ημέρας, στους μέσους όρους ανά ημέρα) και η διαθεσιμότητα των μονάδων (μονάδες × ημέρες, με τις επιστροφές του μήνα).</li></ul>
 
             <h3 data-sec="surplus" class="mt-4 mb-2 text-xs font-bold text-acc-400">Περιορισμοί συστήματος &amp; πλεόνασμα</h3>
@@ -521,7 +521,7 @@ const i18n = {
                 <li><strong class="text-slate-200">Residual surplus (ISP):</strong> η ημερήσια τιμή της γραμμής «Energy Surplus» του αρχείου ISP2 του ΑΔΜΗΕ, σε MWh. Δεν την υπολογίζει η σελίδα· ο ΑΔΜΗΕ τη γράφει αρνητική και η σελίδα τη δείχνει θετική.</li>
                 <li><strong class="text-slate-200">Μηνιαία σύνολα:</strong> το άθροισμα των ημερών που φαίνονται στο γράφημα.</li>
             <li><strong class="text-slate-200">Επίδραση ανά μονάδα:</strong> για κάθε μονάδα σε generic constraint τον μήνα: τα MWh και οι ώρες σε περιορισμό, το φορτίο και η μοντελοποιημένη απόδοση μέσα έναντι έξω από τις ώρες του περιορισμού, και το επιπλέον αέριο που κοστίζει η χαμηλότερη απόδοση.</li></ul>
-            <h3 data-sec="review" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ανασκόπηση ημέρας</h3><ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400"><li><strong class="text-slate-200">Τι δείχνει:</strong> τι άλλαξε στον στόλο αερίου την επιλεγμένη ημέρα σε σχέση με την προηγούμενη ημέρα ή με τον μέσο όρο των προηγούμενων.</li><li><strong class="text-slate-200">Τι κίνησε το κόστος:</strong> η μεταβολή του κόστους του στόλου, χωρισμένη ακριβώς σε όγκο παραγωγής, τιμή αερίου, τιμή CO2 και απόδοση / μείγμα μονάδων. Τα τέσσερα αθροίζουν στο σύνολο, χωρίς υπόλοιπο. Η τιμή CO2 είναι μόνο είσοδος: η σελίδα δείχνει την επίδρασή της σε ευρώ, όχι την τιμή.</li><li><strong class="text-slate-200">Μονάδες:</strong> ταξινομημένες κατά την επίδρασή τους στο κόστος· μονάδα χωρίς παραγωγή εκείνη την ημέρα εμφανίζεται με 0 MWh.</li><li><strong class="text-slate-200">Εκτός και επιστροφές:</strong> μια μονάδα είναι εκτός όταν παράγει έως 1 MWh την ημέρα· επιστρέφει όταν παράγει πάνω από 1 MWh μετά από τουλάχιστον 3 ημέρες εκτός. Το «N+» σημαίνει εκτός από την αρχή του ιστορικού μας (1 Ιουν 2026).</li></ul>
+            <h3 data-sec="review" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ανασκόπηση ημέρας</h3><ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400"><li><strong class="text-slate-200">Τι δείχνει:</strong> τι άλλαξε στον στόλο αερίου την επιλεγμένη ημέρα σε σχέση με την προηγούμενη ημέρα ή με τον μέσο όρο των προηγούμενων.</li><li><strong class="text-slate-200">Τι κίνησε το κόστος:</strong> η μεταβολή του κόστους του στόλου, χωρισμένη ακριβώς σε όγκο παραγωγής, τιμή αερίου, τιμή CO2 και απόδοση / μείγμα μονάδων. Τα τέσσερα αθροίζουν στο σύνολο, χωρίς υπόλοιπο. Η τιμή CO2 είναι μόνο είσοδος: η σελίδα δείχνει την επίδρασή της σε ευρώ, όχι την τιμή.</li><li><strong class="text-slate-200">Μονάδες:</strong> ταξινομημένες κατά την επίδρασή τους στο κόστος· μονάδα χωρίς παραγωγή εκείνη την ημέρα εμφανίζεται με 0 MWh.</li><li><strong class="text-slate-200">Εκτός και επιστροφές:</strong> μια μονάδα είναι εκτός όταν παράγει έως 1 MWh την ημέρα· επιστρέφει όταν παράγει πάνω από 1 MWh μετά από τουλάχιστον 3 ημέρες εκτός. Το «N+» σημαίνει εκτός από την αρχή του ιστορικού μας (<span data-first-day>1 Ιουν 2026</span>).</li></ul>
         `,
         modalBodyDetailed: `
             <p class="mb-3">Αυτό το Dashboard είναι ένα ανεξάρτητο εργαλείο παρακολούθησης και ανάλυσης μονάδων φυσικού αερίου στην Ελληνική Αγορά Ενέργειας, το οποίο χτίζεται και συντηρείται από έναν μόνο αναλυτή, πάνω σε ανοιχτά δεδομένα. Τα νούμερα είναι εκτιμήσεις και ενδείξεις, όχι επίσημη στατιστική.</p>
@@ -557,7 +557,7 @@ const i18n = {
             <ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400">
                 <li><strong class="text-slate-200">Τι δείχνει:</strong> ένα σημείο ανά ημέρα του επιλεγμένου μήνα, όχι μηνιαίους μέσους όρους. Εμφανίζονται μόνο ημέρες με ολοκληρωμένα οικονομικά (SCADA και HGSIDA)· ο τρέχων μήνας γεμίζει μέρα με τη μέρα.</li>
                 <li><strong class="text-slate-200">Οι τρεις γραμμές:</strong> τιμή HGSIDA και μέσο SRMC στόλου (€/MWh, αριστερός άξονας) και απόδοση στόλου (%, δεξιός άξονας), όπως ορίζονται στα Ημερήσια οικονομικά.</li>
-                <li><strong class="text-slate-200">Οι τέσσερις κάρτες:</strong> οι ακραίες ημέρες του μήνα, με την ημερομηνία τους: υψηλότερο και χαμηλότερο μέσο SRMC στόλου, χαμηλότερη και υψηλότερη απόδοση. Αλλάζουν όσο προστίθενται ημέρες στον τρέχοντα μήνα.</li>
+                <li><strong class="text-slate-200">Η γραμμή κάτω από τον τίτλο του γραφήματος:</strong> οι ακραίες ημέρες του μήνα, με την ημερομηνία τους: υψηλότερο και χαμηλότερο μέσο SRMC στόλου, χαμηλότερη και υψηλότερη απόδοση. Αλλάζουν όσο προστίθενται ημέρες στον τρέχοντα μήνα.</li>
                 <li><strong class="text-slate-200">Πώς διαβάζεται:</strong> το SRMC εξαρτάται από την τιμή του αερίου, από την απόδοση με την οποία δούλεψαν οι μονάδες και από την τιμή CO2.</li>
                 <li><strong class="text-slate-200">Ημέρες χωρίς τιμή:</strong> ημέρα με μηδενικό SRMC ή απόδοση (χωρίς έγκυρο υπολογισμό) δεν μετρά στις χαμηλότερες τιμές των καρτών.</li>
             <li><strong class="text-slate-200">Boxes κάτω από το γράφημα:</strong> ο μήνας έναντι του προηγούμενου χρησιμοποιεί μέσους όρους <em>ανά ημέρα</em> των ημερών που έχουν οικονομικά (η απόδοση στόλου είναι τα συνολικά MWh προς τη συνολική ενέργεια αερίου· το HGSIDA είναι ο απλός μέσος των ημερών αυτών· το CO2 εμφανίζεται ως εκπομπές, ποτέ ως τιμή). Το «τι κίνησε το κόστος» χρησιμοποιεί την ίδια μέθοδο λογαριθμικού μέσου με την Ανασκόπηση ημέρας, στους μέσους ανά ημέρα των δύο μηνών. Στον χάρτη διαθεσιμότητας κάθε κελί είναι η ημερήσια παραγωγή μιας μονάδας: σκούρο = εκτός (έως 1 MWh), φωτεινότερο = υψηλότερη παραγωγή σε σχέση με το μέγιστο της ίδιας μονάδας τον μήνα· το πλαίσιο δείχνει επιστροφή μετά από τουλάχιστον 3 ημέρες εκτός· το «N+» σημαίνει εκτός από την αρχή του ιστορικού μας.</li></ul>
@@ -571,7 +571,7 @@ const i18n = {
                 <li><strong class="text-slate-200">Μηνιαία σύνολα:</strong> το άθροισμα των ημερών που φαίνονται στο γράφημα (ημέρες με SCADA).</li>
                 <li><strong class="text-slate-200">Δύο διαφορετικά μεγέθη:</strong> το πλεόνασμα είναι μέγεθος του προγράμματος, ενώ η constraint-driven παραγωγή είναι πραγματική παραγωγή. Συγκρίνονται ως ενδείξεις, όχι ως ισοζύγιο.</li>
             <li><strong class="text-slate-200">Επίδραση ανά μονάδα:</strong> χρησιμοποιούνται μόνο ώρες με παραγωγή. «Μέσα» είναι οι ώρες του περιορισμού και «έξω» οι υπόλοιπες ώρες των ίδιων ημερών. Το επιπλέον αέριο είναι το αέριο που χρησιμοποιήθηκε μέσα στον περιορισμό μείον όσο θα χρειαζόταν η ίδια ενέργεια (MWh) στην απόδοση που έχει η μονάδα έξω από αυτόν· η αξία του χρησιμοποιεί το HGSIDA κάθε ημέρας και δεν περιλαμβάνει το CO2. Η απόδοση είναι μοντελοποιημένη (όπως στα Ημερήσια οικονομικά), άρα το μέγεθος της επίδρασης εξαρτάται από την παραδοχή μερικού φορτίου (k = 0,30, βλ. Περιορισμοί)· αρνητική μεταβολή σε μονάδες σημαίνει ότι ο περιορισμός μείωσε την απόδοση.</li></ul>
-            <h3 data-sec="review" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ανασκόπηση ημέρας</h3><ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400"><li><strong class="text-slate-200">Τι δείχνει:</strong> τι άλλαξε στον στόλο αερίου την επιλεγμένη ημέρα. Ακολουθεί την επιλογή ημερομηνίας και υπολογίζεται από τα οικονομικά της ημέρας και από δικά μας παράγωγα στοιχεία (<code>data/review.json</code>), που η σελίδα φορτώνει μόνο όταν ανοίγει αυτό το tab.</li><li><strong class="text-slate-200">Σύγκριση:</strong> η «προηγούμενη ημέρα» είναι η ημέρα του ημερολογίου πριν και χρειάζεται τα οικονομικά της· ο «μέσος όρος 7 ημερών» είναι ο μέσος, ημέρα με ημέρα, έως 7 προηγούμενων ημερών που έχουν οικονομικά (τουλάχιστον 3).</li><li><strong class="text-slate-200">Τι κίνησε το κόστος:</strong> η μεταβολή του κόστους του στόλου χωρίζεται με τη μέθοδο του λογαριθμικού μέσου (LMDI), που είναι ακριβής και δεν εξαρτάται από τη σειρά των παραγόντων. Ο όγκος είναι η επίδραση της μεταβολής των συνολικών MWh· η τιμή αερίου και η τιμή CO2 είναι οι επιδράσεις της μεταβολής της τιμής ανά μονάδα αερίου και ανά τόνο· η απόδοση / μείγμα είναι η επίδραση της μεταβολής του αερίου και του CO2 ανά παραγόμενη MWh, δηλαδή ποιες μονάδες δούλεψαν και πόσο φορτισμένες. Τα τέσσερα αθροίζουν στο σύνολο χωρίς υπόλοιπο (σε ακέραια ευρώ). Η τιμή CO2 είναι είσοδος του υπολογισμού και δεν εμφανίζεται· εμφανίζεται μόνο η επίδρασή της σε ευρώ.</li><li><strong class="text-slate-200">Μονάδες:</strong> κάθε μονάδα που δούλεψε εκείνη την ημέρα ή στη σύγκριση, ταξινομημένη κατά τη μεταβολή του κόστους της (οι μεταβολές αθροίζουν στη μεταβολή του κόστους του στόλου). Η απόδοση είναι μοντελοποιημένη, όπως στα Ημερήσια οικονομικά, και συγκρίνεται με τη διάμεσο των προηγούμενων 30 ημερών της μονάδας με παραγωγή (τουλάχιστον 5).</li><li><strong class="text-slate-200">Εκτός και επιστροφές:</strong> μια μονάδα είναι εκτός όταν παράγει έως 1 MWh την ημέρα και επιστρέφει όταν παράγει πάνω από 1 MWh μετά από τουλάχιστον 3 ημέρες εκτός· το «N+» σημαίνει ότι η σειρά αρχίζει από την αρχή του ιστορικού μας (1 Ιουν 2026), άρα το πραγματικό διάστημα είναι μεγαλύτερο. Κενό στις ημερομηνίες σπάει τη σειρά.</li><li><strong class="text-slate-200">Generic constraints:</strong> η μονάδα, το παράθυρο του περιορισμού της στο αρχείο ISP2 του ΑΔΜΗΕ (ώρες ρολογιού) και τα MWh που παρήγαγε σε αυτές τις ώρες (ωριαίο SCADA).</li><li><strong class="text-slate-200">Όρια:</strong> το κόστος είναι θεωρητικό, όπως στα Ημερήσια οικονομικά· οι επιδράσεις είναι ενδείξεις, όχι λογιστική.</li></ul>
+            <h3 data-sec="review" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ανασκόπηση ημέρας</h3><ul class="list-disc pl-5 space-y-2 mb-2 text-slate-400"><li><strong class="text-slate-200">Τι δείχνει:</strong> τι άλλαξε στον στόλο αερίου την επιλεγμένη ημέρα. Ακολουθεί την επιλογή ημερομηνίας και υπολογίζεται από τα οικονομικά της ημέρας και από δικά μας παράγωγα στοιχεία (<code>data/review.json</code>), που η σελίδα φορτώνει μόνο όταν ανοίγει αυτό το tab.</li><li><strong class="text-slate-200">Σύγκριση:</strong> η «προηγούμενη ημέρα» είναι η ημέρα του ημερολογίου πριν και χρειάζεται τα οικονομικά της· ο «μέσος όρος 7 ημερών» είναι ο μέσος, ημέρα με ημέρα, έως 7 προηγούμενων ημερών που έχουν οικονομικά (τουλάχιστον 3).</li><li><strong class="text-slate-200">Τι κίνησε το κόστος:</strong> η μεταβολή του κόστους του στόλου χωρίζεται με τη μέθοδο του λογαριθμικού μέσου (LMDI), που είναι ακριβής και δεν εξαρτάται από τη σειρά των παραγόντων. Ο όγκος είναι η επίδραση της μεταβολής των συνολικών MWh· η τιμή αερίου και η τιμή CO2 είναι οι επιδράσεις της μεταβολής της τιμής ανά μονάδα αερίου και ανά τόνο· η απόδοση / μείγμα είναι η επίδραση της μεταβολής του αερίου και του CO2 ανά παραγόμενη MWh, δηλαδή ποιες μονάδες δούλεψαν και πόσο φορτισμένες. Τα τέσσερα αθροίζουν στο σύνολο χωρίς υπόλοιπο (σε ακέραια ευρώ). Η τιμή CO2 είναι είσοδος του υπολογισμού και δεν εμφανίζεται· εμφανίζεται μόνο η επίδρασή της σε ευρώ.</li><li><strong class="text-slate-200">Μονάδες:</strong> κάθε μονάδα που δούλεψε εκείνη την ημέρα ή στη σύγκριση, ταξινομημένη κατά τη μεταβολή του κόστους της (οι μεταβολές αθροίζουν στη μεταβολή του κόστους του στόλου). Η απόδοση είναι μοντελοποιημένη, όπως στα Ημερήσια οικονομικά, και συγκρίνεται με τη διάμεσο των προηγούμενων 30 ημερών της μονάδας με παραγωγή (τουλάχιστον 5).</li><li><strong class="text-slate-200">Εκτός και επιστροφές:</strong> μια μονάδα είναι εκτός όταν παράγει έως 1 MWh την ημέρα και επιστρέφει όταν παράγει πάνω από 1 MWh μετά από τουλάχιστον 3 ημέρες εκτός· το «N+» σημαίνει ότι η σειρά αρχίζει από την αρχή του ιστορικού μας (<span data-first-day>1 Ιουν 2026</span>), άρα το πραγματικό διάστημα είναι μεγαλύτερο. Κενό στις ημερομηνίες σπάει τη σειρά.</li><li><strong class="text-slate-200">Generic constraints:</strong> η μονάδα, το παράθυρο του περιορισμού της στο αρχείο ISP2 του ΑΔΜΗΕ (ώρες ρολογιού) και τα MWh που παρήγαγε σε αυτές τις ώρες (ωριαίο SCADA).</li><li><strong class="text-slate-200">Όρια:</strong> το κόστος είναι θεωρητικό, όπως στα Ημερήσια οικονομικά· οι επιδράσεις είναι ενδείξεις, όχι λογιστική.</li></ul>
 
             <h3 data-sec="limits" class="mt-4 mb-2 text-xs font-bold text-acc-400">Περιορισμοί</h3>
             <ul class="list-disc pl-5 space-y-2 mb-4 text-slate-400">
@@ -593,6 +593,8 @@ function renderMethodologyModal() {
     if (document.getElementById('modalTitle')) document.getElementById('modalTitle').innerText = t.modalTitle;
     if (document.getElementById('modalBody')) {
         document.getElementById('modalBody').innerHTML = methodologyDepth === 'detailed' ? t.modalBodyDetailed : t.modalBodyShort;
+        // Η πρώτη ημέρα του ιστορικού μας από τα δεδομένα (review.json), όχι γραμμένη στο κείμενο (D41)
+        if (typeof reviewData !== 'undefined' && reviewData && reviewData.first_day) { const f = fmtDay(reviewData.first_day); document.querySelectorAll('#modalBody [data-first-day]').forEach(e => { e.textContent = f; }); }
     }
     const x = document.getElementById('modalXBtn'); if (x) x.setAttribute('aria-label', t.btnClose);
     const btnShort = document.getElementById('btnMethodologyShort');
@@ -695,9 +697,9 @@ function setLang(lang) {
     try { localStorage.setItem('kp_lang', lang); } catch (e) { /* ιδιωτική περιήγηση */ }
     const t = i18n[lang];
 
-    // Οθόνη φόρτωσης: τα βήματα 2…5 παίρνουν τα ονόματα των tabs, με τη σειρά τους
+    // Οθόνη φόρτωσης: τα βήματα 2…6 παίρνουν τα ονόματα των tabs, με τη σειρά τους
     const L = t.load;
-    const stepText = { 1: L.s1, 2: t.tabOverview, 3: t.tabEconomics, 4: t.tabIspScada, 5: t.tabSurplus };
+    const stepText = { 1: L.s1, 2: t.tabOverview, 3: t.tabEconomics, 4: t.tabIspScada, 5: t.tabSurplus, 6: t.tabReview };
     const loadIds = { loadTitle: L.title, loadGroup1: L.g1, loadGroup2: L.g2, loadReady: L.ready };
     Object.entries(loadIds).forEach(([id, txt]) => { const el = document.getElementById(id); if (el) el.textContent = txt; });
     document.querySelectorAll('.load-row').forEach(r => { const lb = r.querySelector('[data-load-label]'); if (lb) lb.textContent = stepText[r.dataset.step] || ''; });
@@ -803,7 +805,7 @@ function loadDone(i) {
     b.style.width = '100%'; b.classList.remove('bg-acc-500'); b.classList.add('bg-emerald-500');
     r.querySelector('[data-load-ck]').classList.remove('opacity-0');
 }
-async function loadStep(i, work) {          // βήματα 2…5: δουλειά → γέμισμα → ✓
+async function loadStep(i, work) {          // βήματα 2…6: δουλειά → γέμισμα → ✓
     loadActivate(i);
     await pause(20);
     // Ένα tab που αποτυγχάνει να ζωγραφιστεί δεν κλειδώνει όλη τη σελίδα πίσω από την οθόνη φόρτωσης:
@@ -833,23 +835,25 @@ async function boot() {
     // Γλώσσα (kp_lang): κείμενα, κουμπιά GR | EN και ετικέτες της οθόνης φόρτωσης (δεν ζωγραφίζει tabs πριν έρθουν τα δεδομένα)
     try { setLang(currentLang); } catch (e) { console.warn('Αποτυχία εφαρμογής γλώσσας:', e); }
     try {
-        // Βήμα 1: πραγματική πρόοδος (2 αρχεία: meta + ιστορικό), με ελάχιστο χρόνο ανάγνωσης
+        // Βήμα 1: πραγματική πρόοδος (3 αρχεία: meta, ιστορικό, ανασκόπηση), με ελάχιστο χρόνο ανάγνωσης· cache: 'no-cache' (ETag): πλήρης λήψη μόνο όταν αλλάζει το αρχείο (D41)
         loadActivate(1);
         const t0 = Date.now();
         const files = [
             getJSON('data/meta.json', { cache: 'no-cache' }).catch((e) => { console.warn('meta.json δεν φορτώθηκε:', e); return null; }),   // όχι κρίσιμο
-            getJSON(API_URL + '?v=' + Date.now())
+            getJSON(API_URL, { cache: 'no-cache' }),
+            getJSON('data/review.json', { cache: 'no-cache' }).catch((e) => { console.warn('review.json δεν φορτώθηκε:', e); return null; })   // μη κρίσιμο: τα boxes δείχνουν μήνυμα
         ];
         let done = 0;
-        const [meta, json] = await Promise.all(files.map((p) => p.then((v) => { loadSet(1, Math.round(++done / files.length * 100)); return v; })));
+        const [meta, json, review] = await Promise.all(files.map((p) => p.then((v) => { loadSet(1, Math.round(++done / files.length * 100)); return v; })));
         if (!json || !Array.isArray(json.isp_generation) || json.isp_generation.length === 0) throw new Error('historical.json is empty');
         applyData(json);
         applyMeta(meta);
+        reviewData = (review && review.days) ? review : null; reviewState = reviewData ? 'ready' : 'error';
         await pause(Math.max(0, LOAD_MIN_READ - (Date.now() - t0)));
         loadDone(1);
         await pause(LOAD_STEP);
 
-        // Βήματα 2…5: ένα ανά tab, με τη σειρά των tabs
+        // Βήματα 2…6: ένα ανά tab, με τη σειρά των tabs
         if (typeof applyDataColors === 'function') applyDataColors();
         initExtraSelectors();
         paintTabs();
@@ -857,6 +861,7 @@ async function boot() {
         await loadStep(3, async () => { updateEconomicsTab(); });
         await loadStep(4, async () => { updateMonthlyTab(); });
         await loadStep(5, async () => { updateSurplusTab(); });
+        await loadStep(6, async () => { updateReviewTab(); });
         appReady = true;
 
         document.getElementById('mainSpinner').classList.add('hidden');

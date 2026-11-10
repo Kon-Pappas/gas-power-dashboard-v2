@@ -313,14 +313,16 @@ const TABS = {
 const DAY_TABS = ['overview', 'economics', 'review'];
 // Κινητό (< 768 px): κουμπιά 2 + 2 με ύψος 48 px· υπολογιστής: καρτέλες με γραμμή από κάτω. Στα 768–1023 px το
 // κείμενο είναι μικρότερο και σπάει σε δύο γραμμές, γιατί το «Generic Constraints & Surplus» δεν χωράει σε 1/4 πλάτους.
-const TAB_BASE = 'tab-btn flex items-center justify-center text-xs md:text-sm lg:text-base font-bold rounded-lg md:rounded-none min-h-12 py-1 w-full transition whitespace-normal leading-tight px-2 border md:border-0 md:border-b-2 cursor-pointer ';
+const TAB_BASE = 'tab-btn flex items-center justify-center text-xs md:text-xs lg:text-base font-bold rounded-lg md:rounded-none min-h-12 py-1 w-full transition whitespace-normal leading-tight px-2 border md:border-0 md:border-b-2 cursor-pointer ';
 const TAB_ON = 'bg-acc-400 text-slate-900 border-acc-400 md:bg-transparent md:text-acc-400 md:border-b-acc-400';
 const TAB_OFF = 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white md:bg-transparent md:border-transparent md:hover:text-acc-200';
 
+// Κινητό: 3 + 2 (πλέγμα 6 στηλών)· από 768 px πέντε ίσες στήλες (D41)
+const TAB_SPAN = { overview: ' col-span-2 md:col-span-1', economics: ' col-span-2 md:col-span-1', ispScada: ' col-span-2 md:col-span-1', surplus: ' col-span-3 md:col-span-1', review: ' col-span-3 md:col-span-1' };
 function paintTabs() {
     Object.entries(TABS).forEach(([key, [btn, view]]) => {
         const on = key === currentTab, b = document.getElementById(btn);
-        b.className = TAB_BASE + (on ? TAB_ON : TAB_OFF) + (key === 'review' ? ' col-span-2 md:col-span-1' : '');   // κινητό: το πέμπτο πιάνει όλο το πλάτος
+        b.className = TAB_BASE + (on ? TAB_ON : TAB_OFF) + TAB_SPAN[key];   // κινητό: πλέγμα 6 στηλών, τρία tabs με 2 στήλες και δύο με 3 (3 + 2)
         b.setAttribute('aria-selected', on ? 'true' : 'false');
         document.getElementById(view).classList.toggle('hidden', !on);
     });
@@ -751,17 +753,15 @@ function updateMonthlyTab() {
         hgsidaData.push(v ? v.hgsida : null); srmcData.push(v ? v.srmc : null); effData.push(v ? v.eff : null);
     }
 
-    document.getElementById('kpiPeakCost').innerText = maxCost !== -Infinity ? fmtN(maxCost, 2) : DASH;
-    document.getElementById('kpiPeakCostDay').innerText = maxCostDay ? `${i18n[currentLang].dayWord} ${maxCostDay}` : '';
-    
-    document.getElementById('kpiBestCost').innerText = minCost !== Infinity ? fmtN(minCost, 2) : DASH;
-    document.getElementById('kpiBestCostDay').innerText = minCostDay ? `${i18n[currentLang].dayWord} ${minCostDay}` : '';
-    
-    document.getElementById('kpiWorstEff').innerText = minEff !== Infinity ? fmtN(minEff, 1) : DASH;
-    document.getElementById('kpiWorstEffDay').innerText = minEffDay ? `${i18n[currentLang].dayWord} ${minEffDay}` : '';
-    
-    document.getElementById('kpiMaxEff').innerText = maxEff !== -Infinity ? fmtN(maxEff, 1) : DASH;
-    document.getElementById('kpiMaxEffDay').innerText = maxEffDay ? `${i18n[currentLang].dayWord} ${maxEffDay}` : '';
+    // Οι ακραίες ημέρες του μήνα: μία γραμμή κάτω από τον τίτλο του γραφήματος (D41, αντί για τέσσερις κάρτες)
+    const tt = i18n[currentLang], dw = tt.dayWord;
+    const ext = (label, val, unit, cls, day) => `${escapeHtml(label)} <span class="${cls} font-semibold tabular-nums">${val === null ? DASH : fmtN(val, unit === '%' ? 1 : 2) + ' ' + unit}</span>${day ? ` <span class="text-slate-500">(${escapeHtml(dw)} ${day})</span>` : ''}`;
+    document.getElementById('monthlyExtremes').innerHTML = [
+        ext(tt.lblHighSrmc, maxCost !== -Infinity ? maxCost : null, '€/MWh', 'text-rose-400', maxCostDay),
+        ext(tt.lblLowSrmc, minCost !== Infinity ? minCost : null, '€/MWh', 'text-emerald-400', minCostDay),
+        ext(tt.lblLowEff, minEff !== Infinity ? minEff : null, '%', 'text-orange-400', minEffDay),
+        ext(tt.lblHighEff, maxEff !== -Infinity ? maxEff : null, '%', 'text-emerald-400', maxEffDay)
+    ].join(' · ');
 
     renderMonthlyChart(labels, dates, hgsidaData, srmcData, effData);
     updateMonthlyBoxes();
@@ -1013,10 +1013,10 @@ const RETURN_MIN_DAYS = 3;            // ίδιο με το Python (RETURN_MIN_O
 function loadReviewData() {
     if (reviewState === 'loading' || reviewState === 'ready') return;
     reviewState = 'loading';
-    getJSON('data/review.json?v=' + Date.now())
+    getJSON('data/review.json', { cache: 'no-cache' })
         .then(j => { reviewData = (j && j.days) ? j : null; reviewState = reviewData ? 'ready' : 'error'; })
         .catch(e => { console.warn('review.json δεν φορτώθηκε:', e); reviewState = 'error'; })
-        .then(() => { updateReviewTab(); updateMonthlyBoxes(); updateSurplusBoxes(); });   // κάθε μία ελέγχει αν το tab της είναι ανοιχτό
+        .then(() => { updateReviewTab(); updateMonthlyBoxes(); updateSurplusBoxes(); });
 }
 function setReviewBase(b) { reviewBase = b; updateReviewTab(); }
 function toggleReviewUnits() { reviewShowAll = !reviewShowAll; updateReviewTab(); }
@@ -1029,7 +1029,7 @@ const reviewMedian = (a) => { const s = [...a].sort((x, y) => x - y), n = s.leng
 const reviewMean = (a, f) => a.reduce((s, x) => s + f(x), 0) / a.length;
 
 function updateReviewTab() {
-    if (currentTab !== 'review' || !rawData) return;
+    if (!rawData) return;
     const t = i18n[currentLang];
     const msg = document.getElementById('reviewMsg'), body = document.getElementById('reviewBody');
     const showMsg = (text, go) => {
@@ -1210,7 +1210,7 @@ function updateReviewTab() {
 function reviewPrevMonth(m) { const [y, mm] = m.split('-').map(Number); return mm === 1 ? `${y - 1}-12` : `${y}-${String(mm - 1).padStart(2, '0')}`; }
 function boxGuard(tab, msgId, bodyId) {
     // Κοινός έλεγχος: επιστρέφει {t, month, mo} όταν υπάρχουν στοιχεία, αλλιώς δείχνει το κατάλληλο μήνυμα και επιστρέφει null
-    if (currentTab !== tab || !rawData) return null;
+    if (!rawData) return null;
     const t = i18n[currentLang], msg = document.getElementById(msgId), body = document.getElementById(bodyId);
     const showMsg = (text) => { msg.textContent = text; msg.classList.remove('hidden'); body.classList.add('hidden'); };
     const mSel = document.getElementById('monthSelect'), month = mSel && mSel.value;
@@ -1222,6 +1222,10 @@ function boxGuard(tab, msgId, bodyId) {
     if (!mo) { showMsg(t.mbNoMonth); return null; }
     msg.classList.add('hidden'); body.classList.remove('hidden');
     return { t, month, mo };
+}
+// Η πρώτη ημέρα του ιστορικού μας, από το review.json (όχι γραμμένη στα κείμενα: αλλάζει όταν επεκτείνουμε προς τα πίσω)
+function reviewFirstDayLabel() {
+    return reviewData && reviewData.first_day ? fmtDay(reviewData.first_day) : '';
 }
 function hexToRgb(hex) { const h = hex.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substring(i, i + 2), 16)); }
 
@@ -1279,17 +1283,17 @@ function updateMonthlyBoxes() {
         if (!date.startsWith(month) || name === 'TOTAL GAS UNITS' || name.includes('Σύνολο') || name === 'NAN') return;
         const u = getCanonicalUnitName(name); (mwh[u] = mwh[u] || {})[date] = parseNum(v[2]); days.add(date);
     });
-    const lastDay = days.size ? Math.max(...[...days].map(x => Number(x.split('-')[2]))) : 0;
+    const dayNums = [...days].map(x => Number(x.split('-')[2])), lastDay = dayNums.length ? Math.max(...dayNums) : 0, firstDay = dayNums.length ? Math.min(...dayNums) : 1;   // D41: από την πρώτη ημέρα με δεδομένα (ο 1ος μήνας του ιστορικού μας είναι μισός)
     const units = Object.keys(mwh).sort((a, b) => (getUnitMetadata(a).order - getUnitMetadata(b).order) || getShortUnitName(a).localeCompare(getShortUnitName(b)));
     const rets = (reviewData.events || []).filter(e => e.d.startsWith(month));
     const retSet = new Set(rets.map(e => `${e.u}|${e.d}`));
     let cells = `<div></div>`;
     // Ετικέτες ημερών: 1, 5, 10, 15…, κεντραρισμένες πάνω από το κελί τους (absolute: δεν διευρύνουν τη στήλη ούτε ξεχειλίζουν στα στενά κελιά του κινητού)
-    for (let n = 1; n <= lastDay; n++) cells += `<div style="position:relative;height:12px">${(n === 1 || n % 5 === 0) ? `<span style="position:absolute;left:50%;transform:translateX(-50%);font-size:9px;color:#64748b;white-space:nowrap">${n}</span>` : ''}</div>`;
+    for (let n = firstDay; n <= lastDay; n++) cells += `<div style="position:relative;height:12px">${(n === firstDay || n % 5 === 0) ? `<span style="position:absolute;left:50%;transform:translateX(-50%);font-size:9px;color:#64748b;white-space:nowrap">${n}</span>` : ''}</div>`;
     units.forEach(u => {
         const cs = CLASS_STYLE[getUnitMetadata(u).order] || CLASS_STYLE[3], mxu = Math.max(...Object.values(mwh[u]), 1), [r, gg, b] = hexToRgb(cs.hex);
         cells += `<div style="font-size:11px;font-weight:700;white-space:nowrap;padding-right:6px;color:${cs.hex};overflow:hidden;text-overflow:ellipsis">${escapeHtml(getShortUnitName(u))}</div>`;
-        for (let n = 1; n <= lastDay; n++) {
+        for (let n = firstDay; n <= lastDay; n++) {
             const date = `${month}-${String(n).padStart(2, '0')}`, v = mwh[u][date];
             const bg = v === undefined ? '#0b1220' : (v <= 1 ? '#1e293b' : `rgba(${r},${gg},${b},${(0.22 + 0.78 * Math.min(1, v / mxu)).toFixed(2)})`);
             cells += `<div title="${escapeHtml(`${fmtDay(date, true)} · ${getShortUnitName(u)} · ${v === undefined ? '–' : fmtN(v, 0) + ' MWh'}`)}" style="height:15px;border-radius:3px;background:${bg}${retSet.has(`${u}|${date}`) ? ';box-shadow:inset 0 0 0 2px #fbbf24' : ''}"></div>`;
@@ -1297,7 +1301,7 @@ function updateMonthlyBoxes() {
     });
     const heat = document.getElementById('mbHeat');
     heat.setAttribute('aria-label', t.mbHeatAria.replace('{m}', fmtMonth(month)));
-    heat.style.cssText = `display:grid;gap:3px;align-items:center;grid-template-columns:72px repeat(${Math.max(lastDay, 1)},minmax(0,1fr))`;
+    heat.style.cssText = `display:grid;gap:3px;align-items:center;grid-template-columns:72px repeat(${Math.max(lastDay - firstDay + 1, 1)},minmax(0,1fr))`;
     heat.innerHTML = cells;
     const sq = (bg, extra) => `<span style="display:inline-block;width:14px;height:11px;border-radius:3px;vertical-align:middle;margin-right:4px;background:${bg};${extra || ''}"></span>`;
     document.getElementById('mbLegend').innerHTML = `<span>${sq('#1e293b')}${escapeHtml(t.mbLegOut)}</span><span>${sq('rgba(129,140,248,.9)')}${escapeHtml(t.mbLegOn)}</span><span>${sq('#1e293b', 'box-shadow:inset 0 0 0 2px #fbbf24')}${escapeHtml(t.mbLegRet)}</span><span>${sq('#0b1220')}${escapeHtml(t.mbLegNoData)}</span>`;
@@ -1307,7 +1311,7 @@ function updateMonthlyBoxes() {
     const evHtml = [...rets].sort((a, b) => b.d.localeCompare(a.d)).map(e => `<div class="py-1.5 border-b border-slate-700/50 text-sm"><span class="text-slate-500 text-xs mr-1">${escapeHtml(fmtDay(e.d, true))}</span><b class="text-emerald-300">${escapeHtml(getShortUnitName(e.u))}</b> ${escapeHtml(t.mbRet.replace('{n}', e.off + (e.plus ? '+' : '')))} <span class="text-[11px] text-slate-500">(${escapeHtml(t.revFirstDay)}: ${fmtN(e.mwh, 0)} MWh)</span></div>`).join('') +
         outEnd.map(o => `<div class="py-1.5 border-b border-slate-700/50 text-sm"><b class="text-amber-300">${escapeHtml(getShortUnitName(o[0]))}</b> ${escapeHtml(t.mbOutEnd.replace('{n}', o[1] + (o[2] ? '+' : '')))}</div>`).join('');
     const anyPlus = rets.some(e => e.plus) || outEnd.some(o => o[2]);
-    document.getElementById('mbEvents').innerHTML = (evHtml || `<p class="text-sm text-slate-400">${escapeHtml(t.mbNoEvents)}</p>`) + (anyPlus ? `<p class="text-[11px] text-slate-500 mt-2">${escapeHtml(t.mbPlusNote)}</p>` : '');
+    document.getElementById('mbEvents').innerHTML = (evHtml || `<p class="text-sm text-slate-400">${escapeHtml(t.mbNoEvents)}</p>`) + (anyPlus ? `<p class="text-[11px] text-slate-500 mt-2">${escapeHtml(t.mbPlusNote.replace('{first}', reviewFirstDayLabel()))}</p>` : '');
 }
 
 function updateSurplusBoxes() {
