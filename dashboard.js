@@ -4,6 +4,8 @@
 let overviewChartInst = null;
 let monthlyChartInst = null;
 let surplusChartInst = null;
+// D37: η Ανασκόπηση ημέρας φορτώνει το data/review.json ΜΟΝΟ όταν ανοίξει το tab (idle → loading → ready | error)
+let reviewData = null, reviewState = 'idle', reviewBase = 'prev', reviewShowAll = false;
 
 // ==========================================
 // WATERFALL LOADING SEQUENCE (Με σωστούς χρόνους)
@@ -305,9 +307,10 @@ const TABS = {
     overview: ['tabBtnOverview', 'viewOverview'],
     economics: ['tabBtnEconomics', 'viewEconomics'],
     ispScada: ['tabBtnIspScada', 'viewIspScada'],
-    surplus: ['tabBtnSurplus', 'viewSurplus']
+    surplus: ['tabBtnSurplus', 'viewSurplus'],
+    review: ['tabBtnReview', 'viewReview']
 };
-const DAY_TABS = ['overview', 'economics'];
+const DAY_TABS = ['overview', 'economics', 'review'];
 // Κινητό (< 768 px): κουμπιά 2 + 2 με ύψος 48 px· υπολογιστής: καρτέλες με γραμμή από κάτω. Στα 768–1023 px το
 // κείμενο είναι μικρότερο και σπάει σε δύο γραμμές, γιατί το «Generic Constraints & Surplus» δεν χωράει σε 1/4 πλάτους.
 const TAB_BASE = 'tab-btn flex items-center justify-center text-xs md:text-sm lg:text-base font-bold rounded-lg md:rounded-none min-h-12 py-1 w-full transition whitespace-normal leading-tight px-2 border md:border-0 md:border-b-2 cursor-pointer ';
@@ -317,7 +320,7 @@ const TAB_OFF = 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white m
 function paintTabs() {
     Object.entries(TABS).forEach(([key, [btn, view]]) => {
         const on = key === currentTab, b = document.getElementById(btn);
-        b.className = TAB_BASE + (on ? TAB_ON : TAB_OFF);
+        b.className = TAB_BASE + (on ? TAB_ON : TAB_OFF) + (key === 'review' ? ' col-span-2 md:col-span-1' : '');   // κινητό: το πέμπτο πιάνει όλο το πλάτος
         b.setAttribute('aria-selected', on ? 'true' : 'false');
         document.getElementById(view).classList.toggle('hidden', !on);
     });
@@ -333,6 +336,7 @@ function switchTab(tabId) {
     if (tabId === 'economics') updateEconomicsTab();
     if (tabId === 'ispScada') updateMonthlyTab();
     if (tabId === 'surplus') updateSurplusTab();
+    if (tabId === 'review') { if (reviewState === 'error') reviewState = 'idle'; updateReviewTab(); }   // νέα προσπάθεια αν απέτυχε πριν
     updateStatusBadge();
 }
 
@@ -402,7 +406,7 @@ function updatePicker() {
 }
 
 // Αλλαγή επιλογής: ξαναζωγραφίζονται μόνο τα tabs που εξαρτώνται από αυτήν
-function onDateChange() { updateOverviewTab(); updateEconomicsTab(); updateStatusBadge(); }
+function onDateChange() { updateOverviewTab(); updateEconomicsTab(); updateReviewTab(); updateStatusBadge(); }
 function onMonthChange() { updateMonthlyTab(); updateSurplusTab(); }
 
 function updateStatusBadge() {
@@ -439,6 +443,7 @@ function updateDashboard() {
     updateEconomicsTab();
     updateMonthlyTab();
     updateSurplusTab();
+    updateReviewTab();
 }
 
 // ==========================================
@@ -977,6 +982,195 @@ function renderSurplusChart(labels, dates, surplusData, constraintsData) {
 // ΚΟΥΜΠΙ «ΕΠΑΝΩ» (κινητό, D27, όπως BESS D72): εμφανίζεται όταν τα tabs έχουν βγει από την οθόνη και σε γυρίζει στην κορυφή,
 // όπου είναι η επιλογή ημερομηνίας, η μεθοδολογία, η γλώσσα και τα tabs. Δεν πιάνει μόνιμο χώρο.
 // ==========================================
+// ==========================================
+// TAB 5: DAILY REVIEW (D37)
+// ==========================================
+// Τα νούμερα του μοντέλου (διάσπαση κόστους, διακοπές και επιστροφές, περιορισμοί) τα υπολόγισε το Python και είναι στο data/review.json
+// (δικά μας παράγωγα, χωρίς τιμή τρίτου, K33/K34). Εδώ μόνο διαφορές, ταξινόμηση και κείμενο, από αυτό και από τα οικονομικά της σελίδας.
+const REVIEW_TOP_UNITS = 6;           // πόσες μονάδες φαίνονται πριν το «Εμφάνιση όλων»
+const REVIEW_NEUTRAL_EUR = 5000;      // επίδραση κάτω από 5.000 € = «χωρίς επίδραση» στο κείμενο
+const REVIEW_MEDIAN_DAYS = 30;        // η απόδοση κάθε μονάδας συγκρίνεται με τη διάμεσο των προηγούμενων 30 ημερών της
+const REVIEW_BASE_DAYS = 7;
+const REVIEW_BASE_MIN = 3;            // ίδιο όριο με το Python (BASELINE_MIN_DAYS)
+
+function loadReviewData() {
+    if (reviewState === 'loading' || reviewState === 'ready') return;
+    reviewState = 'loading';
+    getJSON('data/review.json?v=' + Date.now())
+        .then(j => { reviewData = (j && j.days) ? j : null; reviewState = reviewData ? 'ready' : 'error'; })
+        .catch(e => { console.warn('review.json δεν φορτώθηκε:', e); reviewState = 'error'; })
+        .then(() => { if (currentTab === 'review') updateReviewTab(); });
+}
+function setReviewBase(b) { reviewBase = b; updateReviewTab(); }
+function toggleReviewUnits() { reviewShowAll = !reviewShowAll; updateReviewTab(); }
+
+function reviewShiftDate(iso, k) {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d - k)).toISOString().slice(0, 10);
+}
+const reviewMedian = (a) => { const s = [...a].sort((x, y) => x - y), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+const reviewMean = (a, f) => a.reduce((s, x) => s + f(x), 0) / a.length;
+
+function updateReviewTab() {
+    if (currentTab !== 'review' || !rawData) return;
+    const t = i18n[currentLang];
+    const msg = document.getElementById('reviewMsg'), body = document.getElementById('reviewBody');
+    const showMsg = (text) => { msg.textContent = text; msg.classList.remove('hidden'); body.classList.add('hidden'); };
+    const dSel = document.getElementById('dateSelect'), day = dSel && dSel.value;
+    if (!day) return;
+    if (reviewState === 'idle') loadReviewData();
+    if (reviewState === 'loading') { showMsg(t.revLoading); return; }
+    if (reviewState !== 'ready') { showMsg(t.revError); return; }
+
+    const eco = {};
+    (rawData.daily_economics || []).forEach(e => { eco[parseDate(e.Ημερομηνία)] = e; });
+    const E = eco[day];
+    if (!E || !E.Units || E.Units.length === 0) { showMsg(t.revEmpty); return; }
+    msg.classList.add('hidden'); body.classList.remove('hidden');
+
+    const rd = (reviewData.days && reviewData.days[day]) || {};
+    const agg = (e) => {
+        const tt = e['Fleet Totals'], h = e['HGSIDA (€/MWh)'] || 0, fuel = tt['Συνολικό Κόστος Καυσίμου (€)'];
+        return { mwh: tt['Συνολική Παραγωγή (MWh)'], cost: tt['Συνολικό Κόστος Στόλου (€)'], th: h > 0 ? fuel / h : 0 };
+    };
+    // Βάσεις σύγκρισης: η προηγούμενη ημέρα του ημερολογίου ή ο μέσος των προηγούμενων (έως 7) ημερών με οικονομικά
+    const prevIso = reviewShiftDate(day, 1);
+    const prevRows = eco[prevIso] && eco[prevIso].Units ? [eco[prevIso]] : [];
+    const sevenRows = [];
+    for (let k = 1; k <= REVIEW_BASE_DAYS; k++) { const e = eco[reviewShiftDate(day, k)]; if (e && e.Units && e.Units.length) sevenRows.push(e); }
+    const avail = { prev: prevRows.length === 1 && !!rd.vs_prev, '7d': sevenRows.length >= REVIEW_BASE_MIN && !!rd.vs_7d };
+    const base = avail[reviewBase] ? reviewBase : (avail.prev ? 'prev' : (avail['7d'] ? '7d' : null));
+    const baseRows = base === 'prev' ? prevRows : (base === '7d' ? sevenRows : []);
+    const fx = base === 'prev' ? rd.vs_prev : (base === '7d' ? rd.vs_7d : null);
+
+    // Τίτλος και κουμπιά σύγκρισης
+    const longDate = new Intl.DateTimeFormat(t.locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(day + 'T00:00:00Z'));
+    document.getElementById('reviewTitle').textContent = `${t.revTitle} · ${longDate}`;
+    const CHIP_ON = 'px-3 py-1.5 rounded-full text-xs font-semibold border border-acc-400 bg-acc-400 text-slate-900';
+    const CHIP_OFF = 'px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-600 bg-slate-800 text-slate-300 hover:text-white transition';
+    const CHIP_DIS = 'px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-700 bg-slate-800/50 text-slate-600 cursor-not-allowed';
+    [['reviewBtnPrev', 'prev', `${t.revPrev} (${fmtDay(prevIso, true)})`], ['reviewBtn7d', '7d', t.rev7d]].forEach(([id, key, label]) => {
+        const b = document.getElementById(id);
+        b.textContent = label; b.disabled = !avail[key];
+        b.className = !avail[key] ? CHIP_DIS : (base === key ? CHIP_ON : CHIP_OFF);
+        b.setAttribute('aria-pressed', base === key ? 'true' : 'false');
+    });
+
+    // Σύνολα ημέρας και βάσης
+    const today = agg(E), nB = baseRows.length;
+    const baseAgg = nB ? (() => { const a = baseRows.map(agg); return { mwh: reviewMean(a, x => x.mwh), cost: reviewMean(a, x => x.cost), th: reviewMean(a, x => x.th) }; })() : null;
+    const srmcToday = today.mwh > 0 ? today.cost / today.mwh : null;   // ίδιος υπολογισμός (κόστος ÷ MWh) για την ημέρα και τη βάση, χωρίς τη στρογγυλεμένη αποθηκευμένη τιμή
+    const effToday = today.th > 0 ? today.mwh / today.th * 100 : null;
+    const effBase = baseAgg && baseAgg.th > 0 ? baseAgg.mwh / baseAgg.th * 100 : null;
+    const G = 'text-emerald-400', R_ = 'text-rose-400', N = 'text-slate-400';
+    const upBad = (d) => (roundsToZero(d, 2) ? N : (d > 0 ? R_ : G));     // κόστος: πάνω = κόκκινο
+    const upGood = (d) => (roundsToZero(d, 1) ? N : (d > 0 ? G : R_));    // απόδοση: πάνω = πράσινο
+
+    // Κείμενο
+    const eur = (v) => `${fmtN(v / 1e6, 2, !roundsToZero(v / 1e6, 2))} ${t.revMEur}`;
+    const sentenceEl = document.getElementById('reviewSentence');
+    if (!fx || !baseAgg) {
+        sentenceEl.textContent = t.revNoBase;
+    } else {
+        const dCost = today.cost - baseAgg.cost, pct = baseAgg.cost ? dCost / baseAgg.cost * 100 : 0, dGen = (today.mwh - baseAgg.mwh) / 1000;
+        const baseLabel = base === 'prev' ? t.revBasePrev.replace('{date}', fmtDay(prevIso, true)) : t.revBase7.replace('{n}', String(nB));
+        const ph = (k, v) => (Math.abs(v) < REVIEW_NEUTRAL_EUR ? t.revPh[k][2] : t.revPh[k][v < 0 ? 0 : 1]);
+        const ranked = ['vol', 'gas', 'co2', 'mix'].map(k => ({ k, v: fx[k] })).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
+        let text = roundsToZero(dCost / 1e6, 2)
+            ? t.revS1Same.replace('{p}', fmtN(pct, 1, true)).replace('{base}', baseLabel)
+            : t.revS1.replace('{dir}', dCost < 0 ? t.revFell : t.revRose).replace('{x}', fmtN(Math.abs(dCost) / 1e6, 2)).replace('{p}', fmtN(pct, 1, true)).replace('{base}', baseLabel);
+        const m0 = ranked[0];
+        text += ' ' + t.revS2.replace('{f}', ph(m0.k, m0.v)).replace('{v}', eur(m0.v)).replace('{extra}', m0.k === 'vol' ? `, ${fmtN(dGen, 1, true)} GWh` : '');
+        const rest = ranked.slice(1).map(p => `${ph(p.k, p.v)} (${eur(p.v)})`);
+        text += ' ' + t.revS3.replace('{list}', rest.slice(0, -1).join(', ') + ' ' + t.revAnd + ' ' + rest[rest.length - 1]);
+        sentenceEl.textContent = text;
+    }
+
+    // KPI
+    const kpi = (label, value, unit, delta, cls, color, sub) =>
+        `<div class="rounded-lg border border-slate-700/70 bg-slate-900/40 p-3"><div class="text-[11px] text-slate-400">${escapeHtml(label)}</div>` +
+        `<div class="mt-1 flex items-baseline gap-1"><span class="text-xl sm:text-2xl font-bold tabular-nums" style="color:${color}">${value}</span><span class="text-xs text-slate-500">${escapeHtml(unit)}</span></div>` +
+        `<div class="text-[11px] mt-0.5 tabular-nums ${cls}">${delta || '&nbsp;'}</div>` + (sub ? `<div class="text-[11px] text-slate-500 tabular-nums">${sub}</div>` : '') + `</div>`;
+    const dC = baseAgg ? today.cost - baseAgg.cost : null, dG = baseAgg ? (today.mwh - baseAgg.mwh) / 1000 : null;
+    const srmcBase = baseAgg && baseAgg.mwh ? baseAgg.cost / baseAgg.mwh : null, dS = srmcBase !== null && srmcToday !== null ? srmcToday - srmcBase : null;
+    const dE = effToday !== null && effBase !== null ? effToday - effBase : null;
+    document.getElementById('reviewKpis').innerHTML = [
+        kpi(t.revKpiCost, fmtN(today.cost / 1e6, 2), t.revMEur, dC === null ? '' : `${fmtN(dC / 1e6, 2, !roundsToZero(dC / 1e6, 2))} ${t.revMEur} (${fmtN(dC / baseAgg.cost * 100, 1, true)}%)`, dC === null ? N : upBad(dC / 1e6), '#fb7185'),
+        kpi(t.revKpiGen, fmtN(today.mwh / 1000, 1), 'GWh', dG === null ? '' : `${fmtN(dG, 1, !roundsToZero(dG, 1))} GWh (${fmtN(dG * 1000 / baseAgg.mwh * 100, 1, true)}%)`, N, '#fb923c'),
+        kpi(t.revKpiSrmc, srmcToday === null ? DASH : fmtN(srmcToday, 2), '€/MWh', dS === null ? '' : `${fmtN(dS, 2, !roundsToZero(dS, 2))} €/MWh`, dS === null ? N : upBad(dS), DATA_COLORS.srmc),
+        kpi(t.revKpiEff, effToday === null ? DASH : fmtN(effToday, 1), '%', dE === null ? '' : `${fmtN(dE, 1, !roundsToZero(dE, 1))} ${t.revPts}`, dE === null ? N : upGood(dE), DATA_COLORS.efficiency, `${t.revKpiGas} ${fmtN(today.th / 1000, 1)} GWh`)
+    ].join('');
+
+    // Τι κίνησε το κόστος
+    const fxEl = document.getElementById('reviewFx'), fxSub = document.getElementById('reviewFxSub');
+    if (!fx) {
+        fxSub.textContent = ''; fxEl.innerHTML = `<p class="text-sm text-slate-400">${escapeHtml(t.revNoBase)}</p>`;
+    } else {
+        fxSub.textContent = `${t.revFxSub} (${fmtN(baseAgg.cost / 1e6, 2)} → ${fmtN(today.cost / 1e6, 2)} ${t.revMEur})`;
+        const mx = Math.max(...['vol', 'gas', 'co2', 'mix'].map(k => Math.abs(fx[k])), 1);
+        const half = (v, left) => ((left ? v < 0 : v > 0) ? `<i style="display:block;height:100%;width:${(Math.abs(v) / mx * 100).toFixed(1)}%;background:${v < 0 ? '#34d399' : '#f87171'}"></i>` : '');
+        fxEl.innerHTML = ['vol', 'gas', 'co2', 'mix'].map(k => {
+            const v = fx[k], cls = roundsToZero(v / 1e6, 2) ? N : (v > 0 ? R_ : G);
+            return `<div class="grid grid-cols-[1fr_auto] sm:grid-cols-[12rem_1fr_6.5rem] items-center gap-x-3 gap-y-1 py-1.5"><span class="text-sm text-slate-300">${escapeHtml(t.revFx[k])}</span>` +
+                `<span class="text-right sm:order-3 text-sm font-bold tabular-nums ${cls}">${eur(v)}</span>` +
+                `<div class="col-span-2 sm:col-span-1 sm:order-2 grid grid-cols-2 h-4 rounded bg-slate-900 overflow-hidden"><div class="flex justify-end">${half(v, true)}</div><div class="flex">${half(v, false)}</div></div></div>`;
+        }).join('') + `<div class="flex justify-between items-baseline mt-3 pt-3 border-t border-dashed border-slate-600 text-sm text-slate-400"><span>${escapeHtml(t.revFxTotal)}</span><b class="text-base tabular-nums ${upBad(fx.total / 1e6)}">${eur(fx.total)}</b></div>`;
+    }
+
+    // Συμβάντα της ημέρας: εκτός λειτουργίας, επιστροφές, generic constraints
+    const chip = (cls, text, title) => `<span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${cls}"${title ? ` title="${escapeHtml(title)}"` : ''}>${escapeHtml(text)}</span>`;
+    const none = `<span class="text-xs text-slate-500">${escapeHtml(t.revNone)}</span>`;
+    const nameOf = (u) => getShortUnitName(u);
+    const outs = (rd.out || []).map(([u, n, plus]) => chip('border-amber-500/40 bg-amber-500/10 text-amber-300', `${nameOf(u)} · ${n}${plus ? '+' : ''} ${n === 1 ? t.revDay1 : t.revDays}`));
+    const rets = (reviewData.events || []).filter(e => e.d === day).map(e => chip('border-emerald-500/40 bg-emerald-500/10 text-emerald-300', `${nameOf(e.u)} · ${t.revAfter.replace('{n}', e.off + (e.plus ? '+' : ''))}`, `${t.revFirstDay}: ${fmtN(e.mwh, 0)} MWh`));
+    const cons = (rd.cons || []).map(c => chip('border-indigo-400/40 bg-indigo-400/10 text-indigo-200', `${nameOf(c.u)} ${c.w[0]}–${c.w[1]} · ${fmtN(c.mwh, 0)} MWh`));
+    const group = (label, items) => `<div><div class="text-[11px] text-slate-500 mb-1.5">${escapeHtml(label)}</div><div class="flex flex-wrap gap-1.5">${items.length ? items.join('') : none}</div></div>`;
+    document.getElementById('reviewDay').innerHTML = group(t.revOut, outs) + group(t.revReturns, rets) + group(t.revCons, cons);
+
+    // Μονάδες, ταξινομημένες κατά την επίδρασή τους στο κόστος (και όσες σταμάτησαν: χωρίς αυτές το άθροισμα δεν θα έκλεινε στο σύνολο)
+    const unitsOf = (e) => { const m = {}; (e.Units || []).forEach(u => { m[getCanonicalUnitName(u['Μονάδα'])] = u; }); return m; };
+    const uToday = unitsOf(E), uBase = baseRows.map(unitsOf);
+    const names = new Set([...Object.keys(uToday), ...uBase.flatMap(m => Object.keys(m))]);
+    const eff = (u, h) => (u && u['Κόστος Καυσίμου (€)'] > 0 && h > 0 ? u['Παραγωγή (MWh)'] * h / u['Κόστος Καυσίμου (€)'] * 100 : null);
+    const rows = [...names].map(name => {
+        const ut = uToday[name] || null, bMwh = nB ? uBase.reduce((s, m) => s + (m[name] ? m[name]['Παραγωγή (MWh)'] : 0), 0) / nB : 0;
+        const bCost = nB ? uBase.reduce((s, m) => s + (m[name] ? m[name]['Συνολικό Κόστος (€)'] : 0), 0) / nB : 0;
+        const hist = [];
+        for (let k = 1; k <= REVIEW_MEDIAN_DAYS; k++) { const e = eco[reviewShiftDate(day, k)]; if (!e) continue; const v = eff((e.Units || []).find(u => getCanonicalUnitName(u['Μονάδα']) === name), e['HGSIDA (€/MWh)']); if (v !== null) hist.push(v); }
+        const eT = eff(ut, E['HGSIDA (€/MWh)']);
+        return { name, ut, mwh: ut ? ut['Παραγωγή (MWh)'] : 0, cost: ut ? ut['Συνολικό Κόστος (€)'] : 0, dMwh: ut ? ut['Παραγωγή (MWh)'] - bMwh : -bMwh,
+                 dCost: nB ? (ut ? ut['Συνολικό Κόστος (€)'] : 0) - bCost : null, eff: eT, dEff: eT !== null && hist.length >= 5 ? eT - reviewMedian(hist) : null,
+                 srmc: ut ? ut['SRMC Μέσος Όρος (€/MWh)'] : null, con: (rd.cons || []).find(c => c.u === name) || null };
+    }).filter(r => r.ut || (r.dCost !== null && Math.abs(r.dCost) > 0.5));
+    rows.sort((a, b) => nB ? (Math.abs(b.dCost) - Math.abs(a.dCost) || a.name.localeCompare(b.name)) : (b.cost - a.cost || a.name.localeCompare(b.name)));
+    const maxAbs = Math.max(...rows.map(r => Math.abs(r.dCost || 0)), 1);
+    const shown = reviewShowAll ? rows : rows.slice(0, REVIEW_TOP_UNITS);
+    const kEur = (v) => `${fmtN(v / 1000, 0, !roundsToZero(v / 1000, 0))} ${t.revKEur}`;
+    document.getElementById('reviewUnits').innerHTML = shown.map(r => {
+        const meta = getUnitMetadata(r.name), cs = CLASS_STYLE[meta.order] || CLASS_STYLE[3];
+        const dc = r.dCost === null ? '' : `<div class="font-semibold tabular-nums ${upBad(r.dCost)}">${kEur(r.dCost)}</div>` +
+            `<div class="grid grid-cols-2 h-1.5 mt-1 rounded bg-slate-900/70 overflow-hidden"><div class="flex justify-end">${r.dCost < 0 ? `<i style="display:block;height:100%;width:${(Math.abs(r.dCost) / maxAbs * 100).toFixed(1)}%;background:#34d399"></i>` : ''}</div><div class="flex">${r.dCost > 0 ? `<i style="display:block;height:100%;width:${(Math.abs(r.dCost) / maxAbs * 100).toFixed(1)}%;background:#f87171"></i>` : ''}</div></div>`;
+        const badge = r.con ? `<div class="mt-1"><span class="inline-block text-[10px] font-bold rounded px-1.5 py-0.5 border border-indigo-400/40 bg-indigo-400/10 text-indigo-200 max-w-full break-words">${escapeHtml(t.revConShort)} ${escapeHtml(r.con.w[0])}–${escapeHtml(r.con.w[1])}</span></div>` : (r.ut ? '' : `<div class="mt-1"><span class="inline-block text-[10px] font-bold rounded px-1.5 py-0.5 border border-amber-500/40 bg-amber-500/10 text-amber-300 max-w-full break-words">${escapeHtml(t.revNoOutput)}</span></div>`);
+        const unitSpan = (s) => `<span class="text-[11px] text-slate-500">${s}</span>`;
+        const dM = nB ? `<div class="text-[11px] tabular-nums ${N}">${fmtN(r.dMwh, 0, !roundsToZero(r.dMwh, 0))}</div>` : '';
+        const dEf = r.dEff !== null ? `<div class="text-[11px] tabular-nums ${upGood(r.dEff)}" title="${escapeHtml(t.revVsMedianTip)}">${fmtN(r.dEff, 1, !roundsToZero(r.dEff, 1))} ${escapeHtml(t.revVsMedian)}</div>` : '<div class="text-[11px]">&nbsp;</div>';
+        return `<div role="listitem" class="rounded-lg border border-slate-700/60 px-3 py-2.5 grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[10rem_1fr_1.4fr_1fr_1.6fr] gap-x-4 gap-y-2 items-start" style="border-left:3px solid ${cs.hex}; background:${cs.hex}14">` +
+            `<div class="order-1 md:order-none font-bold text-slate-200">${escapeHtml(nameOf(r.name))}${badge}</div>` +
+            `<div class="order-2 md:order-none md:col-start-5 md:row-start-1 text-right whitespace-nowrap min-w-[5.5rem] md:min-w-0">${dc}</div>` +
+            `<div class="order-3 md:order-none col-span-2 md:col-span-3 md:col-start-2 md:row-start-1 grid grid-cols-3 gap-x-3">` +
+              `<div><div class="text-sm tabular-nums text-slate-200">${fmtN(r.mwh, 0)} ${unitSpan('MWh')}</div>${dM}</div>` +
+              `<div><div class="text-sm tabular-nums" style="color:${DATA_COLORS.efficiency}">${r.eff === null ? DASH : fmtN(r.eff, 1) + ' ' + unitSpan('%')}</div>${dEf}</div>` +
+              `<div><div class="text-sm tabular-nums text-amber-400">${r.srmc === null ? DASH : fmtN(r.srmc, 2) + ' ' + unitSpan('€/MWh')}</div></div>` +
+            `</div></div>`;
+    }).join('');
+    const more = document.getElementById('reviewMore');
+    if (rows.length > REVIEW_TOP_UNITS) {
+        more.classList.remove('hidden');
+        more.textContent = reviewShowAll ? t.revShowTop : t.revShowAll.replace('{n}', String(rows.length));
+        more.setAttribute('aria-expanded', reviewShowAll ? 'true' : 'false');
+    } else { more.classList.add('hidden'); }
+}
+
 function scrollToTop() {
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });

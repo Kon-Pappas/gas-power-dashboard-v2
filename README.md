@@ -10,9 +10,10 @@ Public dashboard of natural-gas power plants in the Greek electricity market: wh
 | Tab | Content |
 |---|---|
 | Daily overview | Per unit, scheduled (ISP) against actual (SCADA) generation of the selected day, units sorted by efficiency class (H-Class, F-Class, older generation & peakers). |
-| Daily economics | Gas price (HGSIDA), CO₂ price (EUA), fleet efficiency, average fleet SRMC, generation and estimated cost, and a per-unit table (output, efficiency, CO₂, SRMC, cost). Cost is calculated hour by hour from the SCADA output. |
+| Daily economics | Gas price (HGSIDA), CO₂ emissions, fleet efficiency, average fleet SRMC, generation and estimated cost, and a per-unit table (output, efficiency, CO₂, SRMC, cost). Cost is calculated hour by hour from the SCADA output. |
 | Monthly analytics | One point per day of the month for the HGSIDA price, the average fleet SRMC and the fleet efficiency, with the days of the highest and lowest fleet SRMC and of the lowest and highest efficiency. |
 | Generic constraints & surplus | Daily ISP residual surplus against the constraint-driven generation of gas units (their generic-constraint hours), with monthly totals. |
+| Daily review | What changed in the gas fleet on the selected day against the previous day or the mean of the previous 7 days: the fleet cost change split exactly into generation volume, gas price, CO₂ price and efficiency / mix; the units sorted by their effect on the cost; and the units out, the returns and the generic constraints of the day. It loads `data/review.json` only when it opens. |
 
 The *Methodology & Assumptions* button opens a short and a detailed version of the assumptions behind every tab, in Greek and English.
 
