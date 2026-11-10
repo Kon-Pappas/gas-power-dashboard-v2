@@ -986,10 +986,10 @@ def _month_constraints(day_rows):
                 a["xeur"] += r.get("xeur") or 0.0
     res = []
     for u, a in sorted(acc.items(), key=lambda kv: -kv[1]["mwh"]):
-        res.append({"u": u, "days": int(a["days"]), "h": int(a["h"]), "mwh": round(a["mwh"], 3), "share": round(a["mwh"] / a["tot"] * 100, 1) if a["tot"] else None,
-                    "li": round(a["pin"] / a["nin"], 1) if a["nin"] else None, "lo": round(a["pout"] / a["nout"], 1) if a["nout"] else None,
-                    "ei": round(a["pin"] / a["thin"] * 100, 2) if a["thin"] else None, "eo": round(a["pout"] / a["thout"] * 100, 2) if a["thout"] else None,
-                    "xth": round(a["xth"], 1), "xeur": int(round(a["xeur"]))})
+        res.append({"u": u, "days": int(a["days"]), "h": int(a["h"]), "mwh": round(a["mwh"], 3), "share": round(a["mwh"] / a["tot"] * 100, 4) if a["tot"] else None,
+                    "li": round(a["pin"] / a["nin"], 4) if a["nin"] else None, "lo": round(a["pout"] / a["nout"], 4) if a["nout"] else None,
+                    "ei": round(a["pin"] / a["thin"] * 100, 4) if a["thin"] else None, "eo": round(a["pout"] / a["thout"] * 100, 4) if a["thout"] else None,
+                    "xth": round(a["xth"], 3), "xeur": round(a["xeur"], 2)})
     return res
 
 def load_review():
@@ -1035,8 +1035,9 @@ def build_review(prev=None):
     for m in sorted({d[:7] for d in E}):
         dm = [d for d in sorted(E) if d[:7] == m]
         mean = _mean_agg([agg[d] for d in dm])
-        mo = {"n": len(dm), "mwh_d": round(mean["q"]), "th_d": round(mean["th"]), "cost_d": round(mean["G"] + mean["C"]), "tons_d": round(mean["t"], 1),
-              "eff": round(sum(agg[d]["q"] for d in dm) / sum(agg[d]["th"] for d in dm) * 100, 2) if sum(agg[d]["th"] for d in dm) else None}
+        # D40: τα μηνιαία μεγέθη αποθηκεύονται με πολλά δεκαδικά· η σελίδα στρογγυλεύει ΜΙΑ φορά, για εμφάνιση (αλλιώς διπλή στρογγύλευση: 20.295,47 -> 20.295,5 -> 20.296)
+        mo = {"n": len(dm), "mwh_d": round(mean["q"], 4), "th_d": round(mean["th"], 4), "cost_d": round(mean["G"] + mean["C"], 2), "tons_d": round(mean["t"], 4),
+              "eff": round(sum(agg[d]["q"] for d in dm) / sum(agg[d]["th"] for d in dm) * 100, 4) if sum(agg[d]["th"] for d in dm) else None}
         y, mm = int(m[:4]), int(m[5:])
         pm = f"{y - 1}-12" if mm == 1 else f"{y}-{mm - 1:02d}"
         dp = [d for d in sorted(E) if d[:7] == pm]

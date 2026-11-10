@@ -334,9 +334,10 @@ function switchTab(tabId) {
     updatePicker();
     if (tabId === 'overview') updateOverviewTab();
     if (tabId === 'economics') updateEconomicsTab();
+    if (reviewState === 'error' && ['ispScada', 'surplus', 'review'].includes(tabId)) reviewState = 'idle';   // νέα προσπάθεια αν απέτυχε πριν
     if (tabId === 'ispScada') updateMonthlyTab();
     if (tabId === 'surplus') updateSurplusTab();
-    if (tabId === 'review') { if (reviewState === 'error') reviewState = 'idle'; updateReviewTab(); }   // νέα προσπάθεια αν απέτυχε πριν
+    if (tabId === 'review') updateReviewTab();
     updateStatusBadge();
 }
 
@@ -763,6 +764,7 @@ function updateMonthlyTab() {
     document.getElementById('kpiMaxEffDay').innerText = maxEffDay ? `${i18n[currentLang].dayWord} ${maxEffDay}` : '';
 
     renderMonthlyChart(labels, dates, hgsidaData, srmcData, effData);
+    updateMonthlyBoxes();
 }
 
 function renderMonthlyChart(labels, dates, hgsidaData, srmcData, effData) {
@@ -944,6 +946,7 @@ function updateSurplusTab() {
     document.getElementById('kpiMonthConstraints').innerText = labels.length ? fmtN(sumConstraints, 0) : DASH;
 
     renderSurplusChart(labels, dates, surplusData, constraintsData);
+    updateSurplusBoxes();
 }
 
 function renderSurplusChart(labels, dates, surplusData, constraintsData) {
@@ -1005,6 +1008,7 @@ const REVIEW_NEUTRAL_EUR = 5000;      // επίδραση κάτω από 5.000 
 const REVIEW_MEDIAN_DAYS = 30;        // η απόδοση κάθε μονάδας συγκρίνεται με τη διάμεσο των προηγούμενων 30 ημερών της
 const REVIEW_BASE_DAYS = 7;
 const REVIEW_BASE_MIN = 3;            // ίδιο όριο με το Python (BASELINE_MIN_DAYS)
+const RETURN_MIN_DAYS = 3;            // ίδιο με το Python (RETURN_MIN_OFF_DAYS): «εκτός» = τουλάχιστον 3 ημέρες χωρίς παραγωγή
 
 function loadReviewData() {
     if (reviewState === 'loading' || reviewState === 'ready') return;
@@ -1012,7 +1016,7 @@ function loadReviewData() {
     getJSON('data/review.json?v=' + Date.now())
         .then(j => { reviewData = (j && j.days) ? j : null; reviewState = reviewData ? 'ready' : 'error'; })
         .catch(e => { console.warn('review.json δεν φορτώθηκε:', e); reviewState = 'error'; })
-        .then(() => { if (currentTab === 'review') updateReviewTab(); });
+        .then(() => { updateReviewTab(); updateMonthlyBoxes(); updateSurplusBoxes(); });   // κάθε μία ελέγχει αν το tab της είναι ανοιχτό
 }
 function setReviewBase(b) { reviewBase = b; updateReviewTab(); }
 function toggleReviewUnits() { reviewShowAll = !reviewShowAll; updateReviewTab(); }
@@ -1141,7 +1145,7 @@ function updateReviewTab() {
             return `<div class="grid grid-cols-[1fr_auto] sm:grid-cols-[12rem_1fr_6.5rem] items-center gap-x-3 gap-y-1 py-1.5"><span class="text-sm text-slate-300">${escapeHtml(t.revFx[k])}</span>` +
                 `<span class="text-right sm:order-3 text-sm font-bold tabular-nums ${cls}">${eur(v)}</span>` +
                 `<div class="col-span-2 sm:col-span-1 sm:order-2 grid grid-cols-2 h-4 rounded bg-slate-900 overflow-hidden"><div class="flex justify-end">${half(v, true)}</div><div class="flex">${half(v, false)}</div></div></div>`;
-        }).join('') + `<div class="flex justify-between items-baseline mt-3 pt-3 border-t border-dashed border-slate-600 text-sm text-slate-400"><span>${escapeHtml(t.revFxTotal)}</span><b class="text-base tabular-nums ${upBad(fx.total / 1e6)}">${eur(fx.total)}</b></div>`;
+        }).join('') + `<div class="flex justify-between items-baseline gap-3 mt-3 pt-3 border-t border-dashed border-slate-600 text-sm text-slate-400"><span>${escapeHtml(t.revFxTotal)}</span><b class="text-base tabular-nums whitespace-nowrap ${upBad(fx.total / 1e6)}">${eur(fx.total)}</b></div>`;
     }
 
     // Συμβάντα της ημέρας: εκτός λειτουργίας, επιστροφές, generic constraints
@@ -1196,6 +1200,141 @@ function updateReviewTab() {
         more.textContent = reviewShowAll ? t.revShowTop : t.revShowAll.replace('{n}', String(rows.length));
         more.setAttribute('aria-expanded', reviewShowAll ? 'true' : 'false');
     } else { more.classList.add('hidden'); }
+}
+
+// ==========================================
+// BOXES ΜΗΝΙΑΙΑΣ ΚΛΙΜΑΚΑΣ (D40): Μηνιαία ανάλυση και Περιορισμοί
+// ==========================================
+// Τα νούμερα (διάσπαση κόστους μήνα, επιστροφές, επίδραση περιορισμών) τα υπολόγισε το Python (data/review.json). Η σελίδα δείχνει, και υπολογίζει
+// μόνο μέσους όρους ΗΜΕΡΩΝ από τα οικονομικά που ήδη έχει (HGSIDA) και τον χάρτη παραγωγής από το ημερήσιο SCADA. Φορτώνονται ΜΟΝΟ όταν ανοίγει ένα από τα tabs.
+function reviewPrevMonth(m) { const [y, mm] = m.split('-').map(Number); return mm === 1 ? `${y - 1}-12` : `${y}-${String(mm - 1).padStart(2, '0')}`; }
+function boxGuard(tab, msgId, bodyId) {
+    // Κοινός έλεγχος: επιστρέφει {t, month, mo} όταν υπάρχουν στοιχεία, αλλιώς δείχνει το κατάλληλο μήνυμα και επιστρέφει null
+    if (currentTab !== tab || !rawData) return null;
+    const t = i18n[currentLang], msg = document.getElementById(msgId), body = document.getElementById(bodyId);
+    const showMsg = (text) => { msg.textContent = text; msg.classList.remove('hidden'); body.classList.add('hidden'); };
+    const mSel = document.getElementById('monthSelect'), month = mSel && mSel.value;
+    if (!month) return null;
+    if (reviewState === 'idle') loadReviewData();
+    if (reviewState === 'loading') { showMsg(t.revLoading); return null; }
+    if (reviewState !== 'ready') { showMsg(t.revError); return null; }
+    const mo = reviewData.months && reviewData.months[month];
+    if (!mo) { showMsg(t.mbNoMonth); return null; }
+    msg.classList.add('hidden'); body.classList.remove('hidden');
+    return { t, month, mo };
+}
+function hexToRgb(hex) { const h = hex.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substring(i, i + 2), 16)); }
+
+function updateMonthlyBoxes() {
+    const g = boxGuard('ispScada', 'mbMsg', 'mbBody');
+    if (!g) return;
+    const { t, month, mo } = g, pm = reviewPrevMonth(month), po = reviewData.months[pm] || null;
+    const hgMean = (m) => {
+        const v = (rawData.daily_economics || []).filter(e => parseDate(e.Ημερομηνία).startsWith(m)).map(e => e['HGSIDA (€/MWh)']).filter(x => x > 0);
+        return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+    };
+    const N = 'text-slate-400', G = 'text-emerald-400', R_ = 'text-rose-400';
+    // --- Ο μήνας έναντι του προηγούμενου (ανά ημέρα, μέσος όρος)
+    document.getElementById('mbCmpSub').textContent = po ? t.mbCmpSub.replace('{m}', fmtMonth(month)).replace('{n}', mo.n).replace('{p}', fmtMonth(pm)).replace('{q}', po.n) : `${fmtMonth(month)} (${mo.n} ${t.revDays})`;
+    const rows = [
+        [t.mbGas, mo.th_d / 1000, po ? po.th_d / 1000 : null, 1, 'pct', N], [t.mbCost, mo.cost_d / 1e6, po ? po.cost_d / 1e6 : null, 2, 'pct', 'up'],
+        [t.mbGen, mo.mwh_d / 1000, po ? po.mwh_d / 1000 : null, 1, 'pct', N], [t.mbEff, mo.eff, po ? po.eff : null, 1, 'pts', 'eff'],
+        [t.mbHg, hgMean(month), hgMean(pm), 2, 'pct', 'up'], [t.mbCo2, mo.tons_d, po ? po.tons_d : null, 0, 'pct', N]
+    ];
+    const cmp = rows.map(([label, cur, prev, dec, kind, tone]) => {
+        let ch = '–', cls = N;
+        if (cur !== null && prev !== null && prev !== 0) {
+            const dv = kind === 'pts' ? cur - prev : (cur / prev - 1) * 100;
+            ch = `${fmtN(dv, 1, !roundsToZero(dv, 1))}${kind === 'pts' ? ' ' + t.revPts : '%'}`;
+            cls = roundsToZero(dv, 1) ? N : (tone === 'up' ? (dv > 0 ? R_ : G) : (tone === 'eff' ? (dv > 0 ? G : R_) : N));
+        }
+        return { label, cur: cur === null ? DASH : fmtN(cur, dec), prev: prev === null ? DASH : fmtN(prev, dec), ch, cls };
+    });
+    // Υπολογιστής/tablet: πίνακας· κινητό: στοιβαγμένες γραμμές (η ετικέτα του μεγέθους χρειάζεται πλάτος)
+    const tbl = `<table class="hidden sm:table w-full text-sm"><thead><tr class="text-left text-[11px] text-slate-500"><th class="py-1.5 pr-2 font-semibold">${escapeHtml(t.mbColMetric)}</th><th class="py-1.5 px-2 font-semibold text-right">${escapeHtml(fmtMonth(month))}</th><th class="py-1.5 px-2 font-semibold text-right">${escapeHtml(fmtMonth(pm))}</th><th class="py-1.5 pl-2 font-semibold text-right">${escapeHtml(t.mbColChange)}</th></tr></thead><tbody>` +
+        cmp.map(r => `<tr class="border-t border-slate-700/60"><td class="py-2 pr-2 text-slate-300">${escapeHtml(r.label)}</td><td class="py-2 px-2 text-right font-bold tabular-nums text-slate-100">${r.cur}</td><td class="py-2 px-2 text-right tabular-nums text-slate-500">${r.prev}</td><td class="py-2 pl-2 text-right tabular-nums ${r.cls}">${r.ch}</td></tr>`).join('') + `</tbody></table>`;
+    const stack = `<div class="sm:hidden">` + cmp.map((r, i) => `<div class="py-2.5 ${i ? 'border-t border-slate-700/60' : ''}"><div class="flex justify-between items-baseline gap-3"><span class="text-sm text-slate-300">${escapeHtml(r.label)}</span><span class="text-sm tabular-nums ${r.cls}">${r.ch}</span></div><div class="mt-0.5 text-xs tabular-nums"><b class="text-base text-slate-100">${r.cur}</b> <span class="text-slate-500">· ${escapeHtml(fmtMonth(pm))}: ${r.prev}</span></div></div>`).join('') + `</div>`;
+    document.getElementById('mbCmp').innerHTML = tbl + stack;
+    // --- Τι κίνησε το κόστος τον μήνα
+    const fx = mo.vs_prev, fxEl = document.getElementById('mbFx'), fxSub = document.getElementById('mbFxSub'), fxNote = document.getElementById('mbFxNote');
+    if (!fx || !po) { fxSub.textContent = ''; fxNote.textContent = ''; fxEl.innerHTML = `<p class="text-sm text-slate-400">${escapeHtml(t.mbNoPrev)}</p>`; }
+    else {
+        const eur = (v) => `${fmtN(v / 1e6, 2, !roundsToZero(v / 1e6, 2))} ${t.revMEur}`;
+        fxSub.textContent = `${t.mbFxSub} (${fmtN(po.cost_d / 1e6, 2)} → ${fmtN(mo.cost_d / 1e6, 2)} ${t.revMEur})`;
+        const keys = ['vol', 'gas', 'co2', 'mix'], mx = Math.max(...keys.map(k => Math.abs(fx[k])), 1);
+        const half = (v, left) => ((left ? v < 0 : v > 0) ? `<i style="display:block;height:100%;width:${(Math.abs(v) / mx * 100).toFixed(1)}%;background:${v < 0 ? '#34d399' : '#f87171'}"></i>` : '');
+        fxEl.innerHTML = keys.map(k => {
+            const v = fx[k], cls = roundsToZero(v / 1e6, 2) ? N : (v > 0 ? R_ : G);
+            return `<div class="grid grid-cols-[1fr_auto] sm:grid-cols-[12rem_1fr_6.5rem] items-center gap-x-3 gap-y-1 py-1.5"><span class="text-sm text-slate-300">${escapeHtml(t.revFx[k])}</span><span class="text-right sm:order-3 text-sm font-bold tabular-nums ${cls}">${eur(v)}</span>` +
+                `<div class="col-span-2 sm:col-span-1 sm:order-2 grid grid-cols-2 h-4 rounded bg-slate-900 overflow-hidden"><div class="flex justify-end">${half(v, true)}</div><div class="flex">${half(v, false)}</div></div></div>`;
+        }).join('') + `<div class="flex justify-between items-baseline gap-3 mt-3 pt-3 border-t border-dashed border-slate-600 text-sm text-slate-400"><span>${escapeHtml(t.mbFxTotal)}</span><b class="text-base tabular-nums whitespace-nowrap ${fx.total > 0 ? R_ : G}">${eur(fx.total)}</b></div>`;
+        const ph = (k, v) => (Math.abs(v) < REVIEW_NEUTRAL_EUR ? t.revPh[k][2] : t.revPh[k][v < 0 ? 0 : 1]);
+        const rk = keys.map(k => ({ k, v: fx[k] })).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
+        fxNote.textContent = t.mbFxNote.replace('{f}', ph(rk[0].k, rk[0].v)).replace('{v}', eur(rk[0].v)).replace('{g}', ph(rk[1].k, rk[1].v)).replace('{w}', eur(rk[1].v));
+    }
+    // --- Διαθεσιμότητα μονάδων: ημερήσια παραγωγή SCADA ανά μονάδα και ημέρα του μήνα
+    const mwh = {}, days = new Set();
+    (rawData.scada || []).forEach(r => {
+        const v = Object.values(r), date = parseDate(v[0]), name = String(v[1]).trim();
+        if (!date.startsWith(month) || name === 'TOTAL GAS UNITS' || name.includes('Σύνολο') || name === 'NAN') return;
+        const u = getCanonicalUnitName(name); (mwh[u] = mwh[u] || {})[date] = parseNum(v[2]); days.add(date);
+    });
+    const lastDay = days.size ? Math.max(...[...days].map(x => Number(x.split('-')[2]))) : 0;
+    const units = Object.keys(mwh).sort((a, b) => (getUnitMetadata(a).order - getUnitMetadata(b).order) || getShortUnitName(a).localeCompare(getShortUnitName(b)));
+    const rets = (reviewData.events || []).filter(e => e.d.startsWith(month));
+    const retSet = new Set(rets.map(e => `${e.u}|${e.d}`));
+    let cells = `<div></div>`;
+    // Ετικέτες ημερών: 1, 5, 10, 15…, κεντραρισμένες πάνω από το κελί τους (absolute: δεν διευρύνουν τη στήλη ούτε ξεχειλίζουν στα στενά κελιά του κινητού)
+    for (let n = 1; n <= lastDay; n++) cells += `<div style="position:relative;height:12px">${(n === 1 || n % 5 === 0) ? `<span style="position:absolute;left:50%;transform:translateX(-50%);font-size:9px;color:#64748b;white-space:nowrap">${n}</span>` : ''}</div>`;
+    units.forEach(u => {
+        const cs = CLASS_STYLE[getUnitMetadata(u).order] || CLASS_STYLE[3], mxu = Math.max(...Object.values(mwh[u]), 1), [r, gg, b] = hexToRgb(cs.hex);
+        cells += `<div style="font-size:11px;font-weight:700;white-space:nowrap;padding-right:6px;color:${cs.hex};overflow:hidden;text-overflow:ellipsis">${escapeHtml(getShortUnitName(u))}</div>`;
+        for (let n = 1; n <= lastDay; n++) {
+            const date = `${month}-${String(n).padStart(2, '0')}`, v = mwh[u][date];
+            const bg = v === undefined ? '#0b1220' : (v <= 1 ? '#1e293b' : `rgba(${r},${gg},${b},${(0.22 + 0.78 * Math.min(1, v / mxu)).toFixed(2)})`);
+            cells += `<div title="${escapeHtml(`${fmtDay(date, true)} · ${getShortUnitName(u)} · ${v === undefined ? '–' : fmtN(v, 0) + ' MWh'}`)}" style="height:15px;border-radius:3px;background:${bg}${retSet.has(`${u}|${date}`) ? ';box-shadow:inset 0 0 0 2px #fbbf24' : ''}"></div>`;
+        }
+    });
+    const heat = document.getElementById('mbHeat');
+    heat.setAttribute('aria-label', t.mbHeatAria.replace('{m}', fmtMonth(month)));
+    heat.style.cssText = `display:grid;gap:3px;align-items:center;grid-template-columns:72px repeat(${Math.max(lastDay, 1)},minmax(0,1fr))`;
+    heat.innerHTML = cells;
+    const sq = (bg, extra) => `<span style="display:inline-block;width:14px;height:11px;border-radius:3px;vertical-align:middle;margin-right:4px;background:${bg};${extra || ''}"></span>`;
+    document.getElementById('mbLegend').innerHTML = `<span>${sq('#1e293b')}${escapeHtml(t.mbLegOut)}</span><span>${sq('rgba(129,140,248,.9)')}${escapeHtml(t.mbLegOn)}</span><span>${sq('#1e293b', 'box-shadow:inset 0 0 0 2px #fbbf24')}${escapeHtml(t.mbLegRet)}</span><span>${sq('#0b1220')}${escapeHtml(t.mbLegNoData)}</span>`;
+    // --- Γεγονότα του μήνα: επιστροφές και μονάδες εκτός στο τέλος του μήνα
+    const lastIso = Object.keys(reviewData.days).filter(d => d.startsWith(month)).sort().pop();
+    const outEnd = ((lastIso && reviewData.days[lastIso].out) || []).filter(o => o[1] >= RETURN_MIN_DAYS);
+    const evHtml = [...rets].sort((a, b) => b.d.localeCompare(a.d)).map(e => `<div class="py-1.5 border-b border-slate-700/50 text-sm"><span class="text-slate-500 text-xs mr-1">${escapeHtml(fmtDay(e.d, true))}</span><b class="text-emerald-300">${escapeHtml(getShortUnitName(e.u))}</b> ${escapeHtml(t.mbRet.replace('{n}', e.off + (e.plus ? '+' : '')))} <span class="text-[11px] text-slate-500">(${escapeHtml(t.revFirstDay)}: ${fmtN(e.mwh, 0)} MWh)</span></div>`).join('') +
+        outEnd.map(o => `<div class="py-1.5 border-b border-slate-700/50 text-sm"><b class="text-amber-300">${escapeHtml(getShortUnitName(o[0]))}</b> ${escapeHtml(t.mbOutEnd.replace('{n}', o[1] + (o[2] ? '+' : '')))}</div>`).join('');
+    const anyPlus = rets.some(e => e.plus) || outEnd.some(o => o[2]);
+    document.getElementById('mbEvents').innerHTML = (evHtml || `<p class="text-sm text-slate-400">${escapeHtml(t.mbNoEvents)}</p>`) + (anyPlus ? `<p class="text-[11px] text-slate-500 mt-2">${escapeHtml(t.mbPlusNote)}</p>` : '');
+}
+
+function updateSurplusBoxes() {
+    const g = boxGuard('surplus', 'cbMsg', 'cbBody');
+    if (!g) return;
+    const { t, month, mo } = g, cons = mo.cons || [];
+    document.getElementById('cbSub').textContent = t.cbSub.replace('{m}', fmtMonth(month));
+    const table = document.getElementById('cbTable'), kpis = document.getElementById('cbKpis'), note = document.getElementById('cbNote');
+    if (!cons.length) { kpis.innerHTML = ''; note.textContent = ''; table.innerHTML = `<p class="text-sm text-slate-400">${escapeHtml(t.cbNone)}</p>`; return; }
+    const sum = (k) => cons.reduce((s, r) => s + (r[k] || 0), 0);
+    const kp = (label, val, unit, color) => `<div class="rounded-lg border border-slate-700/70 bg-slate-900/40 p-3"><div class="text-[11px] text-slate-400">${escapeHtml(label)}</div><div class="mt-1 flex items-baseline gap-1"><span class="text-xl sm:text-2xl font-bold tabular-nums" style="color:${color}">${val}</span><span class="text-xs text-slate-500">${escapeHtml(unit)}</span></div></div>`;
+    kpis.innerHTML = kp(t.cbKGen, fmtN(sum('mwh') / 1000, 1), 'GWh', '#fb923c') + kp(t.cbKGas, fmtN(sum('xth') / 1000, 1), t.cbKGasUnit, '#fbbf24') + kp(t.cbKVal, fmtN(sum('xeur') / 1000, 0), t.revKEur, '#fb7185');
+    note.textContent = t.cbNote;
+    const dEff = (r) => (r.ei !== null && r.eo !== null ? r.ei - r.eo : null);
+    const dTxt = (r) => { const d = dEff(r); return d === null ? DASH : fmtN(d, 1, !roundsToZero(d, 1)); };
+    const dCls = (r) => { const d = dEff(r); return d === null || roundsToZero(d, 1) ? 'text-slate-400' : (d > 0 ? 'text-emerald-400' : 'text-rose-400'); };
+    const pair = (a, b, dec) => `${a === null ? DASH : fmtN(a, dec)} <span class="text-slate-500">/ ${b === null ? DASH : fmtN(b, dec)}</span>`;
+    const col = (r) => (CLASS_STYLE[getUnitMetadata(r.u).order] || CLASS_STYLE[3]).hex;
+    const head = [t.cbColUnit, t.cbColDays, t.cbColMwh, t.cbColShare, t.cbColLoad, t.cbColEff, t.cbColDelta, t.cbColGas, t.cbColVal];
+    const desk = `<div class="hidden md:block overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-[11px] text-slate-500">${head.map((h, i) => `<th class="py-1.5 px-2 font-semibold ${i ? 'text-right' : 'text-left'}">${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>` +
+        cons.map(r => `<tr class="border-t border-slate-700/60"><td class="py-2 px-2 font-bold" style="color:${col(r)}">${escapeHtml(getShortUnitName(r.u))}</td><td class="py-2 px-2 text-right tabular-nums">${fmtN(r.days, 0)}</td><td class="py-2 px-2 text-right tabular-nums">${fmtN(r.mwh, 0)}</td><td class="py-2 px-2 text-right tabular-nums">${r.share === null ? DASH : fmtN(r.share, 0) + '%'}</td><td class="py-2 px-2 text-right tabular-nums">${pair(r.li, r.lo, 0)}</td><td class="py-2 px-2 text-right tabular-nums">${pair(r.ei, r.eo, 1)}%</td><td class="py-2 px-2 text-right tabular-nums font-semibold ${dCls(r)}">${dTxt(r)}</td><td class="py-2 px-2 text-right tabular-nums">${fmtN(r.xth / 1000, 2)}</td><td class="py-2 px-2 text-right tabular-nums">${fmtN(r.xeur / 1000, 0)}</td></tr>`).join('') + `</tbody></table></div>`;
+    const cards = `<div class="md:hidden space-y-2">` + cons.map(r => `<div class="rounded-lg border border-slate-700/60 px-3 py-2.5" style="border-left:3px solid ${col(r)}; background:${col(r)}14"><div class="flex items-baseline justify-between gap-3"><div class="font-bold text-slate-200">${escapeHtml(getShortUnitName(r.u))} <span class="text-[11px] font-normal text-slate-500">${fmtN(r.days, 0)} ${escapeHtml(t.revDays)} · ${fmtN(r.h, 0)} ${escapeHtml(t.cbHoursShort)}</span></div><div class="font-semibold tabular-nums ${dCls(r)}">${dTxt(r)} ${escapeHtml(t.revPts)}</div></div>` +
+        `<div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-2 text-xs"><div><div class="text-[10px] text-slate-500">${escapeHtml(t.cbColMwh)}</div><div class="tabular-nums text-slate-200">${fmtN(r.mwh, 0)} <span class="text-slate-500">(${r.share === null ? DASH : fmtN(r.share, 0) + '%'})</span></div></div>` +
+        `<div><div class="text-[10px] text-slate-500">${escapeHtml(t.cbColLoad)}</div><div class="tabular-nums text-slate-200">${pair(r.li, r.lo, 0)}</div></div>` +
+        `<div><div class="text-[10px] text-slate-500">${escapeHtml(t.cbColEff)}</div><div class="tabular-nums text-slate-200">${pair(r.ei, r.eo, 1)}%</div></div>` +
+        `<div><div class="text-[10px] text-slate-500">${escapeHtml(t.cbColGas)} · ${escapeHtml(t.cbColVal)}</div><div class="tabular-nums text-slate-200">${fmtN(r.xth / 1000, 2)} · ${fmtN(r.xeur / 1000, 0)}</div></div></div></div>`).join('') + `</div>`;
+    table.innerHTML = desk + cards;
 }
 
 function scrollToTop() {
