@@ -21,7 +21,7 @@ The *Methodology & Assumptions* button opens a short and a detailed version of t
 
 - **IPTO / ADMIE**: ISP results (scheduled; the *GenericConstraints* sheet gives the units and hours of the generic constraints) and System Realization SCADA (actual operation, files marked by IPTO as uncertified). Daily files. Only gas units on the Transmission System; lignite, large hydro and the co-generation unit with locked 24/7 output are left out.
 - **HEnEx**: the gas price indices (HGSIDA and others). HGSIDA of a day is published the following day, by around midday.
-- **oilpriceapi.com**: EUA CO₂ price, used **only as an input of the CO₂ cost**; the dashboard does not show it (see `docs/KNOWN_ISSUES.md`, K33). Free tier, no historical data: one call per daily run, never in a backfill. A day without a real price uses the last real one (weekends) or €85.00, marked *estimated* in the data.
+- **oilpriceapi.com**: EUA CO₂ price, used **only as an input of the CO₂ cost**; the dashboard does not show it (see `docs/KNOWN_ISSUES.md`, K33). It is an indicative EU ETS spot quote collected by OilPriceAPI from market makers (not the official ICE settlement), and it is **stored rounded to 0.5 €/t** and used as an estimate (D38). Free tier, no historical data: one call per daily run, never in a backfill. A day without a real price uses the last real one (weekends) or €85.00, marked *estimated* in the data.
 
 ## How it is updated
 

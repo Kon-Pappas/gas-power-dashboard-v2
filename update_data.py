@@ -514,6 +514,27 @@ def process_co2(date_str):
             return
     db["co2_prices"] = [d for d in db["co2_prices"] if d.get("Ημερομηνία") != date_str]
 
+# ==========================================
+# ΤΙΜΗ CO2: ΣΤΡΟΓΓΥΛΟΠΟΙΗΣΗ ΣΤΟ 0,5 €/t ΣΤΗΝ ΠΗΓΗ (D38)
+# ==========================================
+# Η τιμή που δίνει το OilPriceAPI (EU_CARBON_EUR) είναι ενδεικτική τιμή spot από market makers (συγκεντρωτική του Investing.com), όχι το επίσημο
+# κλείσιμο του ICE, και το OilPriceAPI δεν έχει δικαιώματα να την παραχωρήσει (K33). Αποθηκεύεται ΜΟΝΟ στρογγυλοποιημένη στα 0,5 €/t («προς τα πάνω στα
+# μισά»: 89,25 -> 89,50) και χρησιμοποιείται ως ΕΚΤΙΜΗΣΗ του ιδιοκτήτη. Η ακριβής τιμή δεν γράφεται ποτέ στο repo ούτε στα logs.
+CO2_ROUND_STEP = 0.5
+
+def round_co2_price(x):
+    return math.floor(float(x) / CO2_ROUND_STEP + 0.5) * CO2_ROUND_STEP
+
+def round_existing_co2_prices():
+    """Στρογγυλοποιεί στο 0,5 €/t τις ήδη αποθηκευμένες τιμές (εφάπαξ, ιδεμποτέντ)· επιστρέφει πόσες άλλαξαν."""
+    n = 0
+    for c in db["co2_prices"]:
+        p = c.get("CO2_Price (€/t)")
+        if p is not None and abs(round_co2_price(p) - p) > 1e-9:
+            c["CO2_Price (€/t)"] = round_co2_price(p)
+            n += 1
+    return n
+
 def fetch_latest_co2_price(today_str):
     """Καλείται ΜΙΑ φορά ανά εκτέλεση, ΜΟΝΟ από το καθημερινό cron (ποτέ σε manual backfill).
     Χρησιμοποιεί το ΤΕΚΜΗΡΙΩΜΕΝΟ /v1/prices/latest (1 request), όχι το /v1/prices?by_date που
@@ -559,8 +580,9 @@ def fetch_latest_co2_price(today_str):
             data = resp.json()
             price = data.get("data", {}).get("price") if data.get("status") == "success" else None
             if price is not None:
-                db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": float(price), "Estimated": False})
-                print(f"  [{today_str}] Fetched latest CO2 price from API: {price}")
+                price_r = round_co2_price(price)   # D38: στρογγυλοποίηση ΠΡΙΝ από οποιαδήποτε εγγραφή ή εκτύπωση
+                db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": price_r, "Estimated": False})
+                print(f"  [{today_str}] Fetched latest CO2 price from API (rounded to {CO2_ROUND_STEP}): {price_r}")
             else:
                 db["co2_prices"].append({"Ημερομηνία": today_str, "CO2_Price (€/t)": None})
         else:
@@ -1098,6 +1120,11 @@ if __name__ == "__main__":
         _n = len(db.pop("ttf_prices"))
         print(f"Cleanup: αφαιρέθηκε το ttf_prices ({_n} εγγραφές) -- η τιμή TTF δεν συλλέγεται πια (D35).")
 
+    # D38: οι τιμές CO2 που είχαν γραφτεί ακριβείς στρογγυλοποιούνται στο 0,5 €/t (εφάπαξ· ασφαλές για δεύτερο run). Τα οικονομικά των ημερών πριν από τις
+    # τελευταίες 10 ξαναϋπολογίζονται με ένα backfill (δες docs/ROADMAP.md).
+    _rounded = round_existing_co2_prices()
+    if _rounded:
+        print(f"Cleanup: {_rounded} τιμές CO2 στρογγυλοποιήθηκαν στο {CO2_ROUND_STEP} €/t (D38) -- τα οικονομικά των παλαιότερων ημερών ξαναϋπολογίζονται με backfill.")
     # Εκκαθάριση: ό,τι δεν είναι μονάδα Φ.Α. (π.χ. η γραμμή AGRAS = υδροηλεκτρικό) φεύγει από τα constraints.
     _before = len(db["daily_gas_constraints"])
     db["daily_gas_constraints"] = [d for d in db["daily_gas_constraints"] if is_gas_constraint_unit(d.get("Gas Factory"))]

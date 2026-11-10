@@ -414,13 +414,26 @@ function updateStatusBadge() {
     if (!badge) return;
     const sel = document.getElementById('dateSelect'), opt = sel && sel.options[sel.selectedIndex];
     if (!DAY_TABS.includes(currentTab) || !opt) { badge.className = 'hidden'; return; }
-    const t = i18n[currentLang], pending = opt.dataset.partial === 'true';
-    // Πράσινο = πλήρες (D11)· πορτοκαλί = περιμένει το SCADA
-    badge.className = 'flex shrink-0 items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] md:text-xs font-bold shadow-sm ' +
-        (pending ? 'border-orange-500/30 bg-orange-500/10 text-orange-400' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400');
-    badge.querySelector('div').className = 'w-1.5 h-1.5 md:w-2 md:h-2 rounded-full shrink-0 ' + (pending ? 'bg-orange-500 animate-pulse' : 'bg-emerald-500');
-    document.getElementById('dataStatusTextShort').innerText = pending ? t.pillPendingShort : t.pillCompleteShort;
-    document.getElementById('dataStatusTextLong').innerText = pending ? t.pillPending : t.pillComplete;
+    const t = i18n[currentLang];
+    // Πράσινο = πλήρες (D11)· πορτοκαλί = περιμένει το SCADA· D39: στα tabs Οικονομικά και Ανασκόπηση, αν η ημέρα δεν έχει οικονομικά,
+    // γαλάζιο = αναμονή HGSIDA (η ημέρα είναι από τις τελευταίες 3) ή γκρι = χωρίς οικονομικά (παλαιότερη ημέρα)
+    let state = opt.dataset.partial === 'true' ? 'pending' : 'complete';
+    if (state === 'complete' && (currentTab === 'economics' || currentTab === 'review') && rawData && rawData.daily_economics) {
+        if (!rawData.daily_economics.some(e => parseDate(e.Ημερομηνία) === sel.value)) {
+            const latest = Array.from(sel.options).map(o => o.value).sort().pop();
+            state = (new Date(latest + 'T00:00:00Z') - new Date(sel.value + 'T00:00:00Z')) / 86400000 <= 2 ? 'hgsida' : 'noeco';
+        }
+    }
+    const STYLE = {
+        complete: ['border-emerald-500/30 bg-emerald-500/10 text-emerald-400', 'bg-emerald-500', t.pillCompleteShort, t.pillComplete],
+        pending: ['border-orange-500/30 bg-orange-500/10 text-orange-400', 'bg-orange-500 animate-pulse', t.pillPendingShort, t.pillPending],
+        hgsida: ['border-sky-500/30 bg-sky-500/10 text-sky-300', 'bg-sky-400 animate-pulse', t.pillHgsidaShort, t.pillHgsida],
+        noeco: ['border-slate-600/40 bg-slate-700/30 text-slate-300', 'bg-slate-400', t.pillNoEcoShort, t.pillNoEco]
+    }[state];
+    badge.className = 'flex shrink-0 items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] md:text-xs font-bold shadow-sm ' + STYLE[0];
+    badge.querySelector('div').className = 'w-1.5 h-1.5 md:w-2 md:h-2 rounded-full shrink-0 ' + STYLE[1];
+    document.getElementById('dataStatusTextShort').innerText = STYLE[2];
+    document.getElementById('dataStatusTextLong').innerText = STYLE[3];
 }
 
 // Καλείται στην εκκίνηση και σε κάθε αλλαγή γλώσσας (μέσω updateDashboard): ξαναγράφει ημερομηνίες, ετικέτα και pill
@@ -1015,7 +1028,17 @@ function updateReviewTab() {
     if (currentTab !== 'review' || !rawData) return;
     const t = i18n[currentLang];
     const msg = document.getElementById('reviewMsg'), body = document.getElementById('reviewBody');
-    const showMsg = (text) => { msg.textContent = text; msg.classList.remove('hidden'); body.classList.add('hidden'); };
+    const showMsg = (text, go) => {
+        msg.textContent = text;
+        if (go) {   // D39: κουμπί προς την τελευταία ημέρα με οικονομικά
+            const wrap = document.createElement('div'), b = document.createElement('button');
+            wrap.className = 'mt-4'; b.type = 'button'; b.textContent = go.label;
+            b.className = 'px-4 py-2 rounded-full text-xs font-semibold border border-acc-400 bg-acc-400 text-slate-900 hover:bg-acc-300 transition';
+            b.onclick = () => { document.getElementById('dateSelect').value = go.day; onDateChange(); };
+            wrap.appendChild(b); msg.appendChild(wrap);
+        }
+        msg.classList.remove('hidden'); body.classList.add('hidden');
+    };
     const dSel = document.getElementById('dateSelect'), day = dSel && dSel.value;
     if (!day) return;
     if (reviewState === 'idle') loadReviewData();
@@ -1025,7 +1048,11 @@ function updateReviewTab() {
     const eco = {};
     (rawData.daily_economics || []).forEach(e => { eco[parseDate(e.Ημερομηνία)] = e; });
     const E = eco[day];
-    if (!E || !E.Units || E.Units.length === 0) { showMsg(t.revEmpty); return; }
+    if (!E || !E.Units || E.Units.length === 0) {
+        const latestEco = Object.keys(eco).filter(d => eco[d].Units && eco[d].Units.length && Array.from(dSel.options).some(o => o.value === d)).sort().pop();
+        showMsg(t.revEmpty, latestEco && latestEco !== day ? { day: latestEco, label: t.revGoLatest.replace('{date}', fmtDay(latestEco, true)) } : null);
+        return;
+    }
     msg.classList.add('hidden'); body.classList.remove('hidden');
 
     const rd = (reviewData.days && reviewData.days[day]) || {};
