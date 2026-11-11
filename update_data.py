@@ -110,10 +110,39 @@ def note_failure(date_str, step, exc):
 # ==========================================
 # HELPER FUNCTIONS
 # ==========================================
+# ==========================================
+# ΛΗΨΕΙΣ ΜΕ ΔΕΥΤΕΡΗ ΠΡΟΣΠΑΘΕΙΑ ΓΙΑ ΠΑΡΟΔΙΚΑ ΣΦΑΛΜΑΤΑ (D43)
+# ==========================================
+# Το backfill του Απριλίου 2026 έχασε 4 ημέρες από 30 (μία κοπή σύνδεσης του ΑΔΜΗΕ, τρία timeout του HEnEx) που διορθώθηκαν με νέο run. Τώρα κάθε λήψη
+# ξαναδοκιμάζεται έως 3 φορές για ΠΑΡΟΔΙΚΑ σφάλματα (κοπή σύνδεσης, timeout, HTTP 5xx / 429). ΔΕΝ ξαναδοκιμάζεται το 404 (το HEnEx απαντά σωστά 404 για
+# τις εκδόσεις v02/v03 που δεν υπάρχουν) ούτε άλλο 4xx. Η κλήση τιμής CO2 δεν περνά από εδώ (το δωρεάν πλάνο έχει όριο κλήσεων).
+RETRY_ATTEMPTS = 3
+RETRY_PAUSES = (2, 5)        # δευτερόλεπτα πριν από τη 2η και την 3η προσπάθεια
+
+def http_get(url, **kwargs):
+    last_exc = None
+    for attempt in range(1, RETRY_ATTEMPTS + 1):
+        try:
+            resp = requests.get(url, **kwargs)
+            if resp.status_code < 500 and resp.status_code != 429:
+                return resp
+            last_exc = None
+            why = f"HTTP {resp.status_code}"
+            if attempt == RETRY_ATTEMPTS:
+                return resp                       # η τελευταία απάντηση (5xx) επιστρέφεται όπως είναι: ο καλών τυπώνει «HTTP 5xx»
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.ChunkedEncodingError) as e:
+            last_exc = e
+            why = type(e).__name__
+            if attempt == RETRY_ATTEMPTS:
+                raise
+        print(f"  ↻ Νέα προσπάθεια {attempt + 1}/{RETRY_ATTEMPTS} μετά από {why} -- {url.split('?')[0]}")
+        time.sleep(RETRY_PAUSES[attempt - 1])
+    raise last_exc                                 # δεν φτάνει ποτέ εδώ· για πληρότητα
+
 def get_admie_excel_url(date_str, file_category):
     url = f"{ADMIE_API_URL}?dateStart={date_str}&dateEnd={date_str}&FileCategory={file_category}"
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=15)
+        resp = http_get(url, headers=HEADERS, timeout=15)
         if resp.status_code == 200 and "error" not in resp.text.lower():
             data = resp.json()
             for item in data:
@@ -126,7 +155,7 @@ def get_admie_excel_url(date_str, file_category):
 
 def fetch_excel(url):
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=20)
+        resp = http_get(url, headers=HEADERS, timeout=20)
         if resp.status_code == 200:
             return io.BytesIO(resp.content)
         print(f"  ⚠ Λήψη αρχείου: HTTP {resp.status_code} -- {url}")
@@ -469,7 +498,7 @@ def process_henex(date_str):
     for v in range(1, 4):
         url = f"https://www.enexgroup.gr/documents/20126/997118/{date_for_url}_NGAS_DOL_EN_v{v:02d}.xlsx"
         try:
-            resp = requests.get(url, headers=HEADERS, timeout=10)
+            resp = http_get(url, headers=HEADERS, timeout=10)
             if resp.status_code == 200:
                 df = pd.read_excel(io.BytesIO(resp.content), sheet_name=0, header=None)
                 header_mask = df.apply(lambda r: r.astype(str).str.contains("Contract", case=False).any(), axis=1)

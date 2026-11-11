@@ -1233,13 +1233,18 @@ function updateMonthlyBoxes() {
     const g = boxGuard('ispScada', 'mbMsg', 'mbBody');
     if (!g) return;
     const { t, month, mo } = g, pm = reviewPrevMonth(month), po = reviewData.months[pm] || null;
+    // D43: ο ΠΡΩΤΟΣ μήνας του ιστορικού δεν έχει προηγούμενο: μία κάρτα πλήρους πλάτους «Ο μήνας σε αριθμούς» με μόνο τις τιμές του, και η κάρτα «τι κίνησε το κόστος» κρύβεται
+    const single = !po;
+    document.getElementById('mbCmpCard').classList.toggle('lg:col-span-2', single);
+    document.getElementById('mbFxCard').classList.toggle('hidden', single);
+    document.getElementById('mbCmpTitle').textContent = single ? t.mbCmpTitleSingle : t.mbCmpTitle;
     const hgMean = (m) => {
         const v = (rawData.daily_economics || []).filter(e => parseDate(e.Ημερομηνία).startsWith(m)).map(e => e['HGSIDA (€/MWh)']).filter(x => x > 0);
         return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
     };
     const N = 'text-slate-400', G = 'text-emerald-400', R_ = 'text-rose-400';
     // --- Ο μήνας έναντι του προηγούμενου (ανά ημέρα, μέσος όρος)
-    document.getElementById('mbCmpSub').textContent = po ? t.mbCmpSub.replace('{m}', fmtMonth(month)).replace('{n}', mo.n).replace('{p}', fmtMonth(pm)).replace('{q}', po.n) : `${fmtMonth(month)} (${mo.n} ${t.revDays})`;
+    document.getElementById('mbCmpSub').textContent = po ? t.mbCmpSub.replace('{m}', fmtMonth(month)).replace('{n}', mo.n).replace('{p}', fmtMonth(pm)).replace('{q}', po.n) : t.mbCmpSubSingle.replace('{m}', fmtMonth(month)).replace('{n}', mo.n);
     const rows = [
         [t.mbGas, mo.th_d / 1000, po ? po.th_d / 1000 : null, 1, 'pct', N], [t.mbCost, mo.cost_d / 1e6, po ? po.cost_d / 1e6 : null, 2, 'pct', 'up'],
         [t.mbGen, mo.mwh_d / 1000, po ? po.mwh_d / 1000 : null, 1, 'pct', N], [t.mbEff, mo.eff, po ? po.eff : null, 1, 'pts', 'eff'],
@@ -1255,9 +1260,12 @@ function updateMonthlyBoxes() {
         return { label, cur: cur === null ? DASH : fmtN(cur, dec), prev: prev === null ? DASH : fmtN(prev, dec), ch, cls };
     });
     // Υπολογιστής/tablet: πίνακας· κινητό: στοιβαγμένες γραμμές (η ετικέτα του μεγέθους χρειάζεται πλάτος)
-    const tbl = `<table class="hidden sm:table w-full text-sm"><thead><tr class="text-left text-[11px] text-slate-500"><th class="py-1.5 pr-2 font-semibold">${escapeHtml(t.mbColMetric)}</th><th class="py-1.5 px-2 font-semibold text-right">${escapeHtml(fmtMonth(month))}</th><th class="py-1.5 px-2 font-semibold text-right">${escapeHtml(fmtMonth(pm))}</th><th class="py-1.5 pl-2 font-semibold text-right">${escapeHtml(t.mbColChange)}</th></tr></thead><tbody>` +
-        cmp.map(r => `<tr class="border-t border-slate-700/60"><td class="py-2 pr-2 text-slate-300">${escapeHtml(r.label)}</td><td class="py-2 px-2 text-right font-bold tabular-nums text-slate-100">${r.cur}</td><td class="py-2 px-2 text-right tabular-nums text-slate-500">${r.prev}</td><td class="py-2 pl-2 text-right tabular-nums ${r.cls}">${r.ch}</td></tr>`).join('') + `</tbody></table>`;
-    const stack = `<div class="sm:hidden">` + cmp.map((r, i) => `<div class="py-2.5 ${i ? 'border-t border-slate-700/60' : ''}"><div class="flex justify-between items-baseline gap-3"><span class="text-sm text-slate-300">${escapeHtml(r.label)}</span><span class="text-sm tabular-nums ${r.cls}">${r.ch}</span></div><div class="mt-0.5 text-xs tabular-nums"><b class="text-base text-slate-100">${r.cur}</b> <span class="text-slate-500">· ${escapeHtml(fmtMonth(pm))}: ${r.prev}</span></div></div>`).join('') + `</div>`;
+    const thc = (txt, cls) => `<th class="py-1.5 ${cls} font-semibold text-right">${escapeHtml(txt)}</th>`;
+    const tbl = `<table class="hidden sm:table w-full ${single ? 'max-w-xl' : ''} text-sm"><thead><tr class="text-left text-[11px] text-slate-500"><th class="py-1.5 pr-2 font-semibold">${escapeHtml(t.mbColMetric)}</th>${thc(fmtMonth(month), 'px-2')}${single ? '' : thc(fmtMonth(pm), 'px-2') + thc(t.mbColChange, 'pl-2')}</tr></thead><tbody>` +
+        cmp.map(r => `<tr class="border-t border-slate-700/60"><td class="py-2 pr-2 text-slate-300">${escapeHtml(r.label)}</td><td class="py-2 px-2 text-right font-bold tabular-nums text-slate-100">${r.cur}</td>${single ? '' : `<td class="py-2 px-2 text-right tabular-nums text-slate-500">${r.prev}</td><td class="py-2 pl-2 text-right tabular-nums ${r.cls}">${r.ch}</td>`}</tr>`).join('') + `</tbody></table>`;
+    const stack = `<div class="sm:hidden">` + cmp.map((r, i) => single
+        ? `<div class="py-2.5 ${i ? 'border-t border-slate-700/60' : ''} flex justify-between items-baseline gap-3"><span class="text-sm text-slate-300">${escapeHtml(r.label)}</span><b class="text-base tabular-nums text-slate-100">${r.cur}</b></div>`
+        : `<div class="py-2.5 ${i ? 'border-t border-slate-700/60' : ''}"><div class="flex justify-between items-baseline gap-3"><span class="text-sm text-slate-300">${escapeHtml(r.label)}</span><span class="text-sm tabular-nums ${r.cls}">${r.ch}</span></div><div class="mt-0.5 text-xs tabular-nums"><b class="text-base text-slate-100">${r.cur}</b> <span class="text-slate-500">· ${escapeHtml(fmtMonth(pm))}: ${r.prev}</span></div></div>`).join('') + `</div>`;
     document.getElementById('mbCmp').innerHTML = tbl + stack;
     // --- Τι κίνησε το κόστος τον μήνα
     const fx = mo.vs_prev, fxEl = document.getElementById('mbFx'), fxSub = document.getElementById('mbFxSub'), fxNote = document.getElementById('mbFxNote');

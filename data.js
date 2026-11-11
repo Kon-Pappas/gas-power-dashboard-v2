@@ -70,6 +70,8 @@ const i18n = {
         revVsMedian: "vs 30d median",
         revVsMedianTip: "Compared with the median efficiency of this unit over its previous 30 days with production",
         mbCmpTitle: "The month against the previous one",
+        mbCmpTitleSingle: "The month in numbers",
+        mbCmpSubSingle: "{m} ({n} days), per day on average",
         mbCmpSub: "{m} ({n} days) against {p} ({q} days), per day on average",
         mbColMetric: "Metric",
         mbColChange: "Change",
@@ -251,7 +253,7 @@ const i18n = {
                 <li><strong class="text-slate-200">Sources:</strong> Data is fetched daily from IPTO's (ADMIE) official reports (ISP & SCADA) and HEnEx (NGAS gas price indices); the CO2 price comes from OilPriceAPI (EU carbon price, €/t), one request a day, and is used only as an input of the CO2 cost: this page does not show or republish it. ISP is IPTO's scheduling of the 24 hours: ISP1 is the first run (around 18:00 the day before) and ISP2 the second (around midnight of the same day); this page uses ISP2.</li>
                 <li><strong class="text-slate-200">Updates:</strong> twice daily, at 07:06 and 13:00 Greek time, via a scheduled job. The last 10 days are re-checked on every run to catch late publications and corrections.</li>
                 <li><strong class="text-slate-200">Data Completeness:</strong> SCADA telemetry for a given day is published by IPTO the following morning; until then, that day is marked "Pending SCADA" and shown using ISP data only. Similarly, HEnEx publishes the HGSIDA index for a given day on the following day, by around midday; until it appears, that day's economics are deferred entirely to the next run rather than calculated with an incomplete or zero value.</li>
-                <li><strong class="text-slate-200">History and time:</strong> the data start on 1 June 2026. Times are Greek time; on the days the clock changes (23 or 25 hours) all hours of the day are read.</li>
+                <li><strong class="text-slate-200">History and time:</strong> the data start on <span data-first-day>1 Apr 2026</span>. Times are Greek time; on the days the clock changes (23 or 25 hours) all hours of the day are read.</li>
             </ul>
 
             <h3 data-sec="overview" class="mt-4 mb-2 text-xs font-bold text-acc-400">Daily overview</h3>
@@ -351,6 +353,8 @@ const i18n = {
         revVsMedian: "vs διάμ. 30ημ.",
         revVsMedianTip: "Σε σύγκριση με τη διάμεση απόδοση της μονάδας στις προηγούμενες 30 ημέρες με παραγωγή",
         mbCmpTitle: "Ο μήνας έναντι του προηγούμενου",
+        mbCmpTitleSingle: "Ο μήνας σε αριθμούς",
+        mbCmpSubSingle: "{m} ({n} ημέρες), ανά ημέρα κατά μέσο όρο",
         mbCmpSub: "{m} ({n} ημέρες) έναντι {p} ({q} ημέρες), ανά ημέρα κατά μέσο όρο",
         mbColMetric: "Μέγεθος",
         mbColChange: "Μεταβολή",
@@ -532,7 +536,7 @@ const i18n = {
                 <li><strong class="text-slate-200">Πηγές Δεδομένων:</strong> Αντλούνται καθημερινά από τον ΑΔΜΗΕ (ISP & SCADA) και το HEnEx (Δείκτες NGAS)· η τιμή CO2 προέρχεται από το OilPriceAPI (τιμή CO2 της ΕΕ, €/t), με ένα αίτημα την ημέρα, και χρησιμοποιείται μόνο ως είσοδος του κόστους CO2: η σελίδα δεν την εμφανίζει ούτε την αναδημοσιεύει. Το ISP είναι ο προγραμματισμός του ΑΔΜΗΕ για το 24ωρο: το ISP1 είναι ο πρώτος (γύρω στις 18:00 της προηγούμενης ημέρας) και το ISP2 ο δεύτερος (γύρω στα μεσάνυχτα της ίδιας ημέρας)· η σελίδα χρησιμοποιεί το ISP2.</li>
                 <li><strong class="text-slate-200">Ενημερώσεις:</strong> δύο φορές την ημέρα, στις 07:06 και στις 13:00 (ώρα Ελλάδος), μέσω προγραμματισμένης εργασίας. Οι τελευταίες 10 μέρες επανελέγχονται σε κάθε run για καθυστερημένες δημοσιεύσεις και διορθώσεις.</li>
                 <li><strong class="text-slate-200">Πληρότητα Δεδομένων:</strong> Τα δεδομένα SCADA για μια ημέρα δημοσιεύονται από τον ΑΔΜΗΕ το επόμενο πρωί· μέχρι τότε η ημέρα εμφανίζεται ως "Pending SCADA" με βάση μόνο τα δεδομένα ISP. Αντίστοιχα, το HEnEx δημοσιεύει το HGSIDA μιας ημέρας την επόμενη, γύρω στο μεσημέρι· μέχρι τότε τα economics της ημέρας αναβάλλονται εξολοκλήρου για το επόμενο run, αντί να υπολογιστούν με ελλιπή ή μηδενική τιμή.</li>
-                <li><strong class="text-slate-200">Ιστορικό και ώρα:</strong> τα δεδομένα ξεκινούν την 1η Ιουνίου 2026. Οι ώρες είναι ώρα Ελλάδος· τις ημέρες αλλαγής ώρας (23 ή 25 ώρες) διαβάζονται όλες οι ώρες της ημέρας.</li>
+                <li><strong class="text-slate-200">Ιστορικό και ώρα:</strong> τα δεδομένα ξεκινούν από <span data-first-day>1 Απρ 2026</span>. Οι ώρες είναι ώρα Ελλάδος· τις ημέρες αλλαγής ώρας (23 ή 25 ώρες) διαβάζονται όλες οι ώρες της ημέρας.</li>
             </ul>
 
             <h3 data-sec="overview" class="mt-4 mb-2 text-xs font-bold text-acc-400">Ημερήσια επισκόπηση</h3>
