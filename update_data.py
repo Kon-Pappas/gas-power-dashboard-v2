@@ -526,9 +526,9 @@ def process_henex(date_str):
                     db["henex_indices"].append({
                         "Ημερομηνία": date_str,
                         "HGSIDA (€/MWh)": float(hgsida),
-                        "HGSIWD (€/MWh)": 0.0 if pd.isna(hgsiwd) else float(hgsiwd),
-                        "HGMBI (€/MWh)": 0.0 if pd.isna(hgmbi) else float(hgmbi),
-                        "HGMSI (€/MWh)": 0.0 if pd.isna(hgmsi) else float(hgmsi)
+                        "HGSIWD (€/MWh)": None if pd.isna(hgsiwd) else float(hgsiwd),     # D46 (K38): ό,τι λείπει γράφεται null, ΠΟΤΕ 0.0
+                        "HGMBI (€/MWh)": None if pd.isna(hgmbi) else float(hgmbi),
+                        "HGMSI (€/MWh)": None if pd.isna(hgmsi) else float(hgmsi)
                     })
                     break
                 # αλλιώς: συνεχίζουμε στην επόμενη έκδοση (v02/v03) αντί να κάνουμε break σε κενό αρχείο
@@ -1080,6 +1080,41 @@ def build_review(prev=None):
         months[m] = mo
     return {"version": 1, "first_day": scada_days[0] if scada_days else None, "days": days, "events": events, "months": months}
 
+# ==========================================
+# ΚΑΤΑΣΤΑΣΗ ΚΑΘΕ ΗΜΕΡΑΣ (D46, K37): ο κανόνας γράφεται ΜΙΑ φορά, εδώ· η σελίδα μόνο τον διαβάζει
+# ==========================================
+# Πριν, η σελίδα υπολόγιζε μόνη της αν μια ημέρα είναι πλήρης και ποιο δεδομένο λείπει (pill και μηνύματα των tabs Οικονομικά και Ανασκόπηση),
+# με ΔΥΟ διαφορετικές «ημέρες αναφοράς» (το pill την τελευταία ημέρα του επιλογέα, το μήνυμα την τελευταία ημέρα με οικονομικά).
+# Τώρα το Python γράφει στο κλειδί «day_status» ένα στοιχείο ανά ημέρα και η σελίδα το εμφανίζει όπως είναι. Επαναϋπολογίζεται σε ΚΑΘΕ run
+# για όλες τις ημέρες (άρα μια ημέρα που περίμενε το HGSIDA γίνεται «complete» μόνη της μόλις γραφτούν τα οικονομικά της).
+STATUS_RECENT_DAYS = 2        # μια ημέρα χωρίς οικονομικά μέσα στις 2 ημέρες πριν από την τελευταία ημέρα δεδομένων = «αναμονή HGSIDA»· παλαιότερη = «χωρίς οικονομικά»
+
+def build_day_status(database=None):
+    database = db if database is None else database
+    def _f(v):
+        try: return float(v)
+        except (TypeError, ValueError): return 0.0
+    tot, units = {}, {}
+    for r in database.get("scada_generation", []):
+        d, name = r.get("Ημερομηνία"), str(r.get("Μονάδα Φ.Α.", "")).strip()
+        if not d: continue
+        if name == "TOTAL GAS UNITS" or "Σύνολο" in name: tot[d] = tot.get(d, 0.0) + _f(r.get("Παραγωγή SCADA (MWh)"))
+        elif name != "NAN": units[d] = units.get(d, 0.0) + _f(r.get("Παραγωγή SCADA (MWh)"))
+    dates = sorted({r.get("Ημερομηνία") for k in ("isp_generation", "scada_generation") for r in database.get(k, []) if r.get("Ημερομηνία")})
+    hg = {h.get("Ημερομηνία") for h in database.get("henex_indices", []) if _f(h.get("HGSIDA (€/MWh)")) > 0}
+    eco = {e.get("Ημερομηνία") for e in database.get("daily_economics", []) if e.get("Units")}
+    last = datetime.strptime(dates[-1], "%Y-%m-%d") if dates else None
+    out = []
+    for d in dates:
+        scada_ok = (tot.get(d, 0.0) if tot.get(d, 0.0) > 0 else units.get(d, 0.0)) > 0
+        recent = (last - datetime.strptime(d, "%Y-%m-%d")).days <= STATUS_RECENT_DAYS
+        state = "pending_scada" if not scada_ok else ("complete" if d in eco else ("waiting_hgsida" if recent else "no_economics"))
+        out.append({"Ημερομηνία": d, "scada_complete": bool(scada_ok), "hgsida": d in hg, "economics": d in eco, "state": state})
+    return out
+
+def refresh_day_status():
+    db["day_status"] = build_day_status(db)
+
 def write_review():
     review = build_review(load_review())
     atomic_write_json(REVIEW_FILE, review, separators=(",", ":"), sort_keys=True)
@@ -1211,6 +1246,10 @@ if __name__ == "__main__":
         time.sleep(1)
 
     recompute_constrained()
+    try:
+        refresh_day_status()      # D46: ΜΕΤΑ τα οικονομικά και τα constraints, πριν την αποθήκευση· αποτυχία = το προηγούμενο day_status μένει
+    except Exception as e:
+        note_failure("-", "day_status", e)
     try:
         write_review()          # D36: πριν κοπεί το ωριαίο SCADA στις τελευταίες ημέρες· αποτυχία = το προηγούμενο αρχείο μένει
     except Exception as e:

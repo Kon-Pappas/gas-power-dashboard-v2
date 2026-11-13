@@ -361,7 +361,10 @@ function fmtMonth(ym) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// Ποιες ημέρες έχουν SCADA (σύνολο αερίου > 0), με ένα πέρασμα στα δεδομένα
+// D46 (K37): η κατάσταση της ημέρας την υπολογίζει το Python (day_status)· η σελίδα μόνο την εμφανίζει
+function dayStatusOf(day) { return (rawData && rawData.dayStatus && rawData.dayStatus[day]) || null; }
+
+// ΕΦΕΔΡΙΚΟΣ υπολογισμός (μόνο όταν το αρχείο δεν έχει ακόμα day_status· θα φύγει στο επόμενο batch): ποιες ημέρες έχουν SCADA (σύνολο αερίου > 0)
 function scadaCompleteness() {
     const tot = {}, units = {};
     (rawData.scada || []).forEach(r => {
@@ -377,7 +380,8 @@ function fillPickers() {
     if (!dSel || !mSel || !rawData) return;
     const t = i18n[currentLang], today = todayAthens();
     const dates = [...new Set([...rawData.isp, ...rawData.scada].map(r => Object.values(r)[0]))].filter(x => x).sort().reverse();
-    const complete = scadaCompleteness();
+    const complete0 = scadaCompleteness();
+    const complete = (d) => { const s = dayStatusOf(d); return s ? !!s.scada_complete : complete0(d); };
     const noYear = isPhone() && new Set(dates.map(x => x.substring(0, 4))).size === 1;
 
     const keepDay = dates.includes(dSel.value) ? dSel.value : null;
@@ -420,11 +424,17 @@ function updateStatusBadge() {
     const t = i18n[currentLang];
     // Πράσινο = πλήρες (D11)· πορτοκαλί = περιμένει το SCADA· D39: στα tabs Οικονομικά και Ανασκόπηση, αν η ημέρα δεν έχει οικονομικά,
     // γαλάζιο = αναμονή HGSIDA (η ημέρα είναι από τις τελευταίες 3) ή γκρι = χωρίς οικονομικά (παλαιότερη ημέρα)
-    let state = opt.dataset.partial === 'true' ? 'pending' : 'complete';
-    if (state === 'complete' && (currentTab === 'economics' || currentTab === 'review') && rawData && rawData.daily_economics) {
-        if (!rawData.daily_economics.some(e => parseDate(e.Ημερομηνία) === sel.value)) {
-            const latest = Array.from(sel.options).map(o => o.value).sort().pop();
-            state = (new Date(latest + 'T00:00:00Z') - new Date(sel.value + 'T00:00:00Z')) / 86400000 <= 2 ? 'hgsida' : 'noeco';
+    const ds = dayStatusOf(sel.value);
+    let state;
+    if (ds) {   // D46: το Python αποφασίζει· στην Επισκόπηση μετράει μόνο το SCADA, στα Οικονομικά και στην Ανασκόπηση και τα οικονομικά
+        state = !ds.scada_complete ? 'pending' : ((currentTab === 'economics' || currentTab === 'review') ? ({ complete: 'complete', waiting_hgsida: 'hgsida', no_economics: 'noeco', pending_scada: 'pending' }[ds.state] || 'complete') : 'complete');
+    } else {    // εφεδρικός υπολογισμός (παλιό αρχείο χωρίς day_status)
+        state = opt.dataset.partial === 'true' ? 'pending' : 'complete';
+        if (state === 'complete' && (currentTab === 'economics' || currentTab === 'review') && rawData && rawData.daily_economics) {
+            if (!rawData.daily_economics.some(e => parseDate(e.Ημερομηνία) === sel.value)) {
+                const latest = Array.from(sel.options).map(o => o.value).sort().pop();
+                state = (new Date(latest + 'T00:00:00Z') - new Date(sel.value + 'T00:00:00Z')) / 86400000 <= 2 ? 'hgsida' : 'noeco';
+            }
         }
     }
     const STYLE = {
@@ -594,8 +604,13 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
 // ==========================================
 // TAB 2: DAILY ECONOMICS
 // ==========================================
-// D44: ημέρα χωρίς οικονομικά: το μήνυμα λέει ΠΟΙΟ δεδομένο λείπει και το κουμπί γυρίζει στην τελευταία ημέρα με οικονομικά (Οικονομικά και Ανασκόπηση)
+// D44/D46: ημέρα χωρίς οικονομικά: το μήνυμα λέει ΠΟΙΟ δεδομένο λείπει και το κουμπί γυρίζει στην τελευταία ημέρα με οικονομικά (Οικονομικά και Ανασκόπηση)
 function dayMissingKind(day) {
+    const ds = dayStatusOf(day);
+    if (ds) {   // D46: από το Python, με ΜΙΑ ημέρα αναφοράς (η τελευταία ημέρα δεδομένων), όπως το pill
+        if (ds.state === 'no_economics') return 'Old';
+        return !ds.scada_complete && !ds.hgsida ? 'Both' : (!ds.scada_complete ? 'Scada' : (!ds.hgsida ? 'Hgsida' : 'Calc'));
+    }
     const opt = Array.from(document.getElementById('dateSelect').options).find(o => o.value === day);
     const eco = (rawData.daily_economics || []).map(e => parseDate(e.Ημερομηνία)).sort();
     const latest = eco.length ? eco[eco.length - 1] : null;

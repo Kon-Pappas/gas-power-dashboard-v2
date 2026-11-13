@@ -12,7 +12,8 @@ let rawData = {
     henex: [], 
     efficiency: [],
     daily_surplus: [],          
-    daily_economics: []    
+    daily_economics: [],
+    dayStatus: null        // D46 (K37): η κατάσταση κάθε ημέρας από το Python, ανά ημερομηνία (null = το αρχείο δεν έχει ακόμα day_status)
 };
 
 let currentLang = 'en';
@@ -819,6 +820,7 @@ function applyData(json) {
     rawData.efficiency = json.thermal_efficiency || [];
     rawData.daily_surplus = json.daily_surplus || [];
     rawData.daily_economics = json.daily_economics || [];
+    rawData.dayStatus = (Array.isArray(json.day_status) && json.day_status.length) ? Object.fromEntries(json.day_status.map(r => [r['Ημερομηνία'], r])) : null;
 }
 
 // ==========================================================================================
