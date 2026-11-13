@@ -507,6 +507,9 @@ function updateOverviewTab() {
     const kpiScadaEl = document.getElementById('kpiTotalScada');
     if (kpiIspEl) kpiIspEl.innerText = ispDay.length ? fmtN(totalIsp, 0) : DASH;
     if (kpiScadaEl) kpiScadaEl.innerText = scadaDay.length ? fmtN(totalScada, 0) : DASH;
+    const lgI = document.getElementById('lgTotalIsp'), lgS = document.getElementById('lgTotalScada');   // D44: τα ίδια σύνολα μέσα στο υπόμνημα (από 768 px)
+    if (lgI) lgI.innerText = ispDay.length ? fmtN(totalIsp, 0) : DASH;
+    if (lgS) lgS.innerText = scadaDay.length ? fmtN(totalScada, 0) : DASH;
 
     const unitsArray = Object.values(unitMap);
     unitsArray.sort((a, b) => {
@@ -591,6 +594,36 @@ function renderOverviewChart(labels, classLabels, dataIsp, dataScada, ispColors,
 // ==========================================
 // TAB 2: DAILY ECONOMICS
 // ==========================================
+// D44: ημέρα χωρίς οικονομικά: το μήνυμα λέει ΠΟΙΟ δεδομένο λείπει και το κουμπί γυρίζει στην τελευταία ημέρα με οικονομικά (Οικονομικά και Ανασκόπηση)
+function dayMissingKind(day) {
+    const opt = Array.from(document.getElementById('dateSelect').options).find(o => o.value === day);
+    const eco = (rawData.daily_economics || []).map(e => parseDate(e.Ημερομηνία)).sort();
+    const latest = eco.length ? eco[eco.length - 1] : null;
+    if (latest && (new Date(latest + 'T00:00:00Z') - new Date(day + 'T00:00:00Z')) / 86400000 > 2) return 'Old';   // παλαιότερη ημέρα: δεν υπάρχουν οικονομικά στο ιστορικό
+    const scadaOk = !(opt && opt.dataset.partial === 'true');                                                       // ίδιος κανόνας με το pill (D44: στο batch 28 περνά στο Python)
+    const he = (rawData.henex || []).find(r => parseDate(Object.values(r)[0]) === day);
+    const hgOk = !!(he && Number(he['HGSIDA (€/MWh)']) > 0);
+    return !scadaOk && !hgOk ? 'Both' : (!scadaOk ? 'Scada' : (!hgOk ? 'Hgsida' : 'Calc'));
+}
+function latestEcoDay(day) {
+    const sel = document.getElementById('dateSelect'), eco = {};
+    (rawData.daily_economics || []).forEach(e => { eco[parseDate(e.Ημερομηνία)] = e; });
+    return Object.keys(eco).filter(d => eco[d].Units && eco[d].Units.length && Array.from(sel.options).some(o => o.value === d)).sort().pop() || null;
+}
+function showMissing(msgId, bodyId, text, go) {
+    const msg = document.getElementById(msgId), body = document.getElementById(bodyId);
+    msg.textContent = text;
+    if (go) {
+        const wrap = document.createElement('div'), b = document.createElement('button');
+        wrap.className = 'mt-4'; b.type = 'button'; b.textContent = go.label;
+        b.className = 'px-4 py-2 rounded-full text-xs font-semibold border border-acc-400 bg-acc-400 text-slate-900 hover:bg-acc-300 transition';
+        b.onclick = () => { document.getElementById('dateSelect').value = go.day; onDateChange(); };
+        wrap.appendChild(b); msg.appendChild(wrap);
+    }
+    msg.classList.remove('hidden'); body.classList.add('hidden');
+}
+function hideMissing(msgId, bodyId) { document.getElementById(msgId).classList.add('hidden'); document.getElementById(bodyId).classList.remove('hidden'); }
+
 function updateEconomicsTab() {
     const dateSelect = document.getElementById('dateSelect');
     if (!dateSelect || !rawData) return;
@@ -610,16 +643,11 @@ function updateEconomicsTab() {
     if (cards) { cards.innerHTML = ''; cards.setAttribute('aria-label', i18n[currentLang].ttlEcoTable); }
 
     if (!dayEco || !dayEco.Units || dayEco.Units.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">${i18n[currentLang].ecoEmpty}</td></tr>`;
-        if (cards) cards.innerHTML = `<div class="p-4 text-center text-slate-500 text-sm">${i18n[currentLang].ecoEmpty}</div>`;
-        document.getElementById('kpiHgsida').innerText = DASH;
-        document.getElementById('kpiCo2Tons').innerText = DASH;
-        document.getElementById('kpiFleetEff').innerText = DASH;
-        document.getElementById('kpiAvgGasCost').innerText = DASH;
-        document.getElementById('kpiEcoScada').innerText = DASH;
-        document.getElementById('kpiTotalEcoCost').innerText = DASH;
+        const t = i18n[currentLang], latest = latestEcoDay(selectedDate);
+        showMissing('ecoMsg', 'ecoBody', t['ecoMiss' + dayMissingKind(selectedDate)], latest && latest !== selectedDate ? { day: latest, label: t.revGoLatest.replace('{date}', fmtDay(latest, true)) } : null);
         return;
     }
+    hideMissing('ecoMsg', 'ecoBody');
 
     const totals = dayEco["Fleet Totals"];
     const hgsidaVal = dayEco["HGSIDA (€/MWh)"] || 0;
@@ -1032,17 +1060,7 @@ function updateReviewTab() {
     if (!rawData) return;
     const t = i18n[currentLang];
     const msg = document.getElementById('reviewMsg'), body = document.getElementById('reviewBody');
-    const showMsg = (text, go) => {
-        msg.textContent = text;
-        if (go) {   // D39: κουμπί προς την τελευταία ημέρα με οικονομικά
-            const wrap = document.createElement('div'), b = document.createElement('button');
-            wrap.className = 'mt-4'; b.type = 'button'; b.textContent = go.label;
-            b.className = 'px-4 py-2 rounded-full text-xs font-semibold border border-acc-400 bg-acc-400 text-slate-900 hover:bg-acc-300 transition';
-            b.onclick = () => { document.getElementById('dateSelect').value = go.day; onDateChange(); };
-            wrap.appendChild(b); msg.appendChild(wrap);
-        }
-        msg.classList.remove('hidden'); body.classList.add('hidden');
-    };
+    const showMsg = (text, go) => showMissing('reviewMsg', 'reviewBody', text, go);
     const dSel = document.getElementById('dateSelect'), day = dSel && dSel.value;
     if (!day) return;
     if (reviewState === 'idle') loadReviewData();
@@ -1053,8 +1071,8 @@ function updateReviewTab() {
     (rawData.daily_economics || []).forEach(e => { eco[parseDate(e.Ημερομηνία)] = e; });
     const E = eco[day];
     if (!E || !E.Units || E.Units.length === 0) {
-        const latestEco = Object.keys(eco).filter(d => eco[d].Units && eco[d].Units.length && Array.from(dSel.options).some(o => o.value === d)).sort().pop();
-        showMsg(t.revEmpty, latestEco && latestEco !== day ? { day: latestEco, label: t.revGoLatest.replace('{date}', fmtDay(latestEco, true)) } : null);
+        const latestEco = latestEcoDay(day);
+        showMsg(t['revMiss' + dayMissingKind(day)], latestEco && latestEco !== day ? { day: latestEco, label: t.revGoLatest.replace('{date}', fmtDay(latestEco, true)) } : null);
         return;
     }
     msg.classList.add('hidden'); body.classList.remove('hidden');

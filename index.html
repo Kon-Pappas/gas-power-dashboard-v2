@@ -133,10 +133,10 @@
         <!-- VIEW 1: DAILY OVERVIEW -->
         <div id="viewOverview" class="space-y-4 sm:space-y-6 block">
             <div hidden class="md:!flex justify-end md:mb-3"><button type="button" onclick="openMethodologyModal('overview', 'detailed')" class="meth-link text-xs text-slate-400 hover:text-acc-300 transition-colors">Methodology →</button></div>
-            <div class="flex items-center gap-6 px-2 sm:px-6 sm:py-4 mb-2 sm:mb-0 sm:bg-slate-800/40 sm:rounded-xl sm:border sm:border-slate-700">
-                <div>
+            <div class="grid grid-cols-[1fr_1px_1fr] items-center px-2 sm:px-6 sm:py-4 mb-2 sm:mb-0 md:hidden sm:bg-slate-800/40 sm:rounded-xl sm:border sm:border-slate-700">   <!-- D44: από 768 px τα σύνολα μπαίνουν μέσα στο υπόμνημα του γραφήματος -->
+                <div class="flex flex-col items-center text-center">
                     <span data-i18n="lblTotalIsp" class="text-[10px] sm:text-[11px] text-slate-500 font-semibold block mb-0.5 sm:mb-1">Total ISP (MWh)</span>
-                    <div class="flex items-center gap-2.5">
+                    <div class="flex items-center justify-center gap-2.5">
                         <div class="w-1.5 h-8 bg-slate-300 rounded-[2px] shadow-sm"></div>
                         <div class="bg-slate-900/60 border border-slate-700/80 px-3 py-1 rounded-lg shadow-inner">
                             <span class="text-xl sm:text-2xl font-bold text-slate-200" id="kpiTotalIsp">0.0</span>
@@ -144,9 +144,9 @@
                     </div>
                 </div>
                 <div class="w-px h-10 sm:h-12 bg-slate-700/50 sm:bg-slate-700"></div>
-                <div>
+                <div class="flex flex-col items-center text-center">
                     <span data-i18n="lblTotalScada" class="text-[10px] sm:text-[11px] text-slate-500 font-semibold block mb-0.5 sm:mb-1">Total SCADA (MWh)</span>
-                    <div class="flex items-center gap-2.5">
+                    <div class="flex items-center justify-center gap-2.5">
                         <div class="w-1.5 h-8 rounded-[2px] shadow-sm relative overflow-hidden bg-slate-500">
                             <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.7) 2px, rgba(255,255,255,0.7) 4px);"></div>
                         </div>
@@ -176,13 +176,15 @@
                         <div class="h-px w-full bg-slate-700/50 sm:hidden"></div>
                         
                         <div class="flex flex-wrap sm:flex-col gap-x-4 gap-y-1.5 sm:gap-2 items-center sm:items-start">
-                            <span data-i18n="lgdDataType" class="w-full sm:w-auto text-[9px] sm:text-[10px] text-slate-500 font-semibold mb-0.5 sm:mb-0">Data type</span>
-                            <span class="flex items-center gap-1.5"><div class="w-3.5 h-2.5 sm:w-4 sm:h-3 bg-slate-300 rounded-sm"></div> <span data-i18n="lgdIspSolid">ISP (solid)</span></span>
-                            <span class="flex items-center gap-1.5">
+                            <span data-i18n="lgdDataType" class="md:hidden w-full sm:w-auto text-[9px] sm:text-[10px] text-slate-500 font-semibold mb-0.5 sm:mb-0">Data type</span>
+                            <span data-i18n="lgdDayTotals" class="hidden md:block text-[10px] text-slate-500 font-semibold">Day total (MWh)</span>
+                            <span class="flex items-center gap-1.5 md:min-w-[17rem]"><div class="w-3.5 h-2.5 sm:w-4 sm:h-3 bg-slate-300 rounded-sm"></div> <span data-i18n="lgdIspSolid">ISP (solid)</span><span id="lgTotalIsp" class="hidden md:inline ml-auto pl-5 text-[15px] font-bold text-slate-100 tabular-nums"></span></span>
+                            <span class="flex items-center gap-1.5 md:min-w-[17rem]">
                                 <div class="w-3.5 h-2.5 sm:w-4 sm:h-3 rounded-sm relative overflow-hidden bg-slate-500">
                                     <div class="absolute inset-0" style="background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.7) 2px, rgba(255,255,255,0.7) 4px);"></div>
                                 </div> 
                                 <span data-i18n="lgdScadaStriped">SCADA (striped)</span>
+                                <span id="lgTotalScada" class="hidden md:inline ml-auto pl-5 text-[15px] font-bold text-slate-100 tabular-nums"></span>
                             </span>
                         </div>
                     </div>
@@ -197,6 +199,8 @@
         <!-- VIEW 2: DAILY ECONOMICS -->
         <div id="viewEconomics" class="space-y-4 sm:space-y-6 hidden">
             <div hidden class="md:!flex justify-end md:mb-3"><button type="button" onclick="openMethodologyModal('economics', 'detailed')" class="meth-link text-xs text-slate-400 hover:text-acc-300 transition-colors">Methodology →</button></div>
+            <div id="ecoMsg" role="status" class="hidden bg-slate-800/40 p-6 rounded-xl border border-slate-700 text-center text-sm text-slate-400"></div>
+            <div id="ecoBody" class="space-y-4 sm:space-y-6">
             <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-4 lg:gap-4 mt-2 mb-2 px-2 sm:px-0">
                 <div class="flex flex-col justify-between sm:bg-slate-800/60 sm:p-4 sm:rounded-xl sm:border sm:border-slate-700">
                     <span data-i18n="lblHgsida" class="text-[10px] sm:text-[11px] text-slate-500 sm:text-slate-400 font-semibold mb-0.5">HGSIDA price</span>
@@ -265,6 +269,7 @@
                         </table>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
         
