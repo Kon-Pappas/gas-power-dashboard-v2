@@ -33288,6 +33288,13 @@
       "HGSIWD (€/MWh)": 81.45,
       "HGMBI (€/MWh)": 108.0,
       "HGMSI (€/MWh)": 80.0
+    },
+    {
+      "Ημερομηνία": "2026-11-12",
+      "HGSIDA (€/MWh)": 84.78,
+      "HGSIWD (€/MWh)": 84.03,
+      "HGMBI (€/MWh)": 95.14,
+      "HGMSI (€/MWh)": 77.84
     }
   ],
   "thermal_efficiency": [
@@ -64338,6 +64345,112 @@
           "Εκπομπές CO2 (t)": 3998.12
         }
       ]
+    },
+    {
+      "Ημερομηνία": "2026-11-12",
+      "HGSIDA (€/MWh)": 84.78,
+      "CO2 Price (€/t)": 89.5,
+      "CO2 Price Estimated": false,
+      "Fleet Totals": {
+        "Συνολική Παραγωγή (MWh)": 56141.0,
+        "Συνολικό Κόστος Καυσίμου (€)": 9105343.47,
+        "Συνολικό Κόστος CO2 (€)": 1982183.13,
+        "Συνολικό Κόστος Στόλου (€)": 11087526.6,
+        "Μέσο SRMC Στόλου (€/MWh)": 197.49,
+        "Συνολικοί Τόνοι CO2 (t)": 22147.3
+      },
+      "Units": [
+        {
+          "Μονάδα": "ELPEDISON_THISVI",
+          "Παραγωγή (MWh)": 5369.0,
+          "Κόστος Καυσίμου (€)": 919609.04,
+          "Κόστος CO2 (€)": 206321.45,
+          "Συνολικό Κόστος (€)": 1125930.49,
+          "SRMC Μέσος Όρος (€/MWh)": 209.71,
+          "Εκπομπές CO2 (t)": 2305.27
+        },
+        {
+          "Μονάδα": "KORINTHOS_POWER",
+          "Παραγωγή (MWh)": 4586.0,
+          "Κόστος Καυσίμου (€)": 745050.9,
+          "Κόστος CO2 (€)": 169539.99,
+          "Συνολικό Κόστος (€)": 914590.89,
+          "SRMC Μέσος Όρος (€/MWh)": 199.43,
+          "Εκπομπές CO2 (t)": 1894.3
+        },
+        {
+          "Μονάδα": "PROTERGIA_CC",
+          "Παραγωγή (MWh)": 3857.0,
+          "Κόστος Καυσίμου (€)": 655564.73,
+          "Κόστος CO2 (€)": 146498.11,
+          "Συνολικό Κόστος (€)": 802062.84,
+          "SRMC Μέσος Όρος (€/MWh)": 207.95,
+          "Εκπομπές CO2 (t)": 1636.85
+        },
+        {
+          "Μονάδα": "ΑΛΙΒΕΡΙ 5",
+          "Παραγωγή (MWh)": 521.0,
+          "Κόστος Καυσίμου (€)": 86004.7,
+          "Κόστος CO2 (€)": 19416.45,
+          "Συνολικό Κόστος (€)": 105421.15,
+          "SRMC Μέσος Όρος (€/MWh)": 202.34,
+          "Εκπομπές CO2 (t)": 216.94
+        },
+        {
+          "Μονάδα": "ΑΛΟΥΜΙΝΙΟ",
+          "Παραγωγή (MWh)": 3180.0,
+          "Κόστος Καυσίμου (€)": 559881.19,
+          "Κόστος CO2 (€)": 113719.45,
+          "Συνολικό Κόστος (€)": 673600.63,
+          "SRMC Μέσος Όρος (€/MWh)": 211.82,
+          "Εκπομπές CO2 (t)": 1270.61
+        },
+        {
+          "Μονάδα": "ΘΗΣ ΗΡΩΝ",
+          "Παραγωγή (MWh)": 4657.0,
+          "Κόστος Καυσίμου (€)": 783516.17,
+          "Κόστος CO2 (€)": 177179.84,
+          "Συνολικό Κόστος (€)": 960696.01,
+          "SRMC Μέσος Όρος (€/MWh)": 206.29,
+          "Εκπομπές CO2 (t)": 1979.66
+        },
+        {
+          "Μονάδα": "KOMOTINI_POWER",
+          "Παραγωγή (MWh)": 12365.0,
+          "Κόστος Καυσίμου (€)": 1751045.14,
+          "Κόστος CO2 (€)": 377055.58,
+          "Συνολικό Κόστος (€)": 2128100.72,
+          "SRMC Μέσος Όρος (€/MWh)": 172.11,
+          "Εκπομπές CO2 (t)": 4212.91
+        },
+        {
+          "Μονάδα": "ΚΟΜΟΤΗΝΗ",
+          "Παραγωγή (MWh)": 7074.0,
+          "Κόστος Καυσίμου (€)": 1352728.99,
+          "Κόστος CO2 (€)": 287768.74,
+          "Συνολικό Κόστος (€)": 1640497.74,
+          "SRMC Μέσος Όρος (€/MWh)": 231.91,
+          "Εκπομπές CO2 (t)": 3215.29
+        },
+        {
+          "Μονάδα": "ΛΑΥΡΙΟ 4",
+          "Παραγωγή (MWh)": 3043.0,
+          "Κόστος Καυσίμου (€)": 593389.58,
+          "Κόστος CO2 (€)": 126985.25,
+          "Συνολικό Κόστος (€)": 720374.83,
+          "SRMC Μέσος Όρος (€/MWh)": 236.73,
+          "Εκπομπές CO2 (t)": 1418.83
+        },
+        {
+          "Μονάδα": "AG_NIKOLAOS2",
+          "Παραγωγή (MWh)": 11489.0,
+          "Κόστος Καυσίμου (€)": 1658553.03,
+          "Κόστος CO2 (€)": 357698.27,
+          "Συνολικό Κόστος (€)": 2016251.29,
+          "SRMC Μέσος Όρος (€/MWh)": 175.49,
+          "Εκπομπές CO2 (t)": 3996.63
+        }
+      ]
     }
   ],
   "daily_constrained_mwh": [
@@ -67906,5 +68019,1596 @@
       "Hours": 9
     }
   ],
-  "scada_quality": []
+  "scada_quality": [],
+  "day_status": [
+    {
+      "Ημερομηνία": "2026-04-01",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-02",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-03",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-04",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-05",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-06",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-07",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-08",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-09",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-10",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-11",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-12",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-13",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-14",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-15",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-16",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-17",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-18",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-19",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-20",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-21",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-22",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-23",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-24",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-25",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-26",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-27",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-28",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-29",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-04-30",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-01",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-02",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-03",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-04",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-05",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-06",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-07",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-08",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-09",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-10",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-11",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-12",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-13",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-14",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-15",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-16",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-17",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-18",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-19",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-20",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-21",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-22",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-23",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-24",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-25",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-26",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-27",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-28",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-29",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-30",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-05-31",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-01",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-02",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-03",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-04",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-05",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-06",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-07",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-08",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-09",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-10",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-11",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-12",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-13",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-14",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-15",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-16",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-17",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-18",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-19",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-20",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-21",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-22",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-23",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-24",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-25",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-26",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-27",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-28",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-29",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-06-30",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-01",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-02",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-03",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-04",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-05",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-06",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-07",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-08",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-09",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-10",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-11",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-12",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-13",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-14",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-15",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-16",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-17",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-18",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-19",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-20",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-21",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-22",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-23",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-24",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-25",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-26",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-27",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-28",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-29",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-30",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-07-31",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-01",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-02",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-03",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-04",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-05",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-06",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-07",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-08",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-09",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-10",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-11",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-12",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-13",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-14",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-15",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-16",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-17",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-18",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-19",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-20",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-21",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-22",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-23",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-24",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-25",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-26",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-27",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-28",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-29",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-30",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-08-31",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-01",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-02",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-03",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-04",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-05",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-06",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-07",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-08",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-09",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-10",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-11",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-12",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-13",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-14",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-15",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-16",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-17",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-18",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-19",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-20",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-21",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-22",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-23",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-24",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-25",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-26",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-27",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-28",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-29",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-09-30",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-01",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-02",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-03",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-04",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-05",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-06",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-07",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-08",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-09",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-10",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-11",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-12",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-13",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-14",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-15",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-16",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-17",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-18",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-19",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-20",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-21",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-22",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-23",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-24",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-25",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-26",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-27",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-28",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-29",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-30",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-10-31",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-01",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-02",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-03",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-04",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-05",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-06",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-07",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-08",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-09",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-10",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-11",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-12",
+      "scada_complete": true,
+      "hgsida": true,
+      "economics": true,
+      "state": "complete"
+    },
+    {
+      "Ημερομηνία": "2026-11-13",
+      "scada_complete": false,
+      "hgsida": false,
+      "economics": false,
+      "state": "pending_scada"
+    }
+  ]
 }
