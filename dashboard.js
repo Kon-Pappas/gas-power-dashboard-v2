@@ -158,7 +158,7 @@ const unitXTicks = () => isPhone() ? { autoSkip: false, maxRotation: 90, minRota
 // ---- Daily overview: μία μονάδα, πρόγραμμα (ISP) έναντι πραγματικού (SCADA)
 function unitTip(unit, cls, isp, sc, color) {
     const T = i18n[currentLang], sel = document.getElementById('dateSelect');
-    const opt = sel && sel.options[sel.selectedIndex], pending = !!opt && opt.dataset.partial === 'true';
+    const ds0 = sel && sel.value ? dayStatusOf(sel.value) : null, pending = !!ds0 && !ds0.scada_complete;   // D47: από το Python
     let html = tipHead(unit, sel && sel.value ? fmtDay(sel.value) : '');
     if (cls) html += `<div class="text-[11px] text-slate-400 -mt-1.5 mb-2">${escapeHtml(cls)}</div>`;
     if (roundsToZero(isp) && roundsToZero(sc)) return html + tipNote(pending ? T.tipScadaPending : T.tipNoMove);
@@ -361,27 +361,16 @@ function fmtMonth(ym) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// D46 (K37): η κατάσταση της ημέρας την υπολογίζει το Python (day_status)· η σελίδα μόνο την εμφανίζει
+// D46/D47 (K37): η κατάσταση της ημέρας την υπολογίζει ΜΟΝΟ το Python (day_status)· η σελίδα μόνο την εμφανίζει.
+// Αν το αρχείο δεν έχει day_status (παλιό αρχείο ή σφάλμα), η σελίδα ΔΕΝ μαντεύει: χωρίς pill, χωρίς ⚠, τελευταία ημέρα, ουδέτερο μήνυμα (D47)
 function dayStatusOf(day) { return (rawData && rawData.dayStatus && rawData.dayStatus[day]) || null; }
-
-// ΕΦΕΔΡΙΚΟΣ υπολογισμός (μόνο όταν το αρχείο δεν έχει ακόμα day_status· θα φύγει στο επόμενο batch): ποιες ημέρες έχουν SCADA (σύνολο αερίου > 0)
-function scadaCompleteness() {
-    const tot = {}, units = {};
-    (rawData.scada || []).forEach(r => {
-        const v = Object.values(r), date = parseDate(v[0]), name = String(v[1]).trim(), val = parseNum(v[2]);
-        if (name === 'TOTAL GAS UNITS' || name.includes('Σύνολο')) tot[date] = (tot[date] || 0) + val;
-        else if (name !== 'NAN') units[date] = (units[date] || 0) + val;
-    });
-    return (date) => ((tot[date] || 0) > 0 ? tot[date] : (units[date] || 0)) > 0;
-}
 
 function fillPickers() {
     const dSel = document.getElementById('dateSelect'), mSel = document.getElementById('monthSelect');
     if (!dSel || !mSel || !rawData) return;
     const t = i18n[currentLang], today = todayAthens();
     const dates = [...new Set([...rawData.isp, ...rawData.scada].map(r => Object.values(r)[0]))].filter(x => x).sort().reverse();
-    const complete0 = scadaCompleteness();
-    const complete = (d) => { const s = dayStatusOf(d); return s ? !!s.scada_complete : complete0(d); };
+    const complete = (d) => { const s = dayStatusOf(d); return s ? !!s.scada_complete : true; };   // χωρίς day_status: καμία ημέρα δεν σημαίνεται εκκρεμής
     const noYear = isPhone() && new Set(dates.map(x => x.substring(0, 4))).size === 1;
 
     const keepDay = dates.includes(dSel.value) ? dSel.value : null;
@@ -391,7 +380,6 @@ function fillPickers() {
         opt.value = date;
         // Στο κινητό το «(σήμερα)» δεν χωράει στο πεδίο (στα ελληνικά κόβεται): το ⚠ λέει ήδη ότι η ημέρα περιμένει (K27)
         opt.textContent = fmtDay(date, noYear) + (date === today && !isPhone() ? ` (${t.today})` : '') + (pending ? ' ⚠' : '');
-        opt.dataset.partial = pending ? 'true' : 'false';
         dSel.appendChild(opt);
     });
     // Πρώτη φορά: η πιο πρόσφατη ΠΛΗΡΗΣ ημέρα (αν η τελευταία περιμένει SCADA). Μετά κρατιέται η επιλογή του επισκέπτη.
@@ -425,18 +413,9 @@ function updateStatusBadge() {
     // Πράσινο = πλήρες (D11)· πορτοκαλί = περιμένει το SCADA· D39: στα tabs Οικονομικά και Ανασκόπηση, αν η ημέρα δεν έχει οικονομικά,
     // γαλάζιο = αναμονή HGSIDA (η ημέρα είναι από τις τελευταίες 3) ή γκρι = χωρίς οικονομικά (παλαιότερη ημέρα)
     const ds = dayStatusOf(sel.value);
-    let state;
-    if (ds) {   // D46: το Python αποφασίζει· στην Επισκόπηση μετράει μόνο το SCADA, στα Οικονομικά και στην Ανασκόπηση και τα οικονομικά
-        state = !ds.scada_complete ? 'pending' : ((currentTab === 'economics' || currentTab === 'review') ? ({ complete: 'complete', waiting_hgsida: 'hgsida', no_economics: 'noeco', pending_scada: 'pending' }[ds.state] || 'complete') : 'complete');
-    } else {    // εφεδρικός υπολογισμός (παλιό αρχείο χωρίς day_status)
-        state = opt.dataset.partial === 'true' ? 'pending' : 'complete';
-        if (state === 'complete' && (currentTab === 'economics' || currentTab === 'review') && rawData && rawData.daily_economics) {
-            if (!rawData.daily_economics.some(e => parseDate(e.Ημερομηνία) === sel.value)) {
-                const latest = Array.from(sel.options).map(o => o.value).sort().pop();
-                state = (new Date(latest + 'T00:00:00Z') - new Date(sel.value + 'T00:00:00Z')) / 86400000 <= 2 ? 'hgsida' : 'noeco';
-            }
-        }
-    }
+    if (!ds) { badge.className = 'hidden'; return; }      // D47: χωρίς day_status δεν μαντεύουμε
+    // στην Επισκόπηση μετράει μόνο το SCADA, στα Οικονομικά και στην Ανασκόπηση και τα οικονομικά (D46)
+    const state = !ds.scada_complete ? 'pending' : ((currentTab === 'economics' || currentTab === 'review') ? ({ complete: 'complete', waiting_hgsida: 'hgsida', no_economics: 'noeco', pending_scada: 'pending' }[ds.state] || 'complete') : 'complete');
     const STYLE = {
         complete: ['border-emerald-500/30 bg-emerald-500/10 text-emerald-400', 'bg-emerald-500', t.pillCompleteShort, t.pillComplete],
         pending: ['border-orange-500/30 bg-orange-500/10 text-orange-400', 'bg-orange-500 animate-pulse', t.pillPendingShort, t.pillPending],
@@ -611,14 +590,7 @@ function dayMissingKind(day) {
         if (ds.state === 'no_economics') return 'Old';
         return !ds.scada_complete && !ds.hgsida ? 'Both' : (!ds.scada_complete ? 'Scada' : (!ds.hgsida ? 'Hgsida' : 'Calc'));
     }
-    const opt = Array.from(document.getElementById('dateSelect').options).find(o => o.value === day);
-    const eco = (rawData.daily_economics || []).map(e => parseDate(e.Ημερομηνία)).sort();
-    const latest = eco.length ? eco[eco.length - 1] : null;
-    if (latest && (new Date(latest + 'T00:00:00Z') - new Date(day + 'T00:00:00Z')) / 86400000 > 2) return 'Old';   // παλαιότερη ημέρα: δεν υπάρχουν οικονομικά στο ιστορικό
-    const scadaOk = !(opt && opt.dataset.partial === 'true');                                                       // ίδιος κανόνας με το pill (D44: στο batch 28 περνά στο Python)
-    const he = (rawData.henex || []).find(r => parseDate(Object.values(r)[0]) === day);
-    const hgOk = !!(he && Number(he['HGSIDA (€/MWh)']) > 0);
-    return !scadaOk && !hgOk ? 'Both' : (!scadaOk ? 'Scada' : (!hgOk ? 'Hgsida' : 'Calc'));
+    return 'Calc';      // D47: χωρίς day_status το μήνυμα μένει ουδέτερο («δεν έχουν υπολογιστεί ακόμα»)
 }
 function latestEcoDay(day) {
     const sel = document.getElementById('dateSelect'), eco = {};
