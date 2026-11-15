@@ -3,7 +3,7 @@
 Public dashboard of natural-gas power plants in the Greek electricity market: what the plants were scheduled to do (ISP) against what they did (SCADA), the theoretical cost of that generation (gas price, efficiency, CO₂), and how much of the system surplus is absorbed by constraint-driven gas generation.
 
 **Live page:** https://kon-pappas.github.io/gas-power-dashboard-v2/
-**Part of:** [Konstantinos Pappas Hub](https://kon-pappas.github.io/), with BESS, Power Flows, BigHydro and Live Greek Power.
+**Part of:** [Greek Energy Hub](https://kon-pappas.github.io/), with BESS, Power Flows, BigHydro and Live Greek Power.
 
 ## What the page shows
 
@@ -28,7 +28,6 @@ The *Methodology & Assumptions* button opens a short and a detailed version of t
 `update_data.py` runs in GitHub Actions (`.github/workflows/update.yml`) only when [cron-job.org](https://cron-job.org) calls it, every day at **07:06 and 13:00 Greek time**. The workflow has no `schedule:` (see `docs/DECISIONS.md`, D07). The script writes `data/historical.json` (all data) and `data/meta.json` (time of the last run and of the next one); the page only shows them. The last 10 days are re-checked at every run to catch late publications and corrections.
 
 If one day or one step fails, the script keeps the previous data of that day, writes everything that succeeded and exits with an error: the run turns red, the good data are still committed (`if: always()`). Run `python scripts/check_constraints.py` to check the constrained MWh against an independent calculation.
-scripts/data_size.py  size of the data as downloaded (raw, gzip, growth per day, days left to the 250 KB limit)
 
 Manual run with dates (backfill): *Actions → Daily Energy Data Update → Run workflow*, with *Start Date* and *End Date* (`YYYY-MM-DD`). A backfill never calls the CO₂ API.
 
@@ -43,7 +42,7 @@ data/historical.json  all data the page reads (written by update_data.py)
 data/scada_hourly.json  hourly SCADA of the last 14 days, for update_data.py only (the page does not download it)
 data/review.json  own derived figures for the daily review (cost decomposition, units out and returns, effect of the constraints); no third-party price in it (written by update_data.py)
 data/meta.json        last and next update (written by update_data.py)
-scripts/              check_constraints.py (independent check of the constrained MWh of the last 14 days)
+scripts/              check_constraints.py (independent check of the constrained MWh of the last 14 days); data_size.py (size of the data as downloaded: raw, gzip, growth per day, days left to the 250 KB limit)
 docs/                 DECISIONS.md, KNOWN_ISSUES.md, ROADMAP.md
 .github/workflows/    update.yml
 ```

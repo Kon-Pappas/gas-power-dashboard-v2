@@ -47,6 +47,7 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 - **Batch 27 — done (D44, D45):** the totals of the *Daily overview* inside the legend (from 768 px) and centred on phones; the *Daily economics* shows a message and a button for a day with missing data, and says which data are missing (the same for the review); the Methodology corrected (boxes above, the loading of the review, titles with the first capital, pill states, disclaimer, order); the register of exceptions; the hub lists H and C updated. **Next, batch 28 (K37, K38):** the Python writes the state of every day (the page only reads it) and writes `null` instead of 0.0 for a missing value (the page shows *–*); a decision of the owner is open: the status pill on the desktop (next to the date picker, or next to *Last update / Next update* as the document says)
 - **Batch 28 — done (D46):** the state of every day (`day_status`) is computed by the Python and the page only shows it; a missing HEnEx index is `null`. the correction of the text of the alignment document about the status pill (owner's decision of 13 Nov 2026) is still open
 - **Batch 29 — done (D47):** the fallback calculation of the state of a day is removed from the page; without `day_status` the page does not guess (no pill, no ⚠, a neutral message). **K37 is closed.** **Open from the review of 11-13 Nov 2026:** only the correction of the text of the alignment document about the status pill (E6), when the owner asks; and the **follow-up to HEnEx after 23 Nov 2026** (K34), with the question about the prices and volumes of the contracts
+- **Batch 30 — done (D48, 14 Nov 2026):** the hub link of the header reads *Greek Energy Hub* (no «/»); the GoatCounter line before `</body>`. **Batch 31 (D49, 15 Nov 2026):** README and docs only.
 - **Waiting for HEnEx until 23 Nov 2026 (K34):** the idea of a **market context** (a 6th tab, or a small card in *Daily economics* or *Monthly analytics*) about the gas price, from the HEnEx indices that we already store (HGSIDA, HGSIWD, HGMBI, HGMSI; the daily file has 20 columns and we keep 4). **Measured on the 225 days from 1 Apr to 11 Nov 2026** (in the sample, not against simple reference models): the day-ahead price predicts the next spot price better than today's spot (mean absolute error 1.31 against 1.67 EUR/MWh, better on 59 % of the days); the sign of the spread DA - WD points to the direction of the next day on 71 % of the days (**not an independent test**: it is the same relation as the first); the width HGMBI - HGMSI follows the size of the next move (r = +0.43); the weekly trend continues on 65 % of the weeks, but with about 29 independent weeks it is weak. **Cautions:** the contracts D+2 and D+3 had no order or trade in the sample file, so there is no curve beyond the day-ahead; the exchange volumes (day-ahead 12,523 MWh, within-day 7,637 MWh) are about 8-12 % of the daily thermal gas of our units; there is no TTF here (D35); and a tab built on HEnEx data raises the weight of the answer of K34. Nothing is built before the answer; the follow-up to HEnEx (after 23 Nov) should ask also for the **prices and volumes of the contracts**
 - **K34 (terms of use of the HEnEx and ADMIE data), checked 10 Nov:** the HEnEx terms forbid making its data available on a website without its written consent; the ADMIE terms have no such clause. An email to info@enexgroup.gr is the first step, **before any new use of the HEnEx file**
 - **The owner's idea of 10 Nov: the other columns of the daily HEnEx file** (traded volume, number of orders and trades, price range, closing price against the VWAP, the indicative prices of D+2 and D+3) instead of the HGMBI, HGMSI and HGSIWD. It has independent information, unlike those three; on 8 Nov the platform volume (WD + DA, 20,160 MWh) was 16.3 % of the gas burn of the fleet, and D+2 and D+3 had no trades. **On hold until K34**; a first look needs a backfill of the extra columns
@@ -82,14 +83,15 @@ Order of work for aligning this dashboard with the hub house style (live-greekpo
 
 ## Open decisions (owner)
 
-1. A full list of pinned dependencies (K19)
-2. Constraint windows with a half hour: weight the edge hours (from now on, or with a backfill of the old days), or leave it (K28)
-3. The old Komotini unit: the same consistency and its minimum load (K29), after the backfill of D31
-4. **K34: the written consent of HEnEx** for the public display of its indices (the email was sent on 9 Nov, waiting for the answer)
+1. A full list of pinned dependencies (K19): **not yet** (15 Nov 2026)
+2. The old Komotini unit and the maximum loads (K29, K30): **after the first winter in the data** (D49)
+3. **K34: the written consent of HEnEx** for the public display of its indices (the email was sent on 9 Nov, waiting for the answer until 23 Nov 2026, then the follow-up with the question about the prices and volumes of the contracts)
    **K35: the delivery day of the HGSIDA** — decided to keep it for now; to be revisited (needs a backfill of all days)
-5. **K33 is closed for the CO2 (D38).** The terms of use of the HEnEx data (K34) are still waiting for the answer of HEnEx; for the ADMIE data nothing restrictive was found
-6. ~~A test week before the backfill of April and May (K32)~~ — **done in a better way on 10 Nov 2026** (D42): the segments were added backwards from the first day, so that no gap exists
-7. The quote time of the CO2 (K31), optional and after K33
+4. **K11: files per month**, before about January 2027
+5. The correction of the text of the alignment document about the status pill (E6), when the owner asks
+
+Closed on 15 Nov 2026 (D49): K28 (half-hour windows left as they are), K31 (no quote time of the CO2), K36 (information).
+Closed earlier: K33 for the CO2 (D38); the test week before the backfill of April and May (K32, D42).
 
 Decided on 10 Nov 2026 (D36): the HGSIDA keeps its day and the Methodology states it (K35); the key of the Daily review is built first (`data/review.json`).
 Decided on 10 Nov 2026: the terms of use of the HEnEx and ADMIE data are checked first, before the other work (K34); the email to OilPriceAPI was sent.
